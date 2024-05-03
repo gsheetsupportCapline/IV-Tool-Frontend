@@ -5,10 +5,10 @@ import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: "Scheduled Patients", href: "#", current: true },
-  { name: "Request a Rush", href: "#", current: false },
-  { name: "Dashboard", href: "#", current: false },
-  { name: "Log Out", href: "#", current: false },
+  { name: "Scheduled Patients", href: "/schedule-patient", current: true },
+  { name: "Request a Rush", href: "/request-rush", current: false },
+  { name: "Dashboard", href: "/dashboard", current: false },
+  { name: "Log Out", href: "/login", current: false },
 ];
 
 function classNames(...classes) {

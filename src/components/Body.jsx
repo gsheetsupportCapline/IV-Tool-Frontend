@@ -23,6 +23,14 @@ const Body = () => {
       path: "dashboard",
       element: <Dashboard />,
     },
+    {
+      path: "dashboard",
+      element: <Dashboard />,
+    },
+    {
+      path: "/schedule-patient",
+      element: <Home />,
+    },
   ]);
   return (
     <div>

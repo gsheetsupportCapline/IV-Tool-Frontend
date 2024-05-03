@@ -11,7 +11,7 @@ function Status() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center ">
       <ul className="mx-auto grid max-w-full w-full grid-cols-3 gap-x-5 px-8">
         <li className="">
           <input

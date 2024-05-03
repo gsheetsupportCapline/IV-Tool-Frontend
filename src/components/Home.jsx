@@ -7,6 +7,7 @@ const Home = () => {
     <>
       <Header />
       <DatePicker />
+
       <Status />
     </>
   );
