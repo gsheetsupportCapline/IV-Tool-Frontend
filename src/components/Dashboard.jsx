@@ -1,20 +1,19 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: "Scheduled Patients", href: "#", current: true },
-  { name: "Request a Rush", href: "#", current: false },
-  { name: "Dashboard", href: "#", current: false },
-  { name: "Log Out", href: "#", current: false },
+  { name: "Dashboard", href: "#", current: true },
+  { name: "Team", href: "#", current: false },
+  { name: "Projects", href: "#", current: false },
+  { name: "Calendar", href: "#", current: false },
 ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-const Header = () => {
+
+export default function Example() {
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (
@@ -61,7 +60,16 @@ const Header = () => {
                   </div>
                 </div>
               </div>
-
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                <button
+                  type="button"
+                  className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                >
+                  <span className="absolute -inset-1.5" />
+                  <span className="sr-only">View notifications</span>
+                  <BellIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
               <Transition
                 as={Fragment}
                 enter="transition ease-out duration-100"
@@ -140,6 +148,4 @@ const Header = () => {
       )}
     </Disclosure>
   );
-};
-
-export default Header;
+}
