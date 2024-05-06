@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
@@ -10,7 +10,6 @@ const fetchData = async () => {
       company: "ABC Corp",
       representative: { name: "Jane Doe" },
     },
-    // Add more mock data as needed
   ];
 };
 

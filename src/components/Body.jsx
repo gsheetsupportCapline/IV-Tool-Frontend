@@ -6,6 +6,7 @@ import { RouterProvider } from "react-router-dom";
 import Home from "./Home";
 import IVUser from "./IVUser";
 import Rush from "./Rush";
+import PendingIV from "./PendingIV";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -34,6 +35,11 @@ const Body = () => {
     {
       path: "/request-rush",
       element: <Rush />,
+    },
+
+    {
+      path: "/pendingIV",
+      element: <PendingIV />,
     },
   ]);
   return (
