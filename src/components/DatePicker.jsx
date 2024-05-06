@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { useState } from "react";
 import Datepicker from "react-tailwindcss-datepicker";
 
 const officeNames = [
@@ -47,9 +47,9 @@ const DatePicker = () => {
     setSelectedOffice(event.target.value);
   };
   return (
-    <div className="flex items-center my-1 bg-slate-400">
+    <div className="flex items-center my-1 bg-slate-400  ">
       <select
-        className="mr-4 bg-slate-500"
+        className="p-2 mr-4 bg-slate-500 rounded-xl"
         value={selectedOffice}
         onChange={handleOfficeChange}
       >
@@ -59,7 +59,7 @@ const DatePicker = () => {
           </option>
         ))}
       </select>
-      <p className="mr-4">Appointment Date</p>
+      <p className="mr-4 ml-10">Appointment Date</p>
       <div className="w-1/4  ">
         <Datepicker value={value} onChange={handleValueChange} />
       </div>

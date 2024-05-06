@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-// Assuming you have a service to fetch data, similar to the reference code
-// For demonstration, I'll use a mock function
 const fetchData = async () => {
-  // Mock data fetching
   return [
     {
       name: "John Doe",

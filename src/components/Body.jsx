@@ -1,9 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 import Browse from "./Browse";
 import Login from "./Login";
-import Dashboard from "./Dashboard";
+
 import { RouterProvider } from "react-router-dom";
 import Home from "./Home";
+import IVUser from "./IVUser";
+import Rush from "./Rush";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -20,16 +22,18 @@ const Body = () => {
       element: <Login />,
     },
     {
-      path: "dashboard",
-      element: <Dashboard />,
+      path: "/dashboard",
+      element: <IVUser />,
     },
-    {
-      path: "dashboard",
-      element: <Dashboard />,
-    },
+
     {
       path: "/schedule-patient",
       element: <Home />,
+    },
+
+    {
+      path: "/request-rush",
+      element: <Rush />,
     },
   ]);
   return (

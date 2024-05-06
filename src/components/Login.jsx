@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import Header from "./Header";
+import { useState } from "react";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState("true");
@@ -13,12 +12,10 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission
     console.log("Email:", email, "Password:", password);
-    // Here you can add your login logic, e.g., calling an API
   };
 
   return (
     <>
-      <Header />
       <form className="bg-black shadow-md rounded px-8 pt-6 pb-8  w-3/12 my-36 mx-auto right-0 left-0 text-white  ">
         <h1 className="font-bold text-3xl py-4">
           {isSignInForm ? "Sign In" : "Sign Up"}
