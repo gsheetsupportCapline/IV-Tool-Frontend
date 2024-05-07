@@ -7,6 +7,8 @@ import Home from "./Home";
 import IVUser from "./IVUser";
 import Rush from "./Rush";
 import PendingIV from "./PendingIV";
+import AssignedIV from "./AssignedIV";
+import Admin from "./Admin";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -40,6 +42,14 @@ const Body = () => {
     {
       path: "/pendingIV",
       element: <PendingIV />,
+    },
+    {
+      path: "/assignedIV",
+      element: <AssignedIV />,
+    },
+    {
+      path: "/admin",
+      element: <Admin />,
     },
   ]);
   return (

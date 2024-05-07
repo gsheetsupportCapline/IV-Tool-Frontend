@@ -37,33 +37,22 @@ const officeNames = [
   "Westgreen",
   "Winnie",
 ];
-
-const PendingIV = () => {
-  // Generate headers for the next three days from today
-  const today = new Date();
+const users = ["user1", "user2", "user3"];
+const AssignedIV = () => {
   const headers = [];
-  for (let i = 0; i < 3; i++) {
-    const nextDay = new Date(today);
-    nextDay.setDate(today.getDate() + i + 1);
-    headers.push(
-      nextDay.toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-        year: "numeric",
-      })
-    );
+  for (let user of users) {
+    headers.push(user);
   }
 
   // Mock data for demonstration purposes
   const data = officeNames.map((office) => {
     const rowData = { office };
-    let totalPendency = 0;
+
     headers.forEach((header) => {
       const randomValue = Math.floor(Math.random() * 100); // Random value for demonstration
       rowData[header] = randomValue;
-      totalPendency += randomValue;
     });
-    rowData["Total Pendency"] = totalPendency;
+
     return rowData;
   });
 
@@ -76,7 +65,6 @@ const PendingIV = () => {
       }),
       {}
     ),
-    "Total Pendency": data.reduce((sum, row) => sum + row["Total Pendency"], 0),
   };
 
   return (
@@ -88,7 +76,6 @@ const PendingIV = () => {
             {headers.map((header) => (
               <TableCell key={header}>{header}</TableCell>
             ))}
-            <TableCell>Total Pendency</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -98,7 +85,6 @@ const PendingIV = () => {
               {headers.map((header) => (
                 <TableCell key={header}>{row[header]}</TableCell>
               ))}
-              <TableCell>{row["Total Pendency"]}</TableCell>
             </TableRow>
           ))}
           <TableRow>
@@ -106,7 +92,6 @@ const PendingIV = () => {
             {headers.map((header) => (
               <TableCell key={header}>{totals[header]}</TableCell>
             ))}
-            <TableCell>{totals["Total Pendency"]}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -114,4 +99,4 @@ const PendingIV = () => {
   );
 };
 
-export default PendingIV;
+export default AssignedIV;
