@@ -1,37 +1,58 @@
 import { useState } from "react";
+import OfficeDropdown from "./OfficeDropdown";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState("true");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedOffice, setSelectedOffice] = useState("");
+
+  const navigate = useNavigate();
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    console.log("Email:", email, "Password:", password);
+  const handleOfficeSelect = (office) => {
+    setSelectedOffice(office);
+    // Proceed with login process after selecting an office
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          email: email,
+          password: password,
+          office: selectedOffice,
+        }
+      );
+
+      // Assuming the server responds with a token or user data
+      // You might want to store this in local storage or context
+      localStorage.setItem("loggedInOffice", selectedOffice);
+      localStorage.setItem("token", response.data.token);
+
+      // Redirect to the Home page after successful login
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Handle the error, e.g., show an error message to the user
+    }
   };
 
   return (
     <>
       <form className="bg-black shadow-md rounded px-8 pt-6 pb-8  w-3/12 my-36 mx-auto right-0 left-0 text-white  ">
-        <h1 className="font-bold text-3xl py-4">
-          {isSignInForm ? "Sign In" : "Sign Up"}
-        </h1>
+        <h1 className="font-bold text-3xl py-4">Sign In</h1>
         <div className="mb-4">
-          {!isSignInForm && (
-            <input
-              className="shadow appearance-none border rounded py-2 px-3 w-full bg-gray-700  leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          )}
+          <OfficeDropdown onSelect={handleOfficeSelect} />
         </div>
+
         <div className="mb-4">
           <input
             className="shadow appearance-none border rounded py-2 px-3 w-full bg-gray-700  leading-tight focus:outline-none focus:shadow-outline"
@@ -58,14 +79,10 @@ const Login = () => {
             type="button"
             onClick={handleSubmit}
           >
-            {isSignInForm ? "Sign In" : "Sign Up"}
+            Sign In
           </button>
         </div>
-        <p className="py-4 cursor-pointer" onClick={toggleSignInForm}>
-          {isSignInForm
-            ? "New to IV ? Sign Up Now"
-            : "Already registered ? Sign In Now"}
-        </p>
+        <p className="py-4 cursor-pointer" onClick={toggleSignInForm}></p>
       </form>
     </>
   );
