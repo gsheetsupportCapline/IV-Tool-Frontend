@@ -22,7 +22,7 @@ const Status = ({ data, dateRange }) => {
   const dataHeaderMapping = {
     "Patient ID": "patientId",
     "Appointment Date": "appointmentDate",
-    Status: "status",
+    "Completion Status": "completionStatus",
     "Plan Type": "planType",
     "IV Type": "ivType",
     Remarks: "remarks",
@@ -33,7 +33,7 @@ const Status = ({ data, dateRange }) => {
     const newItem = {};
     Object.keys(dataHeaderMapping).forEach((header) => {
       if (header === "Appointment Date") {
-        // Format the date using toLocaleDateString or a similar method
+        // Format the date using toLocaleDateString
         newItem[header] = new Date(
           item[dataHeaderMapping[header]]
         ).toLocaleDateString();
@@ -53,7 +53,7 @@ const Status = ({ data, dateRange }) => {
   const headers = [
     "Patient ID",
     "Appointment Date",
-    "Status",
+    "Completion Status",
     "Plan Type",
     "IV Type",
     "Remarks",

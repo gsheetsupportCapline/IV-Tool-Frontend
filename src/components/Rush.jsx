@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Header from "./Header";
@@ -6,6 +7,8 @@ import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 
 const Rush = () => {
+  const loggedInOffice = localStorage.getItem("loggedInOffice");
+
   return (
     <>
       <Header />
@@ -35,6 +38,7 @@ const Rush = () => {
             InputProps={{
               readOnly: true,
             }}
+            value={loggedInOffice}
           />
           <TextField required id="outlined-aptDate" label="Appointment Date" />
           <TextField required id="outlined-aptTime" label="Appointment Time" />
