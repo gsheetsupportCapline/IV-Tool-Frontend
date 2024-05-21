@@ -11,18 +11,37 @@ import Header from "./Header";
 
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
 
   const officeName = localStorage.getItem("loggedInOffice");
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/auth/users"
+        );
+        setUsers(response.data.data);
+      } catch (error) {
+        console.error("Error fetching users", error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const columns = [
     { field: "status", headerName: "Status", width: 150 },
     { field: "office", headerName: "Office", width: 150 },
     { field: "ivType", headerName: "IV Type", width: 150 },
+    // { field: "assignedUser", headerName: "Assigned To", width: 150 },
+    {
+      field: "assignedUser",
+      headerName: "Assigned To",
+      width: 150,
+    },
     { field: "appointmentType", headerName: "Appointment Type", width: 150 },
     { field: "appointmentDate", headerName: "Appointment Date", width: 150 },
     { field: "appointmentTime", headerName: "Appointment Time", width: 150 },
@@ -43,15 +62,49 @@ const Admin = () => {
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (user) => {
-    setSelectedUser(user);
+  const handleMenuItemClick = async (user) => {
+    // Assuming selectedRows contains the appointments to be updated
+    const selectedAppointmentIds = selectedRows.map((row) => row._id); // Adjust 'id' as per your data structure
+    console.log("Selected Appointment Ids", selectedAppointmentIds);
+    // Loop through each selected appointment and update it
+    for (let id of selectedAppointmentIds) {
+      try {
+        const response = await axios.put(
+          `http://localhost:3000/api/appointments/update-appointments/${officeName}/${id}`,
+          {
+            userId: user._id,
+            status: "Assigned",
+          }
+        );
+        console.log("Response api", response);
+        const updatedAppointment = response.data;
+        console.log("updatedAppointment", updatedAppointment);
+        // Find the index of the updated appointment in the rows array
+        const index = rows.findIndex(
+          (row) => row._id.toString() === updatedAppointment._id.toString()
+        );
+        console.log("Index", index);
+
+        // Update the appointment in the local state
+        if (index !== -1) {
+          const newRows = [...rows];
+          newRows[index] = updatedAppointment;
+          setRows(newRows);
+        }
+      } catch (error) {
+        console.error("Failed to update appointment", error);
+      }
+    }
+
     handleClose();
+    console.log(`Assigned ${selectedRows.length} IVs to ${user.name}`);
   };
 
   const handleSelectionChange = (newSelection) => {
     const selectedRows = newSelection.map((id) =>
-      rows.find((row) => `${row.patientId}-${row.appointmentTime}` === id)
+      rows.find((row) => row._id === id)
     );
+    console.log("Selected Rows ", selectedRows);
     setSelectedRows(selectedRows);
   };
 
@@ -67,6 +120,7 @@ const Admin = () => {
       );
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
+        console.log("Appointment data", responseData.appointments);
         let filteredAppointments;
         switch (tabValue) {
           case 0: // All appointments
@@ -140,10 +194,10 @@ const Admin = () => {
             <DataGrid
               rows={rows}
               columns={columns}
-              getRowId={(row) => `${row.patientId}-${row.appointmentTime}`}
               pageSizeOptions={[5, 10, 20, 25, 50, 100]}
               checkboxSelection
-              onSelectionModelChange={handleSelectionChange}
+              onRowSelectionModelChange={handleSelectionChange}
+              getRowId={(row) => row._id.toString()}
             />
           </div>
         </div>
