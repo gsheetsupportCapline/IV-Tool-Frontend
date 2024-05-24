@@ -4,10 +4,11 @@ import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import Header from "./Header";
+import axios from "axios";
 
 const IVUser = () => {
   const [currentUserName, setCurrentUserName] = useState("");
-
+  const [data, setData] = useState([]);
   const fetchCurrentUserName = () => {
     setCurrentUserName("Shubham Pandey");
   };
@@ -20,51 +21,18 @@ const IVUser = () => {
     console.log("Submitting table data...");
   };
 
-  const [data, setData] = useState([
-    {
-      office: "Office 1",
-      appointmentType: "Appointment Type 1",
-      appointmentDate: "2023-04-01",
-      appointmentTime: "10:00 AM",
-      patientID: "12345",
-      insuranceName: "Insurance Name 1",
-      insurancePhone: "123-456-7890",
-      policyHolderName: "Policy Holder 1",
-      policyHolderDOB: "1980-01-01",
-      memberID: "Member ID 1",
-      patientName: "Patient Name 1",
-      patientDOB: "2000-01-01",
-    },
-    {
-      office: "Office 2",
-      appointmentType: "Appointment Type 1",
-      appointmentDate: "2023-04-01",
-      appointmentTime: "10:00 AM",
-      patientID: "12345",
-      insuranceName: "Insurance Name 1",
-      insurancePhone: "123-456-7890",
-      policyHolderName: "Policy Holder 1",
-      policyHolderDOB: "1980-01-01",
-      memberID: "Member ID 1",
-      patientName: "Patient Name 1",
-      patientDOB: "2000-01-01",
-    },
-    {
-      office: "Office 3",
-      appointmentType: "Appointment Type 1",
-      appointmentDate: "2023-04-01",
-      appointmentTime: "10:00 AM",
-      patientID: "12345",
-      insuranceName: "Insurance Name 1",
-      insurancePhone: "123-456-7890",
-      policyHolderName: "Policy Holder 1",
-      policyHolderDOB: "1980-01-01",
-      memberID: "Member ID 1",
-      patientName: "Patient Name 1",
-      patientDOB: "2000-01-01",
-    },
-    // Add more objects for more rows
-  ]);
+  useEffect(() => {
+    // Fetch appointments for the current user
+    const fetchAppointments = async () => {
+      const response = await axios.get(
+        `http://localhost:3000/api/appointments/user-appointments/663dea9588212cdbb741d280`
+      );
+      console.log("response ", response);
+      setData(response.data[0].appointments);
+    };
+
+    fetchAppointments();
+  }, []);
 
   const onEditorValueChange = (props, value) => {
     let updatedData = [...data];
@@ -90,8 +58,8 @@ const IVUser = () => {
           onCellEditComplete={(e) => onEditorValueChange(e, e.value)} // Handle cell edit completion
         >
           <Column
-            field="insurance"
-            header="Insurance"
+            field="ivremarks"
+            header="IV Remarks"
             body={(rowData, { rowIndex, field }) => (
               <InputText
                 value={rowData.insurance}

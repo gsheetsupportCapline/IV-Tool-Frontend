@@ -36,12 +36,7 @@ const Admin = () => {
     { field: "status", headerName: "Status", width: 150 },
     { field: "office", headerName: "Office", width: 150 },
     { field: "ivType", headerName: "IV Type", width: 150 },
-    // { field: "assignedUser", headerName: "Assigned To", width: 150 },
-    {
-      field: "assignedUser",
-      headerName: "Assigned To",
-      width: 150,
-    },
+    { field: "assignedUser", headerName: "Assigned To", width: 150 },
     { field: "appointmentType", headerName: "Appointment Type", width: 150 },
     { field: "appointmentDate", headerName: "Appointment Date", width: 150 },
     { field: "appointmentTime", headerName: "Appointment Time", width: 150 },
