@@ -69,6 +69,7 @@ const Admin = () => {
           {
             userId: user._id,
             status: "Assigned",
+            completionStatus: "In Process",
           }
         );
         console.log("Response api", response);

@@ -15,9 +15,20 @@ const Status = ({ data, dateRange }) => {
     //   `Comparing ${itemDate} with range ${dateRange.startDate} to ${dateRange.endDate}`
     // );
     console.log("item dat", itemDate);
-    return startDate <= itemDate && endDate >= itemDate;
+
+    const isInDateRange = startDate <= itemDate && endDate >= itemDate;
+    switch (selectedOption) {
+      case "yes":
+        return true && isInDateRange; // No additional filtering, show all items
+      case "no":
+        return item.completionStatus === "In Process" && isInDateRange;
+      case "yesno":
+        return item.completionStatus === "Completed" && isInDateRange;
+      default:
+        return false; // Hide items that don't match any filter
+    }
   });
-  // console.log("Filtered data ", filteredData);
+  console.log("Filtered data ", filteredData);
 
   const dataHeaderMapping = {
     "Patient ID": "patientId",
@@ -25,7 +36,7 @@ const Status = ({ data, dateRange }) => {
     "Completion Status": "completionStatus",
     "Plan Type": "planType",
     "IV Type": "ivType",
-    Remarks: "remarks",
+    Remarks: "ivRemarks",
     "Insurance Name": "insuranceName",
   };
 
@@ -61,10 +72,10 @@ const Status = ({ data, dateRange }) => {
   ];
 
   const inProcessCount = filteredData.filter(
-    (item) => item.status === "In Process"
+    (item) => item.completionStatus === "In Process"
   ).length;
   const completedCount = filteredData.filter(
-    (item) => item.status === "Completed"
+    (item) => item.completionStatus === "Completed"
   ).length;
   return (
     <>
