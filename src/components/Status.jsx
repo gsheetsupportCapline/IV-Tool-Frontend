@@ -70,7 +70,7 @@ const Status = ({ data, dateRange }) => {
     "Remarks",
     "Insurance Name",
   ];
-
+  const allFilteredAppointment = filteredData.length;
   const inProcessCount = filteredData.filter(
     (item) => item.completionStatus === "In Process"
   ).length;
@@ -95,7 +95,7 @@ const Status = ({ data, dateRange }) => {
               className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-white py-2 px-4 hover:bg-gray-50 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="yes"
             >
-              IVs Additional Awaiting Info
+              All Appointments {allFilteredAppointment}
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yes" && (

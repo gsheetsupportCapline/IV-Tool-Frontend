@@ -14,15 +14,15 @@ const Body = () => {
   const appRouter = createBrowserRouter([
     {
       path: "/",
-      element: <Home />,
+      element: <Login />,
     },
     {
       path: "/browse",
       element: <Browse />,
     },
     {
-      path: "/login",
-      element: <Login />,
+      path: "/home",
+      element: <Home />,
     },
     {
       path: "/dashboard",

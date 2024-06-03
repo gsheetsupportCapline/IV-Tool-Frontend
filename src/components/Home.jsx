@@ -1,35 +1,26 @@
 import { useState, useEffect } from "react";
-import DatePicker from "./DatePicker";
+
 import Header from "./Header";
 import Status from "./Status";
+import OfficeAndDateSelector from "./OfficeAndDateSelector";
 
 const Home = () => {
+  const [selectedOffice, setSelectedOffice] = useState("");
   const [data, setData] = useState([]);
-  const officeName = localStorage.getItem("loggedInOffice");
-  console.log(officeName);
+
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null,
   });
 
-  const handleDateChange = (dates) => {
-    console.log("dates in home", dates);
-    if (dates) {
-      setDateRange(dates);
-    } else {
-      console.log("date range is getting null ");
-      setDateRange({ startDate: null, endDate: null });
-    }
-  };
-  console.log("dateRange in Home:", dateRange);
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        `http://localhost:3000/api/appointments/fetch-appointments/${officeName}`
+        `http://localhost:3000/api/appointments/fetch-appointments/${selectedOffice}`
       );
       const responseData = await response.json();
+      console.log("Fetched data:", responseData);
       if (responseData && responseData.appointments) {
-        console.log(responseData);
         setData(responseData.appointments);
       } else {
         console.log("API did not return data ", responseData);
@@ -37,11 +28,15 @@ const Home = () => {
       }
     };
     fetchData();
-  }, [officeName]);
+  }, [selectedOffice]);
+
   return (
     <>
       <Header />
-      <DatePicker officeName={officeName} onDateChange={handleDateChange} />
+      <OfficeAndDateSelector
+        onOfficeChange={setSelectedOffice}
+        onDateChange={(dates) => setDateRange(dates)}
+      />
       <Status data={data} dateRange={dateRange} />
     </>
   );

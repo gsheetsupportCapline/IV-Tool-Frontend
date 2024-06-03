@@ -1,24 +1,13 @@
 import { useState } from "react";
-import OfficeDropdown from "./OfficeDropdown";
+
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [isSignInForm, setIsSignInForm] = useState("true");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedOffice, setSelectedOffice] = useState("");
 
   const navigate = useNavigate();
-
-  const toggleSignInForm = () => {
-    setIsSignInForm(!isSignInForm);
-  };
-
-  const handleOfficeSelect = (office) => {
-    setSelectedOffice(office);
-    // Proceed with login process after selecting an office
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,20 +17,34 @@ const Login = () => {
         {
           email: email,
           password: password,
-          office: selectedOffice,
         }
       );
+      // console.log("response", response);
+      // console.log("response data", response.data);
 
-      // Assuming the server responds with a token or user data
-      // You might want to store this in local storage or context
-      localStorage.setItem("loggedInOffice", selectedOffice);
       localStorage.setItem("token", response.data.token);
 
-      // Redirect to the Home page after successful login
-      navigate("/");
+      const userRole = response.data.data.userDetails.role;
+      localStorage.setItem("role", response.data.data.userDetails.role);
+      localStorage.setItem(
+        "assignedOffice",
+        response.data.data.userDetails.assignedOffice
+      );
+      switch (userRole) {
+        case "admin":
+          navigate("/home");
+          break;
+        case "user":
+          navigate("/dashboard");
+          break;
+        case "officeuser":
+          navigate("/home");
+          break;
+        default:
+          console.error("Unknown user role:", userRole);
+      }
     } catch (error) {
       console.error("Login failed:", error);
-      // Handle the error, e.g., show an error message to the user
     }
   };
 
@@ -49,9 +52,6 @@ const Login = () => {
     <>
       <form className="bg-black shadow-md rounded px-8 pt-6 pb-8  w-3/12 my-36 mx-auto right-0 left-0 text-white  ">
         <h1 className="font-bold text-3xl py-4">Sign In</h1>
-        <div className="mb-4">
-          <OfficeDropdown onSelect={handleOfficeSelect} />
-        </div>
 
         <div className="mb-4">
           <input
@@ -82,7 +82,6 @@ const Login = () => {
             Sign In
           </button>
         </div>
-        <p className="py-4 cursor-pointer" onClick={toggleSignInForm}></p>
       </form>
     </>
   );

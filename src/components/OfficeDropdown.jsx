@@ -1,7 +1,10 @@
 // src/components/OfficeDropdown.jsx
-import React from "react";
 
-const OfficeDropdown = ({ onSelect }) => {
+const OfficeDropdown = ({
+  onSelect,
+  allowedOffices,
+  showAllOffices = false,
+}) => {
   const officeNames = [
     "Aransas",
     "Azle",
@@ -33,14 +36,16 @@ const OfficeDropdown = ({ onSelect }) => {
     "Westgreen",
     "Winnie",
   ];
+  // Check if officeOptions is null (indicating admin role)
+  // If not null, filter officeNames based on officeOptions
+  const filteredOfficeNames = showAllOffices
+    ? officeNames
+    : officeNames.filter((name) => allowedOffices.includes(name));
 
   return (
-    <select
-      className="shadow appearance-none border rounded py-2 px-3 w-full bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-      onChange={(e) => onSelect(e.target.value)}
-    >
+    <select onChange={(e) => onSelect(e.target.value)}>
       <option value="">Select an Office</option>
-      {officeNames.map((office) => (
+      {filteredOfficeNames.map((office) => (
         <option key={office} value={office}>
           {office}
         </option>

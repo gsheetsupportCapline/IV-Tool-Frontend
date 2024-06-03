@@ -6,7 +6,7 @@ const navigation = [
   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
   { name: "Request a Rush", href: "/request-rush", current: false },
   { name: "Dashboard", href: "/dashboard", current: false },
-  { name: "Log Out", href: "/login", current: false },
+  { name: "Log Out", href: "/", current: false },
 ];
 
 function classNames(...classes) {
