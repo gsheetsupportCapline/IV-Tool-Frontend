@@ -60,9 +60,9 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
     }
   }, []);
 
-  const handleOfficeChange = (office) => {
-    setSelectedOffice(office);
-    onOfficeChange(office); // Notify parent component of the change
+  const handleOfficeChange = (selectedOffice) => {
+    setSelectedOffice(selectedOffice);
+    onOfficeChange(selectedOffice); // Notify parent component of the change
   };
 
   const handleDateChange = (dates) => {

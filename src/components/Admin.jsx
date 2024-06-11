@@ -8,16 +8,49 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
+import Select from "@mui/material/Select";
 
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedOffice, setSelectedOffice] = useState("");
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
 
-  const officeName = localStorage.getItem("loggedInOffice");
+  const officeName = [
+    "Aransas",
+    "Azle",
+    "Beaumont",
+    "Benbrook",
+    "Brodie",
+    "Calallen",
+    "Crosby",
+    "Devine",
+    "Elgin",
+    "Huffman",
+    "Jasper",
+    "Lavaca",
+    "Liberty",
+    "Lucas",
+    "Lytle",
+    "Mathis",
+    "Potranco",
+    "Rio Bravo",
+    "Riverwalk",
+    "Rockdale",
+    "Rockwall",
+    "San Mateo",
+    "Sinton",
+    "Splendora",
+    "Springtown",
+    "Tidwell",
+    "Victoria",
+    "Westgreen",
+    "Winnie",
+  ];
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -65,7 +98,7 @@ const Admin = () => {
     for (let id of selectedAppointmentIds) {
       try {
         const response = await axios.put(
-          `http://localhost:3000/api/appointments/update-appointments/${officeName}/${id}`,
+          `http://localhost:3000/api/appointments/update-appointments/${selectedOffice}/${id}`,
           {
             userId: user._id,
             status: "Assigned",
@@ -109,10 +142,17 @@ const Admin = () => {
     fetchAndFilterAppointments(newValue);
   };
 
+  // onChange={(e) => {
+  //   setSelectedOffice(e.target.value);
+  //   fetchAndFilterAppointments(value); // Also consider passing the tabValue here if needed
+  // }}
+
   const fetchAndFilterAppointments = async (tabValue) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/appointments/fetch-appointments/${officeName}`
+        `http://localhost:3000/api/appointments/fetch-appointments/${
+          selectedOffice || ""
+        }`
       );
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
@@ -147,7 +187,7 @@ const Admin = () => {
 
   useEffect(() => {
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
-  }, [value, officeName]); // Reload data if the selected tab or officeName changes
+  }, [value, selectedOffice]); // Reload data if the selected tab or officeName changes
 
   return (
     <>
@@ -160,6 +200,21 @@ const Admin = () => {
           marginBottom: "20px",
         }}
       >
+        <Select
+          value={selectedOffice}
+          onChange={(e) => setSelectedOffice(e.target.value)}
+          displayEmpty
+          inputProps={{ "aria-label": "Select Office" }}
+        >
+          <MenuItem value="">
+            <em>Select Office</em>
+          </MenuItem>
+          {officeName.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>
         <Tabs
           value={value}
           onChange={handleChange}
@@ -177,11 +232,16 @@ const Admin = () => {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          {users.map((user) => (
-            <MenuItem key={user._id} onClick={() => handleMenuItemClick(user)}>
-              {user.name}
-            </MenuItem>
-          ))}
+          {users
+            .filter((user) => user.role == "user") //  only role user is present
+            .map((user) => (
+              <MenuItem
+                key={user._id}
+                onClick={() => handleMenuItemClick(user)}
+              >
+                {user.name}
+              </MenuItem>
+            ))}
         </Menu>
       </Box>
       <div className="flex justify-center">
