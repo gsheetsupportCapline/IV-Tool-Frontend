@@ -17,16 +17,19 @@ import {
   planTypeDropdownOptions,
 } from "./DropdownValues";
 import Header from "./Header";
+import axios from "axios";
 
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
+  const userName = localStorage.getItem("loggedinUserName");
   // Function to fetch appointments
   const fetchAppointments = async () => {
     try {
+      const userId = localStorage.getItem("loggedinUserId");
       const response = await fetch(
-        "http://localhost:3000/api/appointments/user-appointments/66579cdeb9606e7391e09afb"
+        `http://localhost:3000/api/appointments/user-appointments/${userId}`
       );
       const data = await response.json();
 
@@ -40,6 +43,47 @@ const IVUsers = () => {
     fetchAppointments();
   }, []);
 
+  const handleSubmit = async () => {
+    try {
+      console.log("Submitting table data...");
+      if (!selectedAppointment) {
+        alert("Please select an appointment to update.");
+        return;
+      }
+
+      console.log(selectedAppointment);
+      // Construct the payload for the API call
+      const payload = {
+        userAppointmentId: selectedAppointment.assignedUser,
+        appointmentId: selectedAppointment._id,
+        ivRemarks: selectedAppointment.ivRemarks,
+        source: selectedAppointment.source,
+        planType: selectedAppointment.planType,
+        completedBy: userName,
+      };
+
+      console.log("Payload ", payload);
+      // Make an API call to update the appointment details
+      await axios.post(
+        `http://localhost:3000/api/appointments/update-individual-appointment-details`,
+        payload
+      );
+
+      // Refresh the data or show a success message
+      alert("Appointment updated successfully!");
+      // Optionally, refresh the appointments data here
+    } catch (error) {
+      console.error("Error submitting table data:", error);
+      alert("An error occurred while updating the appointment.");
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setSelectedAppointment((prevState) => ({
+      ...prevState,
+      [field]: value,
+    }));
+  };
   return (
     <>
       <Header />
@@ -48,15 +92,19 @@ const IVUsers = () => {
           <Typography variant="h6" gutterBottom>
             Assigned IVs
           </Typography>
-          {appointments.map((appointment) => (
-            <Button
-              key={appointment._id}
-              onClick={() => setSelectedAppointment(appointment)}
-              variant="outlined"
-            >
-              {appointment.office} ({appointment.appointmentDate})
-            </Button>
-          ))}
+          {appointments
+            .filter(
+              (appointment) => appointment.completionStatus != "Completed"
+            )
+            .map((appointment) => (
+              <Button
+                key={appointment._id}
+                onClick={() => setSelectedAppointment(appointment)}
+                variant="outlined"
+              >
+                {appointment.office} ({appointment.appointmentDate})
+              </Button>
+            ))}
         </Grid>
         {selectedAppointment && (
           <Grid item xs={9}>
@@ -81,9 +129,12 @@ const IVUsers = () => {
                           id="demo-simple-select"
                           value={selectedAppointment.source}
                           label="Source"
+                          onChange={(event) =>
+                            handleInputChange("source", event.target.value)
+                          }
                         >
                           {sourceDropdownOptions.map((source) => (
-                            <MenuItem key={source.id} value={source.id}>
+                            <MenuItem key={source.id} value={source.source}>
                               {source.source}
                             </MenuItem>
                           ))}
@@ -100,9 +151,12 @@ const IVUsers = () => {
                           id="demo-simple-select"
                           value={selectedAppointment.planType}
                           label="Plan Type"
+                          onChange={(event) =>
+                            handleInputChange("planType", event.target.value)
+                          }
                         >
                           {planTypeDropdownOptions.map((plan) => (
-                            <MenuItem key={plan.id} value={plan.id}>
+                            <MenuItem key={plan.id} value={plan.planType}>
                               {plan.planType}
                             </MenuItem>
                           ))}
@@ -118,11 +172,13 @@ const IVUsers = () => {
                           labelId="demo-simple-select-label"
                           label="IV Remarks"
                           value={selectedAppointment.remark}
-                          // onChange={handleChange}
+                          onChange={(event) =>
+                            handleInputChange("ivRemarks", event.target.value)
+                          }
                           variant="outlined"
                         >
                           {ivRemarks.map((remark) => (
-                            <MenuItem key={remark.id} value={remark.id}>
+                            <MenuItem key={remark.id} value={remark.remark}>
                               {remark.remark}
                             </MenuItem>
                           ))}
@@ -251,11 +307,21 @@ const IVUsers = () => {
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Completed By"
+                        name="completedBy"
+                        value={userName}
+                        variant="outlined"
+                        InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
                   </Grid>
                   <Button
                     variant="contained"
                     color="primary"
-                    //   onClick={handleSubmit}
+                    onClick={handleSubmit}
                     sx={{ marginTop: 2 }}
                   >
                     Submit

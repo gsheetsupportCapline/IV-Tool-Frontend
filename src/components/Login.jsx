@@ -25,6 +25,14 @@ const Login = () => {
       localStorage.setItem("token", response.data.token);
 
       const userRole = response.data.data.userDetails.role;
+      localStorage.setItem(
+        "loggedinUserId",
+        response.data.data.userDetails._id
+      );
+      localStorage.setItem(
+        "loggedinUserName",
+        response.data.data.userDetails.name
+      );
       localStorage.setItem("role", response.data.data.userDetails.role);
       localStorage.setItem(
         "assignedOffice",
