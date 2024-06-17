@@ -10,6 +10,7 @@ import PendingIV from "./PendingIV";
 import AssignedIV from "./AssignedIV";
 import Admin from "./Admin";
 import PriorityIV from "./PriorityIV";
+import IVUsers from "./IVUsers";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -27,7 +28,7 @@ const Body = () => {
     },
     {
       path: "/dashboard",
-      element: <IVUser />,
+      element: <IVUsers />,
     },
 
     {

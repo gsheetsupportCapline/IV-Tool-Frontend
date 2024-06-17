@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -6,43 +7,29 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-const officeNames = [
-  "Aransas",
-  "Azle",
-  "Beaumont",
-  "Benbrook",
-  "Brodie",
-  "Calallen",
-  "Crosby",
-  "Devine",
-  "Elgin",
-  "Huffman",
-  "Jasper",
-  "Lavaca",
-  "Liberty",
-  "Lucas",
-  "Lytle",
-  "Mathis",
-  "Potranco",
-  "Rio Bravo",
-  "Riverwalk",
-  "Rockdale",
-  "Rockwall",
-  "San Mateo",
-  "Sinton",
-  "Splendora",
-  "Springtown",
-  "Tidwell",
-  "Victoria",
-  "Westgreen",
-  "Winnie",
-];
-
 const PendingIV = () => {
-  // Generate headers for the next three days from today
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/appointments/pending-iv-counts")
+      .then((response) => response.json())
+      .then((fetchedData) => {
+        // Aggregate data
+        const aggregatedData = fetchedData.reduce((acc, curr) => {
+          Object.entries(curr.PendingCount).forEach(([date, count]) => {
+            acc.push({ office: curr.OfficeName, date, count });
+          });
+          return acc;
+        }, []);
+        setData(aggregatedData);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  // Generate headers for the next five days from today
   const today = new Date();
   const headers = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     const nextDay = new Date(today);
     nextDay.setDate(today.getDate() + i + 1);
     headers.push(
@@ -54,31 +41,6 @@ const PendingIV = () => {
     );
   }
 
-  // Mock data for demonstration purposes
-  const data = officeNames.map((office) => {
-    const rowData = { office };
-    let totalPendency = 0;
-    headers.forEach((header) => {
-      const randomValue = Math.floor(Math.random() * 100); // Random value for demonstration
-      rowData[header] = randomValue;
-      totalPendency += randomValue;
-    });
-    rowData["Total Pendency"] = totalPendency;
-    return rowData;
-  });
-
-  // Calculate totals for each column
-  const totals = {
-    ...headers.reduce(
-      (acc, header) => ({
-        ...acc,
-        [header]: data.reduce((sum, row) => sum + row[header], 0),
-      }),
-      {}
-    ),
-    "Total Pendency": data.reduce((sum, row) => sum + row["Total Pendency"], 0),
-  };
-
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -88,26 +50,20 @@ const PendingIV = () => {
             {headers.map((header) => (
               <TableCell key={header}>{header}</TableCell>
             ))}
-            <TableCell>Total Pendency</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index}>
+          {data.map((row) => (
+            <TableRow key={`${row.office}-${row.date}`}>
               <TableCell>{row.office}</TableCell>
-              {headers.map((header) => (
-                <TableCell key={header}>{row[header]}</TableCell>
-              ))}
-              <TableCell>{row["Total Pendency"]}</TableCell>
+              {headers.map(
+                (header) =>
+                  header === row.date && (
+                    <TableCell key={header}>{row.count}</TableCell>
+                  )
+              )}
             </TableRow>
           ))}
-          <TableRow>
-            <TableCell>Total</TableCell>
-            {headers.map((header) => (
-              <TableCell key={header}>{totals[header]}</TableCell>
-            ))}
-            <TableCell>{totals["Total Pendency"]}</TableCell>
-          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>
