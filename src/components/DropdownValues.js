@@ -147,4 +147,41 @@ const planTypeDropdownOptions = [
   { id: 17, planType: "HMO Medicare" },
 ];
 
-export { ivRemarks, sourceDropdownOptions, planTypeDropdownOptions };
+const officeNames = [
+  { id: 1, officeName: "Aransas" },
+  { id: 2, officeName: "Azle" },
+  { id: 3, officeName: "Beaumont" },
+  { id: 4, officeName: "Benbrook" },
+  { id: 5, officeName: "Brodie" },
+  { id: 6, officeName: "Calallen" },
+  { id: 7, officeName: "Crosby" },
+  { id: 8, officeName: "Devine" },
+  { id: 9, officeName: "Elgin" },
+  { id: 10, officeName: "Huffman" },
+  { id: 11, officeName: "Jasper" },
+  { id: 12, officeName: "Lavaca" },
+  { id: 13, officeName: "Liberty" },
+  { id: 14, officeName: "Lucas" },
+  { id: 15, officeName: "Lytle" },
+  { id: 16, officeName: "Mathis" },
+  { id: 17, officeName: "Potranco" },
+  { id: 18, officeName: "Rio Bravo" },
+  { id: 19, officeName: "Riverwalk" },
+  { id: 20, officeName: "Rockdale" },
+  { id: 21, officeName: "Rockwall" },
+  { id: 22, officeName: "San Mateo" },
+  { id: 23, officeName: "Sinton" },
+  { id: 24, officeName: "Splendora" },
+  { id: 25, officeName: "Springtown" },
+  { id: 26, officeName: "Tidwell" },
+  { id: 27, officeName: "Victoria" },
+  { id: 28, officeName: "Westgreen" },
+  { id: 29, officeName: "Winnie" },
+];
+
+export {
+  ivRemarks,
+  sourceDropdownOptions,
+  planTypeDropdownOptions,
+  officeNames,
+};

@@ -1,98 +1,75 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
+  Card,
+  CardContent,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Box,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import { officeNames } from "./DropdownValues.js";
+import Header from "./Header.jsx";
+const columns = [
+  { field: "office", headerName: "Office", width: 150 },
+  { field: "count", headerName: "Count", type: "number", width: 150 },
+];
+const columnsOffice = [
+  { field: "userName", headerName: "User Name", width: 150 },
+  { field: "count", headerName: "Count", width: 100 },
+];
 
 const AssignedIV = () => {
   const [users, setUsers] = useState([]);
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState({});
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedOffice, setSelectedOffice] = useState("");
+  const [assignedCounts, setAssignedCounts] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch user data
         const userResponse = await axios.get(
           "http://localhost:3000/api/auth/users"
         );
-        setUsers(userResponse.data.data);
+        const usersData = userResponse.data.data;
 
-        // Placeholder for office names, assuming these are the offices you're interested in
-        const officeNames = [
-          "Aransas",
-          "Azle",
-          "Beaumont",
-          "Benbrook",
-          "Brodie",
-          "Calallen",
-          "Crosby",
-          "Devine",
-          "Elgin",
-          "Huffman",
-          "Jasper",
-          "Lavaca",
-          "Liberty",
-          "Lucas",
-          "Lytle",
-          "Mathis",
-          "Potranco",
-          "Rio Bravo",
-          "Riverwalk",
-          "Rockdale",
-          "Rockwall",
-          "San Mateo",
-          "Sinton",
-          "Splendora",
-          "Springtown",
-          "Tidwell",
-          "Victoria",
-          "Westgreen",
-          "Winnie",
-        ];
+        let allAppointments = [];
 
-        // Initialize counts for each office and user
-        const counts = officeNames.reduce((acc, office) => {
-          acc[office] = {};
-          return acc;
-        }, {});
+        for (let userData of usersData) {
+          const appointmentsResponse = await axios.get(
+            `http://localhost:3000/api/appointments/user-appointments/${userData._id}`
+          );
 
-        // Assuming this is part of your useEffect hook where you're setting the appointments state
-        await Promise.all(
-          users
-            .filter((user) => user.role == "user")
-            .map(async (user) => {
-              const appointmentsResponse = await axios.get(
-                `http://localhost:3000/api/appointments/user-appointments/${user._id}`
-              );
-              appointmentsResponse.data.forEach((appointmentGroup) => {
-                appointmentGroup.appointments.forEach((appointment) => {
-                  if (appointment.status === "Assigned") {
-                    const officeName = appointmentGroup.officeName; // Correctly reference the officeName from the outer object
-                    if (
-                      Object.prototype.hasOwnProperty.call(
-                        counts[officeName],
-                        appointment.assignedUser
-                      )
-                    ) {
-                      counts[officeName][appointment.assignedUser]++;
-                    } else {
-                      counts[officeName][appointment.assignedUser] = 1;
-                    }
-                  }
-                });
-              });
-            })
+          allAppointments.push(...appointmentsResponse.data);
+        }
+
+        const groupedAppointments = allAppointments.reduce(
+          (acc, appointment) => {
+            const { assignedUser, office } = appointment;
+            if (!acc[assignedUser]) {
+              acc[assignedUser] = {};
+            }
+            if (!acc[assignedUser][office]) {
+              acc[assignedUser][office] = 0;
+            }
+            acc[assignedUser][office]++;
+            return acc;
+          },
+          {}
         );
-        console.log("counts", counts);
-        setAppointments(counts);
+
+        const usersWithName = usersData.map((userData) => ({
+          ...userData,
+          firstName: userData.name,
+        }));
+
+        setUsers(usersWithName);
+        setAppointments(groupedAppointments);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -103,46 +80,144 @@ const AssignedIV = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (selectedOffice) {
+      axios
+        .get(
+          `http://localhost:3000/api/appointments/assigned-counts/${selectedOffice}`
+        )
+        .then((response) => {
+          const data = response.data;
+          const formattedData = Object.entries(data.assignedCounts).map(
+            ([userId, count]) => ({
+              userName:
+                users.find((user) => user._id === userId)?.name || "Unknown", // Find user name by ID
+              count,
+            })
+          );
+          console.log(formattedData);
+          setAssignedCounts(formattedData);
+        })
+        .catch((error) => {
+          console.error("Error fetching assigned counts", error);
+        });
+    }
+  }, [selectedOffice, users]); // Dependency array ensures effect runs when selectedOffice changes
+
   if (loading) {
-    return <CircularProgress />;
+    return <Typography>Loading...</Typography>;
   }
 
-  // Calculate total counts for each office
-  const totalCounts = Object.keys(appointments).reduce((acc, office) => {
-    acc[office] = Object.values(appointments[office]).reduce(
-      (sum, count) => sum + count,
-      0
-    );
-    return acc;
-  }, {});
+  const handleUserChange = (event) => {
+    setSelectedUserId(event.target.value);
+  };
 
+  let rows = [];
+
+  if (selectedUserId) {
+    if (appointments[selectedUserId]) {
+      rows = Object.entries(appointments[selectedUserId]).map(
+        ([office, count], idx) => ({
+          id: idx,
+          office,
+          count,
+        })
+      );
+    } else {
+      console.error(`No appointments found for userId: ${selectedUserId}`);
+    }
+  }
+  console.log(selectedUserId);
   return (
-    <TableContainer component={Paper}>
-      <Table aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Office</TableCell>
-            {users
-              .filter((user) => user.role == "user")
-              .map((user, index) => (
-                <TableCell key={index}>{user.name}</TableCell>
-              ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Object.entries(appointments).map(
-            ([office, userCounts], rowIndex) => (
-              <TableRow key={rowIndex}>
-                <TableCell>{office}</TableCell>
-                {Object.entries(userCounts).map(([userId, count], colIndex) => (
-                  <TableCell key={colIndex}>{count || 0}</TableCell>
+    <>
+      <Header />
+      <Box
+        sx={{ display: "flex", justifyContent: "space-between", padding: 2 }}
+      >
+        <Box sx={{ flex: 1, marginRight: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">User</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={selectedUserId}
+              label="User"
+              onChange={handleUserChange}
+            >
+              {users
+                .filter((user) => user.role == "user")
+                .map((user, index) => (
+                  <MenuItem key={index} value={user._id}>
+                    {user.name}
+                  </MenuItem>
                 ))}
-              </TableRow>
-            )
+            </Select>
+          </FormControl>
+          {selectedUserId && (
+            <Card
+              sx={{
+                backgroundColor: "#F9F6EE",
+                maxWidth: "600px",
+                margin: "auto",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5">Assigned IVs</Typography>
+
+                <DataGrid
+                  rows={rows}
+                  columns={columns}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
+                  checkboxSelection={false}
+                  getRowId={(row) => `${row.userName}-${row.count}`}
+                />
+              </CardContent>
+            </Card>
           )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </Box>
+        <Box sx={{ flex: 1, marginLeft: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Office</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              label="Office"
+              value={selectedOffice}
+              onChange={(e) => setSelectedOffice(e.target.value)}
+            >
+              {officeNames.map((office) => (
+                <MenuItem key={office.id} value={office.officeName}>
+                  {office.officeName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {selectedOffice && (
+            <Card
+              sx={{
+                backgroundColor: "#F9F6EE",
+                maxWidth: "600px",
+                margin: "auto",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5">Assigned IVs</Typography>
+                <DataGrid
+                  rows={assignedCounts}
+                  columns={columnsOffice}
+                  pageSize={5}
+                  rowsPerPageOptions={[5]}
+                  checkboxSelection={false}
+                  disableSelectionOnClick
+                  getRowId={(row) => `${row.userName}-${row.count}`}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </Box>
+      </Box>
+    </>
   );
 };
 

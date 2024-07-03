@@ -4,7 +4,7 @@ import Login from "./Login";
 
 import { RouterProvider } from "react-router-dom";
 import Home from "./Home";
-import IVUser from "./IVUser";
+
 import Rush from "./Rush";
 import PendingIV from "./PendingIV";
 import AssignedIV from "./AssignedIV";
