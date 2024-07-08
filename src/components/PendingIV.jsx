@@ -1,72 +1,115 @@
-import React, { useEffect, useState } from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+// Import necessary hooks and components
+import React, { useState, useEffect } from "react";
+import Header from "./Header";
+import Datepicker from "react-tailwindcss-datepicker";
+import * as DropdownValues from "./DropdownValues";
 
 const PendingIV = () => {
+  const [value, setValue] = useState({
+    startDate: new Date(),
+    endDate: new Date(new Date().setMonth(new Date().getMonth() + 11)), // Correctly creates a new Date instance for endDate
+  });
+
   const [data, setData] = useState([]);
 
-  useEffect(() => {
-    fetch("http://localhost:3000/api/appointments/pending-iv-counts")
-      .then((response) => response.json())
-      .then((fetchedData) => {
-        // Aggregate data
-        const aggregatedData = fetchedData.reduce((acc, curr) => {
-          Object.entries(curr.PendingCount).forEach(([date, count]) => {
-            acc.push({ office: curr.OfficeName, date, count });
-          });
-          return acc;
-        }, []);
-        setData(aggregatedData);
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+  const handleValueChange = (newValue) => {
+    console.log("New Value:", newValue); // Debugging: Check what you receive
+    // Assuming newValue is { startDate: Date, endDate: Date }
+    setValue({
+      startDate: new Date(newValue.startDate),
+      endDate: new Date(newValue.endDate),
+    });
+  };
 
-  // Generate headers for the next five days from today
-  const today = new Date();
-  const headers = [];
-  for (let i = 0; i < 5; i++) {
-    const nextDay = new Date(today);
-    nextDay.setDate(today.getDate() + i + 1);
-    headers.push(
-      nextDay.toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-        year: "numeric",
-      })
+  useEffect(() => {
+    const fetchData = async () => {
+      const startDateParam = value.startDate.toISOString().split("T")[0];
+      const endDateParam = value.endDate.toISOString().split("T")[0];
+
+      const url = `http://localhost:3000/api/appointments/fetch-unassigned-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
+
+      try {
+        const response = await fetch(url);
+        const responseData = await response.json();
+        setData(responseData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [value]);
+
+  const processDataForTable = () => {
+    const processedData = {};
+
+    data.forEach((item) => {
+      item.offices.forEach((office) => {
+        if (!processedData[item._id]) {
+          processedData[item._id] = {};
+        }
+        if (office && office.officeName) {
+          processedData[item._id][office.officeName] = office.count;
+        }
+      });
+    });
+
+    // Ensure all offices are present for every date, filling missing counts with 0
+    const officeNames = DropdownValues.officeNames.map(
+      (name) => name.officeName
     );
-  }
+    officeNames.forEach((officeName) => {
+      data.forEach((item) => {
+        if (!processedData[item._id]) {
+          processedData[item._id] = {};
+        }
+        if (!processedData[item._id][officeName]) {
+          processedData[item._id][officeName] = 0;
+        }
+      });
+    });
+
+    return processedData;
+  };
+
+  const renderTable = () => {
+    const processedData = processDataForTable();
+    const uniqueDates = [...new Set(data.map((item) => item._id))].sort();
+    const headers = ["Office", ...uniqueDates];
+
+    return (
+      <table>
+        <thead>
+          <tr>
+            {headers.map((header, index) => (
+              <th key={index}>{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {DropdownValues.officeNames.map((officeNameObj, index) => (
+            <tr key={index}>
+              {/* Ensure we're accessing officeName property correctly */}
+              <td>{officeNameObj.officeName}</td>
+              {uniqueDates.map((date) => (
+                // Accessing processedData with date and then office name
+                <td key={date}>
+                  {processedData[date]?.[officeNameObj.officeName] || 0}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Office</TableCell>
-            {headers.map((header) => (
-              <TableCell key={header}>{header}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((row) => (
-            <TableRow key={`${row.office}-${row.date}`}>
-              <TableCell>{row.office}</TableCell>
-              {headers.map(
-                (header) =>
-                  header === row.date && (
-                    <TableCell key={header}>{row.count}</TableCell>
-                  )
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <>
+      <Header />
+      <Datepicker value={value} onChange={handleValueChange} />
+      {renderTable()}
+    </>
   );
 };
 
