@@ -10,13 +10,14 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import axios from "axios"; // Import Axios
 import moment from "moment";
+import { officeNames } from "./DropdownValues";
+import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 const Rush = () => {
-  const loggedInOffice = "Aransas";
+  const [selectedOffice, setSelectedOffice] = useState("");
   const treatingProvider = "John";
 
   const [values, setValues] = useState({
-    office: loggedInOffice,
     appointmentDate: null,
     appointmentTime: null,
     treatingProvider: "",
@@ -36,6 +37,9 @@ const Rush = () => {
       ...prevValues,
       [name]: value,
     }));
+  };
+  const handleOfficeChange = (newOffice) => {
+    setSelectedOffice(newOffice);
   };
 
   const handleAppointmentDateChange = (date) => {
@@ -105,7 +109,7 @@ const Rush = () => {
     console.log("Submitting payload:", payload);
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/appointments/create-new-appointment/${values.office}`,
+        `http://localhost:3000/api/appointments/create-new-appointment/${selectedOffice}`,
         payload
       );
       alert("Appointment created successfully");
@@ -142,15 +146,22 @@ const Rush = () => {
           noValidate
           autoComplete="off"
         >
-          <TextField
-            required
-            id="outlined-read-only-office"
-            label="Office"
-            InputProps={{
-              readOnly: true,
-            }}
-            value={loggedInOffice}
-          />
+          <FormControl fullWidth>
+            <InputLabel id="office-label">Office</InputLabel>
+            <Select
+              labelId="office-label"
+              id="office-select"
+              value={selectedOffice}
+              onChange={(e) => handleOfficeChange(e.target.value)}
+              label="Office"
+            >
+              {officeNames.map((office) => (
+                <MenuItem key={office.id} value={office.officeName}>
+                  {office.officeName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <DatePicker
             required
