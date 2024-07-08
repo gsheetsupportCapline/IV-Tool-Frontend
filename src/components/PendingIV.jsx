@@ -1,19 +1,21 @@
 // Import necessary hooks and components
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Header from "./Header";
 import Datepicker from "react-tailwindcss-datepicker";
 import * as DropdownValues from "./DropdownValues";
 
 const PendingIV = () => {
   const [value, setValue] = useState({
-    startDate: new Date(),
-    endDate: new Date(new Date().setMonth(new Date().getMonth() + 11)), // Correctly creates a new Date instance for endDate
+    // startDate: new Date(),
+    startDate: null,
+    // endDate: new Date(new Date().setMonth(new Date().getMonth() + 11)), // Correctly creates a new Date instance for endDate
+    endDate: null,
   });
 
   const [data, setData] = useState([]);
 
   const handleValueChange = (newValue) => {
-    console.log("New Value:", newValue); // Debugging: Check what you receive
+    console.log("New Value:", newValue);
     // Assuming newValue is { startDate: Date, endDate: Date }
     setValue({
       startDate: new Date(newValue.startDate),
@@ -74,6 +76,7 @@ const PendingIV = () => {
 
   const renderTable = () => {
     const processedData = processDataForTable();
+    console;
     const uniqueDates = [...new Set(data.map((item) => item._id))].sort();
     const headers = ["Office", ...uniqueDates];
 
@@ -82,18 +85,29 @@ const PendingIV = () => {
         <thead>
           <tr>
             {headers.map((header, index) => (
-              <th key={index}>{header}</th>
+              <th
+                key={index}
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-center"
+              >
+                {header}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {DropdownValues.officeNames.map((officeNameObj, index) => (
-            <tr key={index}>
-              {/* Ensure we're accessing officeName property correctly */}
-              <td>{officeNameObj.officeName}</td>
+            <tr
+              key={index}
+              className={`border ${
+                index % 2 === 0 ? "bg-white" : "bg-gray-100"
+              }`}
+            >
+              <td className="border px-4 py-2 text-center">
+                {officeNameObj.officeName}
+              </td>
               {uniqueDates.map((date) => (
                 // Accessing processedData with date and then office name
-                <td key={date}>
+                <td key={date} className="border px-4 py-2 text-center">
                   {processedData[date]?.[officeNameObj.officeName] || 0}
                 </td>
               ))}
@@ -107,7 +121,12 @@ const PendingIV = () => {
   return (
     <>
       <Header />
-      <Datepicker value={value} onChange={handleValueChange} />
+      <div className="flex items-center my-1 bg-slate-400">
+        <p className="mr-4 ml-10">Appointment Date</p>
+        <div className="w-1/4">
+          <Datepicker value={value} onChange={handleValueChange} />
+        </div>
+      </div>
       {renderTable()}
     </>
   );
