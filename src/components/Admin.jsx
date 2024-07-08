@@ -64,12 +64,25 @@ const Admin = () => {
     };
     fetchUsers();
   }, []);
+  // Custom cell renderer function
+  const renderUserName = (params) => {
+    // Find the user object from the users array based on the userId
+    const user = users.find((user) => user._id === params.row.assignedUser);
+
+    // Return the user's name if found, otherwise return the userId
+    return user ? user.name : params.row.assignedUser;
+  };
 
   const columns = [
     { field: "status", headerName: "Status", width: 150 },
     { field: "office", headerName: "Office", width: 150 },
     { field: "ivType", headerName: "IV Type", width: 150 },
-    { field: "assignedUser", headerName: "Assigned To", width: 150 },
+    {
+      field: "assignedUser",
+      headerName: "Assigned To",
+      width: 150,
+      renderCell: renderUserName,
+    },
     { field: "appointmentType", headerName: "Appointment Type", width: 150 },
     { field: "appointmentDate", headerName: "Appointment Date", width: 150 },
     { field: "appointmentTime", headerName: "Appointment Time", width: 150 },

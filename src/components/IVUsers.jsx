@@ -102,7 +102,10 @@ const IVUsers = () => {
                 onClick={() => setSelectedAppointment(appointment)}
                 variant="outlined"
               >
-                {appointment.office} ({appointment.appointmentDate})
+                {appointment.office}{" "}
+                {new Date(appointment.appointmentDate)
+                  .toISOString()
+                  .slice(0, 10)}
               </Button>
             ))}
         </Grid>
@@ -202,7 +205,10 @@ const IVUsers = () => {
                         fullWidth
                         label="Appointment Date"
                         name="appointmentDate"
-                        value={selectedAppointment.appointmentDate}
+                        // value={selectedAppointment.appointmentDate}
+                        value={new Date(selectedAppointment.appointmentDate)
+                          .toISOString()
+                          .slice(0, 10)}
                         variant="outlined"
                         InputProps={{ readOnly: true }}
                       />
