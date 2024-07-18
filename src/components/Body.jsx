@@ -9,8 +9,11 @@ import Rush from "./Rush";
 import PendingIV from "./PendingIV";
 import AssignedIV from "./AssignedIV";
 import Admin from "./Admin";
-import PriorityIV from "./PriorityIV";
+
 import IVUsers from "./IVUsers";
+import ProductionIV from "./ProductionIV";
+import AwaitingIV from "./AwaitingIV";
+import AdminDashboard from "./AdminDashboard";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -54,8 +57,16 @@ const Body = () => {
       element: <Admin />,
     },
     {
-      path: "/priorityIV",
-      element: <PriorityIV />,
+      path: "/productionIV",
+      element: <ProductionIV />,
+    },
+    {
+      path: "/awaitingIV",
+      element: <AwaitingIV />,
+    },
+    {
+      path: "/admin-dashboard",
+      element: <AdminDashboard />,
     },
   ]);
   return (

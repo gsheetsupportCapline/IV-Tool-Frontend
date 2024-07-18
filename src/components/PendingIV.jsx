@@ -1,6 +1,6 @@
 // Import necessary hooks and components
 import { useState, useEffect } from "react";
-import Header from "./Header";
+
 import Datepicker from "react-tailwindcss-datepicker";
 import * as DropdownValues from "./DropdownValues";
 
@@ -76,7 +76,7 @@ const PendingIV = () => {
 
   const renderTable = () => {
     const processedData = processDataForTable();
-    console;
+
     const uniqueDates = [...new Set(data.map((item) => item._id))].sort();
     const headers = ["Office", ...uniqueDates];
 
@@ -120,7 +120,6 @@ const PendingIV = () => {
 
   return (
     <>
-      <Header />
       <div className="flex items-center my-1 bg-slate-400">
         <p className="mr-4 ml-10">Appointment Date</p>
         <div className="w-1/4">

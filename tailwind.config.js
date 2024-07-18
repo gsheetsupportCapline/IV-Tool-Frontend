@@ -7,7 +7,9 @@ export default {
     "./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
   ],
   theme: {
-    extend: {},
+    extend: {
+      cursor: ["pointer"],
+    },
   },
   plugins: [],
 };

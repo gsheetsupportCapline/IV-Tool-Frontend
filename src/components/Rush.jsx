@@ -12,6 +12,7 @@ import axios from "axios"; // Import Axios
 import moment from "moment";
 import { officeNames } from "./DropdownValues";
 import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { Note } from "@mui/icons-material";
 
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -128,13 +129,15 @@ const Rush = () => {
       <Header />
       <Card
         sx={{
-          width: "60%",
+          width: "50%",
           borderColor: "primary.main",
           borderRadius: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          margin: "auto", // Center the card horizontally
+          marginTop: "20px", // Adjust top margin to avoid sticking to the header
         }}
       >
         {/* Form Fields */}

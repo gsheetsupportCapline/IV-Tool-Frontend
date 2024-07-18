@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { officeNames } from "./DropdownValues.js";
-import Header from "./Header.jsx";
+
 const columns = [
   { field: "office", headerName: "Office", width: 150 },
   { field: "count", headerName: "Count", type: "number", width: 150 },
@@ -130,7 +130,6 @@ const AssignedIV = () => {
   console.log(selectedUserId);
   return (
     <>
-      <Header />
       <Box
         sx={{ display: "flex", justifyContent: "space-between", padding: 2 }}
       >
