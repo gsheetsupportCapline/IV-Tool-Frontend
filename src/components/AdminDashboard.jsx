@@ -7,7 +7,7 @@ import ProductionIV from "./ProductionIV";
 import Header from "./Header";
 
 const AdminDashboard = () => {
-  const [selectedItem, setSelectedItem] = useState("");
+  const [selectedItem, setSelectedItem] = useState("PendingIV");
 
   return (
     <>
