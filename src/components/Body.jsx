@@ -14,6 +14,7 @@ import IVUsers from "./IVUsers";
 import ProductionIV from "./ProductionIV";
 import AwaitingIV from "./AwaitingIV";
 import AdminDashboard from "./AdminDashboard";
+import SignIn from "./SignIn";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -67,6 +68,10 @@ const Body = () => {
     {
       path: "/admin-dashboard",
       element: <AdminDashboard />,
+    },
+    {
+      path: "/signin",
+      element: <SignIn />,
     },
   ]);
   return (

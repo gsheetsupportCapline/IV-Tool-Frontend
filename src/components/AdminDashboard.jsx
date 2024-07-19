@@ -14,7 +14,7 @@ const AdminDashboard = () => {
       <Header />
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-1/5 border-r border-gray-300 p-4">
+        <div className="w-1/5 border-r border-gray-300 p-4 bg-white rounded-lg shadow-lg">
           <h2 className="text-lg font-semibold">IV Status</h2>
           <ul>
             <li
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content Area */}
-        <div className="w-4/5 p-4">
+        <div className="w-4/5 p-4 bg-white rounded-lg shadow-lg">
           {selectedItem === "PendingIV" && <PendingIV />}
           {selectedItem === "AssignedIV" && <AssignedIV />}
           {selectedItem === "ProductionIV" && <ProductionIV />}
