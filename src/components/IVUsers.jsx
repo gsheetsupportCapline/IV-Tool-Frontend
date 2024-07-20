@@ -18,6 +18,7 @@ import {
 } from "./DropdownValues";
 import Header from "./Header";
 import axios from "axios";
+import { ListItem, ListItemText } from "@mui/material";
 
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
@@ -96,17 +97,37 @@ const IVUsers = () => {
             .filter(
               (appointment) => appointment.completionStatus != "Completed"
             )
+            .sort((a, b) => a.office.localeCompare(b.office)) // Sort alphabetically by office
             .map((appointment) => (
-              <Button
+              // <Button
+              //   key={appointment._id}
+              //   onClick={() => setSelectedAppointment(appointment)}
+              //   variant="outlined"
+              // >
+              //   {appointment.office}{" "}
+              //   {new Date(appointment.appointmentDate)
+              //     .toISOString()
+              //     .slice(0, 10)}
+              // </Button>
+
+              <ListItem
                 key={appointment._id}
                 onClick={() => setSelectedAppointment(appointment)}
-                variant="outlined"
+                sx={{
+                  "&:hover": {
+                    cursor: "pointer",
+                    backgroundColor: "#ababab",
+                  },
+                }}
               >
-                {appointment.office}{" "}
-                {new Date(appointment.appointmentDate)
-                  .toISOString()
-                  .slice(0, 10)}
-              </Button>
+                <ListItemText
+                  primary={`${appointment.office} ${new Date(
+                    appointment.appointmentDate
+                  )
+                    .toISOString()
+                    .slice(0, 10)}`}
+                />
+              </ListItem>
             ))}
         </Grid>
         {selectedAppointment && (
