@@ -3,7 +3,7 @@ import Table from "./Table";
 import { useEffect } from "react";
 const Status = ({ data, dateRange }) => {
   // State to keep track of the selected radio button
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState("yes");
   const [allFilteredAppointmentCount, setAllFilteredAppointmentCount] =
     useState(0);
   const [inProcessCount, setInProcessCount] = useState(0);
@@ -127,7 +127,7 @@ const Status = ({ data, dateRange }) => {
               onChange={handleOptionChange}
             />
             <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-white py-2 px-4 hover:bg-gray-50 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
+              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-gray-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="yes"
             >
               All Appointments {allFilteredAppointmentCount}
@@ -150,7 +150,7 @@ const Status = ({ data, dateRange }) => {
               onChange={handleOptionChange}
             />
             <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-white py-2 px-4 hover:bg-gray-50 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
+              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="no"
             >
               In-Process IVs {inProcessCount}
@@ -173,7 +173,7 @@ const Status = ({ data, dateRange }) => {
               onChange={handleOptionChange}
             />
             <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-white py-2 px-4 hover:bg-gray-50 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out "
+              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out "
               htmlFor="yesno"
             >
               Completed IVs {completedCount}

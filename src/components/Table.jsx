@@ -8,8 +8,11 @@ const Table = ({ data, headers }) => {
         value={data}
         paginator
         rows={5}
-        rowsPerPageOptions={[5, 10, 25, 50]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
         tableStyle={{ minWidth: "50rem" }}
+        rowClassName={(rowData, rowIndex) =>
+          rowIndex % 2 === 0 ? "even-row" : "odd-row"
+        }
       >
         {headers.map((header, index) => (
           <Column
