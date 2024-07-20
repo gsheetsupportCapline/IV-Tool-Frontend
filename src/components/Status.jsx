@@ -1,10 +1,13 @@
 import { useState } from "react";
 import Table from "./Table";
-
+import { useEffect } from "react";
 const Status = ({ data, dateRange }) => {
   // State to keep track of the selected radio button
   const [selectedOption, setSelectedOption] = useState("");
-
+  const [allFilteredAppointmentCount, setAllFilteredAppointmentCount] =
+    useState(0);
+  const [inProcessCount, setInProcessCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
   console.log("data in status component", data);
   console.log("dateRange in status component", dateRange);
   const filteredData = data.filter((item) => {
@@ -19,7 +22,7 @@ const Status = ({ data, dateRange }) => {
     const isInDateRange = startDate <= itemDate && endDate >= itemDate;
     switch (selectedOption) {
       case "yes":
-        return true && isInDateRange; // No additional filtering, show all items
+        return isInDateRange; // No additional filtering, show all items
       case "no":
         return item.completionStatus === "In Process" && isInDateRange;
       case "yesno":
@@ -70,13 +73,45 @@ const Status = ({ data, dateRange }) => {
     "Remarks",
     "Insurance Name",
   ];
-  const allFilteredAppointment = filteredData.length;
-  const inProcessCount = filteredData.filter(
-    (item) => item.completionStatus === "In Process"
-  ).length;
-  const completedCount = filteredData.filter(
-    (item) => item.completionStatus === "Completed"
-  ).length;
+  // const allFilteredAppointment = filteredData.length;
+  // const inProcessCount = filteredData.filter(
+  //   (item) => item.completionStatus === "In Process"
+  // ).length;
+  // const completedCount = filteredData.filter(
+  //   (item) => item.completionStatus === "Completed"
+  // ).length;
+
+  // Inside your Status component
+
+  useEffect(() => {
+    let allFilteredAppointment = 0;
+    let inProcess = 0;
+    let completed = 0;
+
+    // Directly filter and count items during iteration
+    data.forEach((item) => {
+      const startDate = new Date(dateRange.startDate);
+      const endDate = new Date(dateRange.endDate);
+      const itemDate = new Date(item.appointmentDate);
+      const isInDateRange = startDate <= itemDate && endDate >= itemDate;
+      // Only proceed if the item is within the date range
+      if (isInDateRange) {
+        if (!item.completionStatus) return; // Skip items without a completionStatus
+
+        if (item.completionStatus === "In Process") {
+          inProcess++;
+        } else if (item.completionStatus === "Completed") {
+          completed++;
+        }
+
+        allFilteredAppointment++; // Increment for each item in the date range
+      }
+    });
+
+    setAllFilteredAppointmentCount(allFilteredAppointment);
+    setInProcessCount(inProcess);
+    setCompletedCount(completed);
+  }, [data, dateRange]); // Depend on data and dateRange
   return (
     <>
       <div className="flex items-center justify-center ">
@@ -95,7 +130,7 @@ const Status = ({ data, dateRange }) => {
               className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-white py-2 px-4 hover:bg-gray-50 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="yes"
             >
-              All Appointments {allFilteredAppointment}
+              All Appointments {allFilteredAppointmentCount}
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yes" && (

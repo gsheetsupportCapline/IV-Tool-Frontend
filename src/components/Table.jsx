@@ -1,9 +1,9 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-
+import "./Table.css";
 const Table = ({ data, headers }) => {
   return (
-    <div className="card">
+    <div className="table-container">
       <DataTable
         value={data}
         paginator

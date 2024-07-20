@@ -1,0 +1,35 @@
+.table-container {
+  overflow-y: auto;
+  height: 400px; /* Adjust the height as needed */
+}
+
+.p-datatable .p-datatable-tbody tr:nth-child(even),
+.p-datatable .p-datatable-tfoot tr {
+  background-color: inherit;
+}
+
+/* Make the first row sticky */
+.p-datatable .p-datatable-thead th,
+.p-datatable .p-datatable-thead td {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white; /* Ensure the background matches the table */
+}
+
+/* Optional: Style for the scrollbar */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
