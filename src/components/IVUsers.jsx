@@ -18,7 +18,15 @@ import {
 } from "./DropdownValues";
 import Header from "./Header";
 import axios from "axios";
-import { ListItem, ListItemText } from "@mui/material";
+
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
@@ -85,6 +93,14 @@ const IVUsers = () => {
       [field]: value,
     }));
   };
+
+  const appointmentsGroupedByOffice = appointments.reduce((acc, curr) => {
+    if (!acc[curr.office]) {
+      acc[curr.office] = [];
+    }
+    acc[curr.office].push(curr);
+    return acc;
+  }, {});
   return (
     <>
       <Header />
@@ -93,42 +109,43 @@ const IVUsers = () => {
           <Typography variant="h6" gutterBottom>
             Assigned IVs
           </Typography>
-          {appointments
-            .filter(
-              (appointment) => appointment.completionStatus != "Completed"
-            )
-            .sort((a, b) => a.office.localeCompare(b.office)) // Sort alphabetically by office
-            .map((appointment) => (
-              // <Button
-              //   key={appointment._id}
-              //   onClick={() => setSelectedAppointment(appointment)}
-              //   variant="outlined"
-              // >
-              //   {appointment.office}{" "}
-              //   {new Date(appointment.appointmentDate)
-              //     .toISOString()
-              //     .slice(0, 10)}
-              // </Button>
-
-              <ListItem
-                key={appointment._id}
-                onClick={() => setSelectedAppointment(appointment)}
-                sx={{
-                  "&:hover": {
-                    cursor: "pointer",
-                    backgroundColor: "#ababab",
-                  },
-                }}
+          {Object.keys(appointmentsGroupedByOffice).map((office) => (
+            <Accordion key={office}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls={`panel${office}-content`}
+                id={`panel${office}-header`}
               >
-                <ListItemText
-                  primary={`${appointment.office} ${new Date(
-                    appointment.appointmentDate
+                <Typography>{office}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {appointmentsGroupedByOffice[office]
+                  .filter(
+                    (appointment) =>
+                      appointment.completionStatus !== "Completed"
                   )
-                    .toISOString()
-                    .slice(0, 10)}`}
-                />
-              </ListItem>
-            ))}
+
+                  .map((appointment) => (
+                    <ListItem
+                      key={appointment._id}
+                      onClick={() => setSelectedAppointment(appointment)}
+                      sx={{
+                        "&:hover": {
+                          cursor: "pointer",
+                          backgroundColor: "#ababab",
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={`${new Date(appointment.appointmentDate)
+                          .toISOString()
+                          .slice(0, 10)} - ${appointment.patientId}`}
+                      />
+                    </ListItem>
+                  ))}
+              </AccordionDetails>
+            </Accordion>
+          ))}
         </Grid>
         {selectedAppointment && (
           <Grid item xs={9}>
