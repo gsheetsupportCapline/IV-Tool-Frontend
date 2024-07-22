@@ -188,6 +188,10 @@ const Admin = () => {
           default:
             filteredAppointments = [];
         }
+        // Sort the appointments by appointmentDate in descending order
+        filteredAppointments.sort(
+          (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+        );
         setRows(filteredAppointments);
       } else {
         setRows([]);
