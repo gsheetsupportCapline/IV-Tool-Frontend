@@ -177,9 +177,6 @@ const Admin = () => {
 
     for (let id of selectedAppointmentIds) {
       try {
-        const appointment = rows.find((row) => row._id === id);
-        const currentStatus = appointment.status;
-
         // Construct the URL with the office name extracted from the selectedRows
         const officeNameForCurrentId = selectedRows.find(
           (row) => row._id === id
@@ -188,7 +185,7 @@ const Admin = () => {
           `http://localhost:3000/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: null, // Set userId to null or appropriate value to indicate unassignment
-            status: currentStatus === "Assigned" ? "Unassigned" : "Assigned", // Toggle status
+            status: "Unassigned",
             completionStatus: "IV Not Done", // Reset completionStatus or set as needed
           }
         );
@@ -289,6 +286,7 @@ const Admin = () => {
             </MenuItem>
           ))}
         </Select>
+
         <Tabs
           value={value}
           onChange={handleChange}
@@ -298,12 +296,16 @@ const Admin = () => {
           <Tab label="Assigned" />
           <Tab label="Unassigned" />
         </Tabs>
-        <Button variant="contained" onClick={handleUnassignClick}>
-          Unassign
-        </Button>
-        <Button variant="contained" onClick={handleClick}>
-          Assign to User
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {" "}
+          {/* Add this Box around the buttons */}
+          <Button variant="contained" onClick={handleUnassignClick}>
+            Unassign
+          </Button>
+          <Button variant="contained" onClick={handleClick}>
+            Assign to User
+          </Button>
+        </Box>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
