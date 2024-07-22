@@ -130,12 +130,13 @@ const Rush = () => {
       <Card
         sx={{
           width: "50%",
+          height: "100vh",
           borderColor: "primary.main",
           borderRadius: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+
           margin: "auto", // Center the card horizontally
           marginTop: "20px", // Adjust top margin to avoid sticking to the header
         }}
