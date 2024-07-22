@@ -20,6 +20,7 @@ const Admin = () => {
   const [users, setUsers] = useState([]);
 
   const officeName = [
+    "AllOffices",
     "Aransas",
     "Azle",
     "Beaumont",
@@ -107,11 +108,21 @@ const Admin = () => {
     // Assuming selectedRows contains the appointments to be updated
     const selectedAppointmentIds = selectedRows.map((row) => row._id); // Adjust 'id' as per your data structure
     console.log("Selected Appointment Ids", selectedAppointmentIds);
+
     // Loop through each selected appointment and update it
     for (let id of selectedAppointmentIds) {
       try {
+        // Extract the office name for the current appointment ID
+        const officeNameForCurrentId = selectedRows.find(
+          (row) => row._id === id
+        )?.office;
+
+        if (!officeNameForCurrentId) {
+          console.error("Office name not found for appointment ID:", id);
+          continue;
+        }
         const response = await axios.put(
-          `http://localhost:3000/api/appointments/update-appointments/${selectedOffice}/${id}`,
+          `http://localhost:3000/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: user._id,
             status: "Assigned",
@@ -159,6 +170,52 @@ const Admin = () => {
   //   setSelectedOffice(e.target.value);
   //   fetchAndFilterAppointments(value); // Also consider passing the tabValue here if needed
   // }}
+
+  const handleUnassignClick = async () => {
+    const selectedAppointmentIds = selectedRows.map((row) => row._id);
+    console.log("Selected Appointment Ids", selectedAppointmentIds);
+
+    for (let id of selectedAppointmentIds) {
+      try {
+        const appointment = rows.find((row) => row._id === id);
+        const currentStatus = appointment.status;
+
+        // Construct the URL with the office name extracted from the selectedRows
+        const officeNameForCurrentId = selectedRows.find(
+          (row) => row._id === id
+        )?.office;
+        const response = await axios.put(
+          `http://localhost:3000/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
+          {
+            userId: null, // Set userId to null or appropriate value to indicate unassignment
+            status: currentStatus === "Assigned" ? "Unassigned" : "Assigned", // Toggle status
+            completionStatus: "IV Not Done", // Reset completionStatus or set as needed
+          }
+        );
+
+        console.log("Response api", response);
+        const updatedAppointment = response.data;
+        console.log("Updated Appointment", updatedAppointment);
+
+        // Find the index of the updated appointment in the rows array
+        const index = rows.findIndex(
+          (row) => row._id === updatedAppointment._id
+        );
+
+        // Update the appointment in the local state
+        if (index !== -1) {
+          const newRows = [...rows];
+          newRows[index] = updatedAppointment;
+          setRows(newRows);
+        }
+      } catch (error) {
+        console.error("Failed to update appointment", error);
+      }
+    }
+
+    // Optionally, refresh the list of appointments after unassignment
+    fetchAndFilterAppointments(value); // Call your existing function to refetch and filter appointments
+  };
 
   const fetchAndFilterAppointments = async (tabValue) => {
     try {
@@ -241,6 +298,9 @@ const Admin = () => {
           <Tab label="Assigned" />
           <Tab label="Unassigned" />
         </Tabs>
+        <Button variant="contained" onClick={handleUnassignClick}>
+          Unassign
+        </Button>
         <Button variant="contained" onClick={handleClick}>
           Assign to User
         </Button>

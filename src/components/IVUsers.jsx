@@ -140,7 +140,9 @@ const IVUsers = () => {
                       <ListItemText
                         primary={`${new Date(appointment.appointmentDate)
                           .toISOString()
-                          .slice(0, 10)} - ${appointment.patientId}`}
+                          .slice(0, 10)} - AptTime ${
+                          appointment.appointmentTime
+                        } - P.Id ${appointment.patientId}`}
                       />
                     </ListItem>
                   ))}

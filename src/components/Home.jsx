@@ -21,7 +21,11 @@ const Home = () => {
       const responseData = await response.json();
       console.log("Fetched data:", responseData);
       if (responseData && responseData.appointments) {
-        setData(responseData.appointments);
+        const sortedAppointments = responseData.appointments.sort((a, b) => {
+          // Assuming appointmentDate is in ISO 8601 format
+          return new Date(b.appointmentDate) - new Date(a.appointmentDate);
+        });
+        setData(sortedAppointments);
       } else {
         console.log("API did not return data ", responseData);
         setData([]);
