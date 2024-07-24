@@ -9,6 +9,9 @@ export default {
   theme: {
     extend: {
       cursor: ["pointer"],
+      colors: {
+        "light-blue": "#add8e6", // This is a light blue color
+      },
     },
   },
   plugins: [],

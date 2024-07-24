@@ -76,6 +76,7 @@ const Admin = () => {
 
   const columns = [
     { field: "status", headerName: "Status", width: 150 },
+    { field: "completionStatus", headerName: "Completion Status", width: 150 },
     { field: "office", headerName: "Office", width: 150 },
     { field: "ivType", headerName: "IV Type", width: 150 },
     {

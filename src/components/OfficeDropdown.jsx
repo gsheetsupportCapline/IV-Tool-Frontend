@@ -44,7 +44,7 @@ const OfficeDropdown = ({
 
   return (
     <select onChange={(e) => onSelect(e.target.value)}>
-      <option value="">Select an Office</option>
+      <option value="">Select Office</option>
       {filteredOfficeNames.map((office) => (
         <option key={office} value={office}>
           {office}

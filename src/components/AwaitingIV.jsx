@@ -49,7 +49,7 @@ const AwaitingIV = () => {
   return (
     <>
       <Header />
-      <div className="flex items-center my-1 bg-slate-400">
+      <div className="flex items-center my-1 bg-slate-400 p-2">
         <div className="flex space-x-4">
           <select className="form-select mt-2" onChange={handleOfficeChange}>
             <option value="">Office</option>
@@ -72,7 +72,7 @@ const AwaitingIV = () => {
       {/* Render Appointments in a Table */}
       <div className="mt-4 p-4 bg-white shadow-md rounded-lg w-full">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-blue-500 text-white">
+          <thead className="bg-light-blue text-black">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 IV Remarks

@@ -19,7 +19,7 @@ const Table = ({ data, headers }) => {
             key={index}
             field={header}
             header={header}
-            style={{ width: "10%" }}
+            style={{ width: "5%" }}
           />
         ))}
       </DataTable>
