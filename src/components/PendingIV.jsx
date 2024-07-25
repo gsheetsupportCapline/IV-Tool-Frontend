@@ -87,7 +87,7 @@ const PendingIV = () => {
             {headers.map((header, index) => (
               <th
                 key={index}
-                className="px-4 py-2 bg-gray-200 text-gray-700 text-center"
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-center sticky top-0"
               >
                 {header}
               </th>

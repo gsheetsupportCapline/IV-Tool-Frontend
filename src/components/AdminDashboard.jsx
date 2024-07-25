@@ -12,13 +12,13 @@ const AdminDashboard = () => {
   return (
     <>
       <Header />
-      <div className="flex">
+      <div className="flex sticky">
         {/* Sidebar */}
-        <div className="w-1/5 border-r border-gray-300 p-4 bg-white rounded-lg shadow-lg">
-          <h2 className="text-lg font-semibold">IV Status</h2>
+        <div className="w-1/5 border-r border-gray-300 p-4 bg-slate-700 rounded-lg shadow-lg">
+          <h2 className="text-lg text-white font-semibold">IV Status</h2>
           <ul>
             <li
-              className={`cursor-pointer py-2 hover:shadow ${
+              className={`cursor-pointer px-4 py-2 rounded-lg  hover:shadow ${
                 selectedItem === "PendingIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("PendingIV")}
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
               Pending IV
             </li>
             <li
-              className={`cursor-pointer py-2 hover:shadow ${
+              className={`cursor-pointer px-4 py-2 rounded-lg  hover:shadow ${
                 selectedItem === "AssignedIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("AssignedIV")}
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
               Assigned IV
             </li>
             <li
-              className={`cursor-pointer py-2 hover:shadow ${
+              className={`cursor-pointer px-4 rounded-lg  py-2 hover:shadow ${
                 selectedItem === "ProductionIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("ProductionIV")}
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content Area */}
-        <div className="w-4/5 p-4 bg-white rounded-lg shadow-lg">
+        <div className="w-4/5 p-4 bg-slate-100 rounded-lg shadow-lg sticky top-0">
           {selectedItem === "PendingIV" && <PendingIV />}
           {selectedItem === "AssignedIV" && <AssignedIV />}
           {selectedItem === "ProductionIV" && <ProductionIV />}

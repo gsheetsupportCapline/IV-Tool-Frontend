@@ -270,6 +270,7 @@ const Admin = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "20px",
+          backgroundColor: "#94a3b8",
         }}
       >
         <Select
@@ -292,6 +293,15 @@ const Admin = () => {
           value={value}
           onChange={handleChange}
           aria-label="simple tabs example"
+          sx={{
+            "& .Mui-selected": {
+              backgroundColor: "#334155", // Make the background transparent
+              color: "white", // Change the text color to white
+            },
+            "& .MuiTab-root": {
+              color: "white", // Change the text color to white for all tabs
+            },
+          }}
         >
           <Tab label="All IVs" />
           <Tab label="Assigned" />

@@ -131,6 +131,7 @@ const AssignedIV = () => {
   return (
     <>
       <Box
+        height={700}
         sx={{ display: "flex", justifyContent: "space-between", padding: 2 }}
       >
         <Box sx={{ flex: 1, marginRight: 2 }}>
