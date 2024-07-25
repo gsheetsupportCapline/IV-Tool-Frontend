@@ -78,7 +78,15 @@ const IVUsers = () => {
         `http://localhost:3000/api/appointments/update-individual-appointment-details`,
         payload
       );
+      // Remove the selected appointment from the appointments state
+      setAppointments(
+        appointments.filter(
+          (appointment) => appointment._id !== selectedAppointment._id
+        )
+      );
 
+      // Optionally, reset the selectedAppointment state
+      setSelectedAppointment(null);
       // Refresh the data or show a success message
       alert("Appointment updated successfully!");
       // Optionally, refresh the appointments data here
@@ -106,7 +114,7 @@ const IVUsers = () => {
     <>
       <Header />
       <Grid container spacing={2} sx={{ padding: "20px" }}>
-        <Grid item xs={3}>
+        <Grid item xs={3} sx={{ backgroundColor: "#334155", padding: "10px" }}>
           <Typography variant="h6" gutterBottom>
             Assigned IVs
           </Typography>
@@ -133,7 +141,7 @@ const IVUsers = () => {
                       sx={{
                         "&:hover": {
                           cursor: "pointer",
-                          backgroundColor: "#ababab",
+                          backgroundColor: "#6b7280",
                         },
                       }}
                     >
@@ -151,13 +159,17 @@ const IVUsers = () => {
           ))}
         </Grid>
         {selectedAppointment && (
-          <Grid item xs={9}>
+          <Grid
+            item
+            xs={9}
+            sx={{ backgroundColor: "#94a3b8", padding: "10px" }}
+          >
             <Typography variant="h6" gutterBottom>
               Appointment Details
             </Typography>
 
             <Grid item xs={8}>
-              <Card sx={{ padding: 2 }}>
+              <Card sx={{ padding: 2, backgroundColor: "#f1f5f9" }}>
                 <Box
                   component="form"
                   sx={{ display: "flex", flexDirection: "column", gap: 2 }}

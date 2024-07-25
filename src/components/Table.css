@@ -48,3 +48,9 @@
   height: 450px; /* Adjust the height as needed */
   background-color: #f5f5f5; /* Off-white background */
 }
+
+/* Table.css */
+.header-row {
+  background-color: #add8e6;
+  color: black; /* Optional: Sets the text color for better readability */
+}

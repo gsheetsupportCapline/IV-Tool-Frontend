@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
-
+import "./Table.css";
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -75,26 +75,97 @@ const Admin = () => {
   };
 
   const columns = [
-    { field: "status", headerName: "Status", width: 150 },
-    { field: "completionStatus", headerName: "Completion Status", width: 150 },
-    { field: "office", headerName: "Office", width: 150 },
-    { field: "ivType", headerName: "IV Type", width: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "completionStatus",
+      headerName: "Completion Status",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "office",
+      headerName: "Office",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "ivType",
+      headerName: "IV Type",
+      headerClassName: "header-row",
+      width: 150,
+    },
     {
       field: "assignedUser",
       headerName: "Assigned To",
       width: 150,
       renderCell: renderUserName,
+      headerClassName: "header-row",
     },
-    { field: "appointmentType", headerName: "Appointment Type", width: 150 },
-    { field: "appointmentDate", headerName: "Appointment Date", width: 150 },
-    { field: "appointmentTime", headerName: "Appointment Time", width: 150 },
-    { field: "patientId", headerName: "Patient Id", width: 100 },
-    { field: "insuranceName", headerName: "Insurance Name", width: 150 },
-    { field: "insurancePhone", headerName: "Insurance Phone No", width: 150 },
-    { field: "policyHolderName", headerName: "Policy Holder Name", width: 150 },
-    { field: "policyHolderDOB", headerName: "Policy Holder DOB", width: 150 },
-    { field: "memberId", headerName: "Member Id", width: 100 },
-    { field: "employerName", headerName: "Employer Name", width: 150 },
+    {
+      field: "appointmentType",
+      headerName: "Appointment Type",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "appointmentDate",
+      headerName: "Appointment Date",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "appointmentTime",
+      headerName: "Appointment Time",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "patientId",
+      headerName: "Patient Id",
+      headerClassName: "header-row",
+      width: 100,
+    },
+    {
+      field: "insuranceName",
+      headerName: "Insurance Name",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "insurancePhone",
+      headerName: "Insurance Phone No",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "policyHolderName",
+      headerName: "Policy Holder Name",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "policyHolderDOB",
+      headerName: "Policy Holder DOB",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "memberId",
+      headerName: "Member Id",
+      headerClassName: "header-row",
+      width: 100,
+    },
+    {
+      field: "employerName",
+      headerName: "Employer Name",
+      headerClassName: "header-row",
+      width: 150,
+    },
   ];
 
   const handleClick = (event) => {
@@ -264,6 +335,7 @@ const Admin = () => {
   return (
     <>
       <Header />
+
       <Box
         sx={{
           display: "flex",
@@ -271,6 +343,7 @@ const Admin = () => {
           alignItems: "center",
           marginBottom: "20px",
           backgroundColor: "#94a3b8",
+          px: 2,
         }}
       >
         <Select
@@ -307,7 +380,7 @@ const Admin = () => {
           <Tab label="Assigned" />
           <Tab label="Unassigned" />
         </Tabs>
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, p: 2 }}>
           {" "}
           {/* Add this Box around the buttons */}
           <Button variant="contained" onClick={handleUnassignClick}>
@@ -335,7 +408,7 @@ const Admin = () => {
         </Menu>
       </Box>
       <div className="flex justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-4 w-full ">
+        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full ">
           <div style={{ height: 500, width: "100%" }}>
             <DataGrid
               rows={rows}
