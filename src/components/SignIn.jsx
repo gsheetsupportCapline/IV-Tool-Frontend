@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -21,7 +21,7 @@ const SignIn = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false); // State for snackbar visibility
   const [snackbarMessage, setSnackbarMessage] = useState(""); // State for snackbar message
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Default severity
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -54,38 +54,26 @@ const SignIn = () => {
           }
         );
 
-        localStorage.setItem("token", response.data.token);
+        await localStorage.setItem("token", response.data.token);
 
-        const userRole = response.data.data.userDetails.role;
-        localStorage.setItem(
+        // const userRole = response.data.data.userDetails.role;
+        await localStorage.setItem(
           "loggedinUserId",
           response.data.data.userDetails._id
         );
-        localStorage.setItem(
+        await localStorage.setItem(
           "loggedinUserName",
           response.data.data.userDetails.name
         );
-        localStorage.setItem("role", response.data.data.userDetails.role);
-        localStorage.setItem(
+        await localStorage.setItem("role", response.data.data.userDetails.role);
+        await localStorage.setItem(
           "assignedOffice",
           response.data.data.userDetails.assignedOffice
         );
         setSnackbarMessage("Login successful!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        switch (userRole) {
-          case "admin":
-            navigate("/home");
-            break;
-          case "user":
-            navigate("/dashboard");
-            break;
-          case "officeuser":
-            navigate("/home");
-            break;
-          default:
-            console.error("Unknown user role:", userRole);
-        }
+        window.location.href = "/schedule-patient";
       } catch (error) {
         console.error("Login failed:", error);
         setSnackbarMessage("Invalid credentials.");

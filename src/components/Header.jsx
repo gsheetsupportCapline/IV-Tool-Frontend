@@ -2,13 +2,39 @@ import { Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
+// const navigation = [
+//   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
+//   { name: "Ivs Awaiting", href: "/awaitingIV", current: false },
+//   { name: "Request a Rush", href: "/request-rush", current: false },
+//   { name: "Assign IVs", href: "/admin", current: false },
+//   { name: "Dashboard", href: "/admin-dashboard", current: false },
+//   { name: "Log Out", href: "/", current: false },
+// ];
+const userId = localStorage.getItem("loggedinUserId");
+const userName = localStorage.getItem("loggedinUserName");
+const userAssignedOffice = localStorage.getItem("assignedOffice");
+const userRole = localStorage.getItem("role");
+
 const navigation = [
-  { name: "Scheduled Patients", href: "/schedule-patient", current: true },
-  { name: "Ivs Awaiting", href: "/awaitingIV", current: false },
-  { name: "Request a Rush", href: "/request-rush", current: false },
-  { name: "Assign IVs", href: "/admin", current: false },
-  { name: "Dashboard", href: "/admin-dashboard", current: false },
-  { name: "Log Out", href: "/", current: false },
+  { link: "/schedule-patient", text: "Scheduled Patients", show: true },
+  { link: "/awaitingIV", text: "IVs Awaiting", show: true },
+  { link: "/request-rush", text: "Request a Rush", show: true },
+  {
+    link: "/admin",
+    text: "Assign IVs",
+    show: userRole == "admin" ? true : false,
+  },
+  {
+    link: "/admin-dashboard",
+    text: "Dashboard",
+    show: userRole == "admin" ? true : false,
+  },
+  {
+    link: "/dashboard",
+    text: "Dashboard",
+    show: userRole == "user" ? true : false,
+  },
+  { link: "/", text: "Log Out", show: true },
 ];
 
 function classNames(...classes) {
@@ -21,18 +47,6 @@ const Header = () => {
         <>
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                {/* Mobile menu button*/}
-                <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                  <span className="absolute -inset-0.5" />
-                  <span className="sr-only">Open main menu</span>
-                  {open ? (
-                    <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
-              </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
                   <img
@@ -43,21 +57,21 @@ const Header = () => {
                 </div>
                 <div className="hidden sm:ml-6 sm:block sm:flex-grow sm:flex sm:justify-end">
                   <div className="flex space-x-4">
-                    {navigation.map((item) => (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        className={classNames(
-                          item.current
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "rounded-md px-3 py-2 text-sm font-medium"
-                        )}
-                        aria-current={item.current ? "page" : undefined}
-                      >
-                        {item.name}
-                      </a>
-                    ))}
+                    {navigation.map((item) => {
+                      if (item.show)
+                        return (
+                          <a
+                            key={item.text}
+                            href={item.link}
+                            className={classNames(
+                              "bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                            aria-current={item.current ? "page" : undefined}
+                          >
+                            {item.text}
+                          </a>
+                        );
+                    })}
                   </div>
                 </div>
               </div>
