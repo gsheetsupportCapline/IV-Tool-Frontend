@@ -160,7 +160,7 @@ const AssignedIV = () => {
           {selectedUserId && (
             <Card
               sx={{
-                backgroundColor: "#F9F6EE",
+                backgroundColor: "#cbd5e1",
                 maxWidth: "600px",
                 margin: "auto",
               }}
@@ -200,7 +200,7 @@ const AssignedIV = () => {
             <Card
               sx={{
                 backgroundColor: "#F9F6EE",
-                maxWidth: "600px",
+                maxWidth: "700px",
                 margin: "auto",
               }}
             >
