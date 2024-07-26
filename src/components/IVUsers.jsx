@@ -67,7 +67,7 @@ const IVUsers = () => {
       ) {
         setSnackbarOpen(true);
         setSnackbarSeverity("error");
-        setSnackbarMessage("Source, Plan Type, and Iv Remarks are mandatory.");
+        setSnackbarMessage("Source, Plan Type and Iv Remarks are mandatory.");
         return;
       }
       console.log("Submitting table data...");
@@ -132,8 +132,16 @@ const IVUsers = () => {
     <>
       <Header />
       <Grid container spacing={2} sx={{ padding: "20px", height: "100vh" }}>
-        <Grid item xs={3} sx={{ backgroundColor: "#334155", padding: "10px" }}>
-          <Typography variant="h6" gutterBottom>
+        <Grid
+          item
+          xs={3}
+          sx={{
+            backgroundColor: "#334155",
+            padding: "10px",
+            borderRadius: "8px",
+          }}
+        >
+          <Typography variant="h6" gutterBottom color="white">
             Assigned IVs
           </Typography>
           {Object.keys(appointmentsGroupedByOffice).map((office) => (
@@ -155,7 +163,13 @@ const IVUsers = () => {
                   .map((appointment) => (
                     <ListItem
                       key={appointment._id}
-                      onClick={() => setSelectedAppointment(appointment)}
+                      onClick={() => {
+                        setSelectedAppointment(appointment);
+                        // Resetting the form fields to empty or initial values
+                        handleInputChange("source", "");
+                        handleInputChange("planType", "");
+                        handleInputChange("ivRemarks", "");
+                      }}
                       sx={{
                         "&:hover": {
                           cursor: "pointer",
@@ -203,6 +217,7 @@ const IVUsers = () => {
                           id="demo-simple-select"
                           value={selectedAppointment.source}
                           label="Source"
+                          required
                           onChange={(event) =>
                             handleInputChange("source", event.target.value)
                           }
