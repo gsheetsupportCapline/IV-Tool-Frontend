@@ -47,6 +47,7 @@ const AssignedIV = () => {
 
           allAppointments.push(...appointmentsResponse.data);
         }
+        console.log("all apt", allAppointments);
 
         const groupedAppointments = allAppointments.reduce(
           (acc, appointment) => {
@@ -62,6 +63,7 @@ const AssignedIV = () => {
           },
           {}
         );
+        console.log("group appt", groupedAppointments);
 
         const usersWithName = usersData.map((userData) => ({
           ...userData,
@@ -115,14 +117,16 @@ const AssignedIV = () => {
   let rows = [];
 
   if (selectedUserId) {
+    console.log("Selected User Appointments:", appointments[selectedUserId]);
     if (appointments[selectedUserId]) {
       rows = Object.entries(appointments[selectedUserId]).map(
         ([office, count], idx) => ({
-          id: idx,
+          id: String(idx),
           office,
           count,
         })
       );
+      console.log("Formatted Rows for DataGrid:", rows);
     } else {
       console.error(`No appointments found for userId: ${selectedUserId}`);
     }
@@ -170,7 +174,6 @@ const AssignedIV = () => {
                   pageSize={10}
                   rowsPerPageOptions={[10]}
                   checkboxSelection={false}
-                  getRowId={(row) => `${row.userName}-${row.count}`}
                 />
               </CardContent>
             </Card>

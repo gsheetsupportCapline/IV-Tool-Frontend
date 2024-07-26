@@ -28,11 +28,12 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Header from "./Header";
-
+import Alert from "@mui/material/Alert";
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-
+  const [validationErrors, setValidationErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
   const userName = localStorage.getItem("loggedinUserName");
   // Function to fetch appointments
   const fetchAppointments = async () => {
@@ -54,6 +55,8 @@ const IVUsers = () => {
   }, []);
 
   const handleSubmit = async () => {
+    // Reset validation errors
+    setValidationErrors({});
     try {
       console.log("Submitting table data...");
       if (!selectedAppointment) {
@@ -88,15 +91,30 @@ const IVUsers = () => {
       // Optionally, reset the selectedAppointment state
       setSelectedAppointment(null);
       // Refresh the data or show a success message
-      alert("Appointment updated successfully!");
-      // Optionally, refresh the appointments data here
+      // On success, show a success message
+      setSuccessMessage("Appointment updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 5000); // Auto-hide after 5 seconds
     } catch (error) {
       console.error("Error submitting table data:", error);
-      alert("An error occurred while updating the appointment.");
+      setValidationErrors({
+        source: "There was an error updating the appointment.",
+        planType: "There was an error updating the appointment.",
+        ivRemarks: "There was an error updating the appointment.",
+      });
     }
   };
 
   const handleInputChange = (field, value) => {
+    let tempValidationErrors = { ...validationErrors };
+    delete tempValidationErrors[field]; // Clear any existing errors for this field
+
+    // Validate mandatory fields
+    if (["source", "planType", "ivRemarks"].includes(field)) {
+      if (!value) {
+        tempValidationErrors[field] = "This field is required.";
+      }
+    }
+    setValidationErrors(tempValidationErrors);
     setSelectedAppointment((prevState) => ({
       ...prevState,
       [field]: value,
@@ -113,7 +131,7 @@ const IVUsers = () => {
   return (
     <>
       <Header />
-      <Grid container spacing={2} sx={{ padding: "20px" }}>
+      <Grid container spacing={2} sx={{ padding: "20px", height: "100vh" }}>
         <Grid item xs={3} sx={{ backgroundColor: "#334155", padding: "10px" }}>
           <Typography variant="h6" gutterBottom>
             Assigned IVs
@@ -162,12 +180,15 @@ const IVUsers = () => {
           <Grid
             item
             xs={9}
-            sx={{ backgroundColor: "#94a3b8", padding: "10px" }}
+            sx={{
+              backgroundColor: "#94a3b8",
+              padding: "10px",
+              position: "relative",
+            }}
           >
             <Typography variant="h6" gutterBottom>
               Appointment Details
             </Typography>
-
             <Grid item xs={8}>
               <Card sx={{ padding: 2, backgroundColor: "#f1f5f9" }}>
                 <Box
@@ -176,7 +197,7 @@ const IVUsers = () => {
                 >
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={4}>
-                      <FormControl fullWidth>
+                      <FormControl fullWidth error={!!validationErrors.source}>
                         <InputLabel id="demo-simple-select-label">
                           Source
                         </InputLabel>
@@ -198,7 +219,10 @@ const IVUsers = () => {
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                      <FormControl fullWidth>
+                      <FormControl
+                        fullWidth
+                        error={!!validationErrors.planType}
+                      >
                         <InputLabel id="demo-simple-select-label">
                           Plan Type
                         </InputLabel>
@@ -220,7 +244,10 @@ const IVUsers = () => {
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                      <FormControl fullWidth>
+                      <FormControl
+                        fullWidth
+                        error={!!validationErrors.ivRemarks}
+                      >
                         <InputLabel id="demo-simple-select-label">
                           IV Remarks
                         </InputLabel>
