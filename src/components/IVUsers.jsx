@@ -28,12 +28,15 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Header from "./Header";
+import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const userName = localStorage.getItem("loggedinUserName");
   // Function to fetch appointments
   const fetchAppointments = async () => {
@@ -55,9 +58,18 @@ const IVUsers = () => {
   }, []);
 
   const handleSubmit = async () => {
-    // Reset validation errors
-    setValidationErrors({});
     try {
+      if (
+        !selectedAppointment ||
+        !selectedAppointment.source ||
+        !selectedAppointment.planType ||
+        !selectedAppointment.ivRemarks
+      ) {
+        setSnackbarOpen(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage("Source, Plan Type, and Iv Remarks are mandatory.");
+        return;
+      }
       console.log("Submitting table data...");
       if (!selectedAppointment) {
         alert("Please select an appointment to update.");
@@ -91,30 +103,18 @@ const IVUsers = () => {
       // Optionally, reset the selectedAppointment state
       setSelectedAppointment(null);
       // Refresh the data or show a success message
-      // On success, show a success message
-      setSuccessMessage("Appointment updated successfully!");
-      setTimeout(() => setSuccessMessage(""), 5000); // Auto-hide after 5 seconds
+      setSnackbarOpen(true);
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Appointment updated successfully!");
     } catch (error) {
       console.error("Error submitting table data:", error);
-      setValidationErrors({
-        source: "There was an error updating the appointment.",
-        planType: "There was an error updating the appointment.",
-        ivRemarks: "There was an error updating the appointment.",
-      });
+      setSnackbarOpen(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage("An error occurred while updating the appointment.");
     }
   };
 
   const handleInputChange = (field, value) => {
-    let tempValidationErrors = { ...validationErrors };
-    delete tempValidationErrors[field]; // Clear any existing errors for this field
-
-    // Validate mandatory fields
-    if (["source", "planType", "ivRemarks"].includes(field)) {
-      if (!value) {
-        tempValidationErrors[field] = "This field is required.";
-      }
-    }
-    setValidationErrors(tempValidationErrors);
     setSelectedAppointment((prevState) => ({
       ...prevState,
       [field]: value,
@@ -180,15 +180,12 @@ const IVUsers = () => {
           <Grid
             item
             xs={9}
-            sx={{
-              backgroundColor: "#94a3b8",
-              padding: "10px",
-              position: "relative",
-            }}
+            sx={{ backgroundColor: "#94a3b8", padding: "10px" }}
           >
             <Typography variant="h6" gutterBottom>
               Appointment Details
             </Typography>
+
             <Grid item xs={8}>
               <Card sx={{ padding: 2, backgroundColor: "#f1f5f9" }}>
                 <Box
@@ -197,7 +194,7 @@ const IVUsers = () => {
                 >
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={4}>
-                      <FormControl fullWidth error={!!validationErrors.source}>
+                      <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">
                           Source
                         </InputLabel>
@@ -219,10 +216,7 @@ const IVUsers = () => {
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                      <FormControl
-                        fullWidth
-                        error={!!validationErrors.planType}
-                      >
+                      <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">
                           Plan Type
                         </InputLabel>
@@ -244,10 +238,7 @@ const IVUsers = () => {
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                      <FormControl
-                        fullWidth
-                        error={!!validationErrors.ivRemarks}
-                      >
+                      <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">
                           IV Remarks
                         </InputLabel>
@@ -418,6 +409,21 @@ const IVUsers = () => {
           </Grid>
         )}
       </Grid>
+      <Snackbar
+        open={snackbarOpen}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position at top right
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: "100%", marginTop: "50px" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
