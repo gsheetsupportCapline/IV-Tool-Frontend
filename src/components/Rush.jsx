@@ -11,7 +11,7 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import axios from "axios"; // Import Axios
 import moment from "moment";
 import { officeNames } from "./DropdownValues";
-import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -135,122 +135,160 @@ const Rush = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-
           margin: "auto", // Center the card horizontally
           marginTop: "20px", // Adjust top margin to avoid sticking to the header
         }}
       >
-        {/* Form Fields */}
         <Box
           component="form"
           sx={{
-            "& > :not(style)": { m: 1, width: "25ch" },
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            width: "90%", // Adjust width as needed
+            padding: 2,
+            backgroundColor: "#f1f5f9",
           }}
           noValidate
           autoComplete="off"
         >
-          <FormControl fullWidth>
-            <InputLabel id="office-label">Office</InputLabel>
-            <Select
-              labelId="office-label"
-              id="office-select"
-              value={selectedOffice}
-              onChange={(e) => handleOfficeChange(e.target.value)}
-              label="Office"
-            >
-              {officeNames.map((office) => (
-                <MenuItem key={office.id} value={office.officeName}>
-                  {office.officeName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Grid container spacing={2}>
+            {/* First Column */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth sx={{ marginBottom: 2 }}>
+                <InputLabel id="office-label">Office</InputLabel>
+                <Select
+                  labelId="office-label"
+                  id="office-select"
+                  value={selectedOffice}
+                  onChange={(e) => handleOfficeChange(e.target.value)}
+                  label="Office"
+                >
+                  {officeNames.map((office) => (
+                    <MenuItem key={office.id} value={office.officeName}>
+                      {office.officeName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <DatePicker
-            required
-            id="outlined-aptDate"
-            label="Appointment Date"
-            renderInput={(params) => <TextField {...params} />}
-            value={values.appointmentDate}
-            onChange={handleAppointmentDateChange}
-          />
-          <TimePicker
-            label="Appointment Time"
-            renderInput={(params) => <TextField {...params} />}
-            value={values.appointmentTime}
-            onChange={handleTimeChange}
-          />
-          <TextField
-            required
-            id="outlined-read-only-treating-provider"
-            label="Treating Provider"
-            InputProps={{
-              readOnly: true,
-            }}
-            value={treatingProvider}
-          />
+              <TextField
+                required
+                id="outlined-read-only-treating-provider"
+                label="Treating Provider"
+                InputProps={{
+                  readOnly: true,
+                }}
+                value={treatingProvider}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+              <TextField
+                required
+                id="outlined-patient-id"
+                label="Patient Id"
+                onChange={(e) => handleChange(e.target.value, "patientId")}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+              <DatePicker
+                required
+                id="outlined-patient-dob"
+                label="Patient DOB"
+                value={values.patientDOB}
+                onChange={handlePatientDOBChange}
+                sx={{ marginBottom: 2, width: "100%" }}
+                fullWidth
+              />
 
-          <TextField
-            required
-            id="outlined-patient-id"
-            label="Patient Id"
-            onChange={(e) => handleChange(e.target.value, "patientId")}
-          />
-          <TextField
-            required
-            id="outlined-patient-name"
-            label="Patient Name"
-            value={values.patientName}
-            onChange={(e) => handleChange(e.target.value, "patientName")}
-          />
-          <DatePicker
-            required
-            id="outlined-patient-dob"
-            label="Patient DOB"
-            value={values.patientDOB}
-            onChange={handlePatientDOBChange}
-          />
-          <TextField
-            id="outlined-policy-holder-name"
-            label="Policy Holder Name"
-            value={values.policyHolderName}
-            onChange={(e) => handleChange(e.target.value, "policyHolderName")}
-          />
-          <DatePicker
-            id="outlined-policy-holder-dob"
-            label="Policy Holder DOB"
-            value={values.policyHolderDOB}
-            onChange={handlePolicyHolderDOBChange}
-          />
-          <TextField
-            required
-            id="outlined-mid-ssn"
-            label="MID/SSN"
-            value={values.MIDSSN}
-            onChange={(e) => handleChange(e.target.value, "MIDSSN")}
-          />
+              <TextField
+                required
+                id="outlined-insurance-name"
+                label="Insurance Name"
+                value={values.insuranceName}
+                onChange={(e) => handleChange(e.target.value, "insuranceName")}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+              <TextField
+                id="outlined-policy-holder-name"
+                label="Policy Holder Name"
+                value={values.policyHolderName}
+                onChange={(e) =>
+                  handleChange(e.target.value, "policyHolderName")
+                }
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+            </Grid>
 
-          <TextField
-            required
-            id="outlined-insurance-name"
-            label="Insurance Name"
-            value={values.insuranceName}
-            onChange={(e) => handleChange(e.target.value, "insuranceName")}
-          />
-          <TextField
-            required
-            id="outlined-insurance-contact"
-            label="Insurance Contact"
-            value={values.insurancePhone}
-            onChange={(e) => handleChange(e.target.value, "insurancePhone")}
-          />
+            {/* Second Column */}
+            <Grid item xs={12} sm={6}>
+              <DatePicker
+                required
+                id="outlined-aptDate"
+                label="Appointment Date"
+                renderInput={(params) => <TextField {...params} />}
+                value={values.appointmentDate}
+                onChange={handleAppointmentDateChange}
+                sx={{ marginBottom: 2, width: "100%" }}
+                fullWidth
+              />
+              <TimePicker
+                label="Appointment Time"
+                renderInput={(params) => <TextField {...params} />}
+                value={values.appointmentTime}
+                onChange={handleTimeChange}
+                sx={{ marginBottom: 2, width: "100%" }}
+                fullWidth
+              />
+
+              <TextField
+                required
+                id="outlined-patient-name"
+                label="Patient Name"
+                value={values.patientName}
+                onChange={(e) => handleChange(e.target.value, "patientName")}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+              <TextField
+                required
+                id="outlined-mid-ssn"
+                label="MID/SSN"
+                value={values.MIDSSN}
+                onChange={(e) => handleChange(e.target.value, "MIDSSN")}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+
+              <TextField
+                required
+                id="outlined-insurance-contact"
+                label="Insurance Contact"
+                value={values.insurancePhone}
+                onChange={(e) => handleChange(e.target.value, "insurancePhone")}
+                sx={{ marginBottom: 2 }}
+                fullWidth
+              />
+
+              <DatePicker
+                id="outlined-policy-holder-dob"
+                label="Policy Holder DOB"
+                value={values.policyHolderDOB}
+                onChange={handlePolicyHolderDOBChange}
+                sx={{ marginBottom: 2, width: "100%" }}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+
+          <Stack spacing={2} direction="row">
+            <Button variant="contained" onClick={handleSubmit}>
+              Submit
+            </Button>
+          </Stack>
         </Box>
-
-        <Stack spacing={2} direction="row">
-          <Button variant="contained" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </Stack>
       </Card>
     </>
   );
