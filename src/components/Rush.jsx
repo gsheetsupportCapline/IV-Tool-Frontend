@@ -12,11 +12,14 @@ import axios from "axios"; // Import Axios
 import moment from "moment";
 import { officeNames } from "./DropdownValues";
 import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
-
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
   const treatingProvider = "John";
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [values, setValues] = useState({
     appointmentDate: null,
     appointmentTime: null,
@@ -85,6 +88,30 @@ const Rush = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Initialize an error message if any required field is missing
+    let errorMessage = "";
+
+    // Check for missing fields
+    if (
+      !values.appointmentDate ||
+      !values.appointmentTime ||
+      !values.patientId ||
+      !values.patientName ||
+      !values.patientDOB ||
+      !values.MIDSSN ||
+      !values.insuranceName ||
+      !values.insurancePhone
+    ) {
+      errorMessage = "Please fill all the required fields.";
+    }
+
+    // If there's an error message, show the snackbar
+    if (errorMessage) {
+      setSnackbarOpen(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage(errorMessage);
+      return;
+    }
     // Constructing the payload
     const payload = {
       appointmentDate: values.appointmentDate
@@ -112,14 +139,32 @@ const Rush = () => {
         `http://localhost:3000/api/appointments/create-new-appointment/${selectedOffice}`,
         payload
       );
-      alert("Appointment created successfully");
+      setSnackbarOpen(true);
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Rush IV created successfully!");
+      // Clear the form after successful submission
+      setValues({
+        appointmentDate: null,
+        appointmentTime: null,
+        treatingProvider: "",
+        patientId: "",
+        patientDOB: null,
+        patientName: "",
+        MIDSSN: "",
+        insuranceName: "",
+        insurancePhone: "",
+        policyHolderName: "",
+        policyHolderDOB: null,
+      });
       console.log("response", response.data);
     } catch (error) {
       console.error(
         "Error creating new appointment:",
         error.response ? error.response.data : error.message
       );
-      alert("Failed to create appointment. Please try again.");
+      setSnackbarOpen(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Failed to create IV");
     }
   };
 
@@ -206,10 +251,12 @@ const Rush = () => {
                   required
                   id="outlined-patient-id"
                   label="Patient Id"
+                  value={values.patientId}
                   onChange={(e) => handleChange(e.target.value, "patientId")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
                 />
+
                 <DatePicker
                   required
                   id="outlined-patient-dob"
@@ -314,6 +361,21 @@ const Rush = () => {
           </Box>
         </Card>
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position at top right
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: "100%", marginTop: "50px" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
