@@ -9,16 +9,19 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
+import Datepicker from "react-tailwindcss-datepicker";
 import "./Table.css";
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
-
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
-
+  const [valueDate, setValueDate] = useState({
+    startDate: null,
+    endDate: null,
+  });
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -296,18 +299,31 @@ const Admin = () => {
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
         console.log("Appointment data", responseData.appointments);
-        let filteredAppointments;
+
+        // Check if a date range is selected
+        const startDate = valueDate.startDate;
+        const endDate = valueDate.endDate;
+
+        let filteredAppointments = responseData.appointments;
+
+        // If a date range is selected, filter appointments
+        if (startDate && endDate) {
+          filteredAppointments = responseData.appointments.filter(
+            (appointment) =>
+              startDate <= appointment.appointmentDate &&
+              appointment.appointmentDate <= endDate
+          );
+        }
         switch (tabValue) {
           case 0: // All appointments
-            filteredAppointments = responseData.appointments;
             break;
           case 1: // Assigned appointments
-            filteredAppointments = responseData.appointments.filter(
+            filteredAppointments = filteredAppointments.filter(
               (appointment) => appointment.status === "Assigned"
             );
             break;
           case 2: // Unassigned appointments
-            filteredAppointments = responseData.appointments.filter(
+            filteredAppointments = filteredAppointments.filter(
               (appointment) => appointment.status === "Unassigned"
             );
             break;
@@ -330,8 +346,12 @@ const Admin = () => {
 
   useEffect(() => {
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
-  }, [value, selectedOffice]); // Reload data if the selected tab or officeName changes
+  }, [value, valueDate, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes
 
+  const handleValueChange = (newValue) => {
+    console.log("newValue:", newValue);
+    setValueDate(newValue);
+  };
   return (
     <>
       <Header />
@@ -346,22 +366,28 @@ const Admin = () => {
           px: 2,
         }}
       >
-        <Select
-          value={selectedOffice}
-          onChange={(e) => setSelectedOffice(e.target.value)}
-          displayEmpty
-          inputProps={{ "aria-label": "Select Office" }}
-        >
-          <MenuItem value="">
-            <em>Select Office</em>
-          </MenuItem>
-          {officeName.map((name) => (
-            <MenuItem key={name} value={name}>
-              {name}
+        <div className="flex items-center my-1 bg-slate-400">
+          <Select
+            value={selectedOffice}
+            onChange={(e) => setSelectedOffice(e.target.value)}
+            displayEmpty
+            inputProps={{ "aria-label": "Select Office" }}
+          >
+            <MenuItem value="">
+              <em>Select Office</em>
             </MenuItem>
-          ))}
-        </Select>
+            {officeName.map((name) => (
+              <MenuItem key={name} value={name}>
+                {name}
+              </MenuItem>
+            ))}
+          </Select>
 
+          <p className="mr-6 ml-10 whitespace-nowrap text-sm">Appointment</p>
+          <div className="w-full">
+            <Datepicker value={valueDate} onChange={handleValueChange} />
+          </div>
+        </div>
         <Tabs
           value={value}
           onChange={handleChange}
