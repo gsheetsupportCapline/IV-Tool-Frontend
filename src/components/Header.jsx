@@ -1,6 +1,5 @@
 import { Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 // const navigation = [
 //   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
@@ -10,9 +9,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 //   { name: "Dashboard", href: "/admin-dashboard", current: false },
 //   { name: "Log Out", href: "/", current: false },
 // ];
-const userId = localStorage.getItem("loggedinUserId");
-const userName = localStorage.getItem("loggedinUserName");
-const userAssignedOffice = localStorage.getItem("assignedOffice");
+
 const userRole = localStorage.getItem("role");
 
 const navigation = [

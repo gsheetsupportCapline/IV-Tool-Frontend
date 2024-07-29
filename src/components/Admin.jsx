@@ -11,6 +11,7 @@ import Header from "./Header";
 import Select from "@mui/material/Select";
 import Datepicker from "react-tailwindcss-datepicker";
 import "./Table.css";
+import ShimmerTableComponent from "./ShimmerTableComponent";
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -18,6 +19,7 @@ const Admin = () => {
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [valueDate, setValueDate] = useState({
     startDate: null,
     endDate: null,
@@ -290,6 +292,7 @@ const Admin = () => {
   };
 
   const fetchAndFilterAppointments = async (tabValue) => {
+    setIsLoading(true);
     try {
       const response = await fetch(
         `http://localhost:3000/api/appointments/fetch-appointments/${
@@ -338,9 +341,11 @@ const Admin = () => {
       } else {
         setRows([]);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error("Failed to fetch appointments", error);
       setRows([]);
+      setIsLoading(false);
     }
   };
 
@@ -394,8 +399,8 @@ const Admin = () => {
           aria-label="simple tabs example"
           sx={{
             "& .Mui-selected": {
-              backgroundColor: "#334155", // Make the background transparent
-              color: "white", // Change the text color to white
+              backgroundColor: "#334155",
+              color: "white",
             },
             "& .MuiTab-root": {
               color: "white", // Change the text color to white for all tabs
@@ -435,16 +440,20 @@ const Admin = () => {
       </Box>
       <div className="flex justify-center">
         <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full ">
-          <div style={{ height: 500, width: "100%" }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              pageSizeOptions={[5, 10, 20, 25, 50, 100]}
-              checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
-              getRowId={(row) => row._id.toString()}
-            />
-          </div>
+          {isLoading ? (
+            <ShimmerTableComponent />
+          ) : (
+            <div style={{ height: 500, width: "100%" }}>
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                pageSizeOptions={[5, 10, 20, 25, 50, 100]}
+                checkboxSelection
+                onRowSelectionModelChange={handleSelectionChange}
+                getRowId={(row) => row._id.toString()}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>
