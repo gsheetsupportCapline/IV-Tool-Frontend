@@ -121,7 +121,7 @@ const PendingIV = () => {
   return (
     <>
       <div className="flex items-center my-1 bg-slate-400">
-        <p className="mr-4 ml-10">Appointment Date</p>
+        <p className="mr-4 ml-10 font-tahoma">Appointment Date</p>
         <div className="w-1/4">
           <Datepicker value={value} onChange={handleValueChange} />
         </div>

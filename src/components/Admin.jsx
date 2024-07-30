@@ -341,7 +341,7 @@ const Admin = () => {
         }
         // Sort the appointments by appointmentDate in descending order
         filteredAppointments.sort((a, b) => {
-          //new Date(b.appointmentDate) - new Date(a.appointmentDate)
+          //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
           const dateCompare =
             new Date(b.appointmentDate) - new Date(a.appointmentDate);
 

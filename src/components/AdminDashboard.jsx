@@ -15,10 +15,12 @@ const AdminDashboard = () => {
       <div className="flex sticky">
         {/* Sidebar */}
         <div className="w-1/5 border-r border-gray-300 p-4 bg-slate-700 rounded-lg shadow-lg">
-          <h2 className="text-lg text-white font-semibold">IV Status</h2>
+          <h2 className="text-lg text-white font-semibold font-tahoma">
+            IV Status
+          </h2>
           <ul>
             <li
-              className={`cursor-pointer px-4 py-2 rounded-lg  hover:shadow ${
+              className={`cursor-pointer px-4 py-2 rounded-lg font-tahoma hover:shadow ${
                 selectedItem === "PendingIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("PendingIV")}
@@ -26,7 +28,7 @@ const AdminDashboard = () => {
               Pending IV
             </li>
             <li
-              className={`cursor-pointer px-4 py-2 rounded-lg  hover:shadow ${
+              className={`cursor-pointer px-4 py-2 rounded-lg  font-tahoma hover:shadow ${
                 selectedItem === "AssignedIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("AssignedIV")}
@@ -34,7 +36,7 @@ const AdminDashboard = () => {
               Assigned IV
             </li>
             <li
-              className={`cursor-pointer px-4 rounded-lg  py-2 hover:shadow ${
+              className={`cursor-pointer px-4 rounded-lg  py-2 font-tahoma  hover:shadow ${
                 selectedItem === "ProductionIV" ? "bg-gray-500 text-white" : ""
               }`}
               onClick={() => setSelectedItem("ProductionIV")}

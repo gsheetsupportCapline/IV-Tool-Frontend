@@ -197,7 +197,12 @@ const Rush = () => {
         >
           <Typography
             variant="h4"
-            sx={{ marginBottom: 2, marginTop: 2, color: "white" }}
+            sx={{
+              marginBottom: 2,
+              marginTop: 2,
+              color: "white",
+            }}
+            fontFamily={"Tahoma"}
           >
             Rush IV
           </Typography>
