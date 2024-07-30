@@ -12,6 +12,9 @@ export default {
       colors: {
         "light-blue": "#add8e6", // This is a light blue color
       },
+      fontFamily: {
+        tahoma: ["Tahoma", "sans-serif"],
+      },
     },
   },
   plugins: [],

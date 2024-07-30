@@ -10,6 +10,16 @@ const Status = ({ data, dateRange }) => {
   const [completedCount, setCompletedCount] = useState(0);
   console.log("data in status component", data);
   console.log("dateRange in status component", dateRange);
+  const dataHeaderMapping = {
+    "Patient ID": "patientId",
+    "Appointment Date": "appointmentDate",
+    // "Appointment Time": "appointmentTime",
+    "Completion Status": "completionStatus",
+    "Plan Type": "planType",
+    "IV Type": "ivType",
+    Remarks: "ivRemarks",
+    "Insurance Name": "insuranceName",
+  };
   const filteredData = data.filter((item) => {
     const startDate = new Date(dateRange.startDate);
     const endDate = new Date(dateRange.endDate);
@@ -31,17 +41,29 @@ const Status = ({ data, dateRange }) => {
         return false; // Hide items that don't match any filter
     }
   });
-  console.log("Filtered data ", filteredData);
+  // Sort the filteredData by appointment date and time in descending order
+  // Sort the filteredData by appointment date and time in descending order
+  filteredData.sort((a, b) => {
+    // Construct full date-time strings for comparison
+    const dateTimeStringA = `${a.appointmentDate} ${a.appointmentTime}`;
+    const dateTimeStringB = `${b.appointmentDate} ${b.appointmentTime}`;
 
-  const dataHeaderMapping = {
-    "Patient ID": "patientId",
-    "Appointment Date": "appointmentDate",
-    "Completion Status": "completionStatus",
-    "Plan Type": "planType",
-    "IV Type": "ivType",
-    Remarks: "ivRemarks",
-    "Insurance Name": "insuranceName",
-  };
+    // Parse the full date-time strings into Date objects
+    const dateTimeA = new Date(dateTimeStringA);
+    const dateTimeB = new Date(dateTimeStringB);
+
+    // Compare dates
+    if (dateTimeA > dateTimeB) {
+      return -1; // a comes before b, a is later
+    }
+    if (dateTimeA < dateTimeB) {
+      return 1; // a comes after b, a is earlier
+    }
+
+    // Dates are equal, no change in order
+    return 0;
+  });
+  console.log("Filtered data ", filteredData);
 
   const transformedData = filteredData.map((item) => {
     const newItem = {};
@@ -67,6 +89,7 @@ const Status = ({ data, dateRange }) => {
   const headers = [
     "Patient ID",
     "Appointment Date",
+    // "Appointment Time",
     "Completion Status",
     "Plan Type",
     "IV Type",

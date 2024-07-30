@@ -388,7 +388,9 @@ const Admin = () => {
             ))}
           </Select>
 
-          <p className="mr-6 ml-10 whitespace-nowrap text-sm">Appointment</p>
+          <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
+            Appointment
+          </p>
           <div className="w-full">
             <Datepicker value={valueDate} onChange={handleValueChange} />
           </div>
@@ -407,9 +409,9 @@ const Admin = () => {
             },
           }}
         >
-          <Tab label="All IVs" />
-          <Tab label="Assigned" />
-          <Tab label="Unassigned" />
+          <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
+          <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
+          <Tab label="Unassigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
         </Tabs>
         <Box sx={{ display: "flex", gap: 1, p: 2 }}>
           {" "}

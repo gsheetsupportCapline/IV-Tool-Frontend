@@ -52,7 +52,7 @@ const Header = () => {
                     alt="Your Company"
                   />
                 </div>
-                <div className="hidden sm:ml-6 sm:block sm:flex-grow sm:flex sm:justify-end">
+                <div className="hidden sm:ml-6 sm:block sm:flex-grow sm:flex sm:justify-end font-tahoma ">
                   <div className="flex space-x-4">
                     {navigation.map((item) => {
                       if (item.show)
@@ -61,7 +61,7 @@ const Header = () => {
                             key={item.text}
                             href={item.link}
                             className={classNames(
-                              "bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium"
+                              "bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white"
                             )}
                             aria-current={item.show ? "page" : undefined}
                           >
