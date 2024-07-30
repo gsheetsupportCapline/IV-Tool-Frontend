@@ -1,40 +1,66 @@
-import React, { useState } from "react";
-import Header from "./Header";
+import { useState } from "react";
+
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [isSignInForm, setIsSignInForm] = useState("true");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const toggleSignInForm = () => {
-    setIsSignInForm(!isSignInForm);
-  };
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    console.log("Email:", email, "Password:", password);
-    // Here you can add your login logic, e.g., calling an API
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          email: email,
+          password: password,
+        }
+      );
+      // console.log("response", response);
+      // console.log("response data", response.data);
+
+      localStorage.setItem("token", response.data.token);
+
+      const userRole = response.data.data.userDetails.role;
+      localStorage.setItem(
+        "loggedinUserId",
+        response.data.data.userDetails._id
+      );
+      localStorage.setItem(
+        "loggedinUserName",
+        response.data.data.userDetails.name
+      );
+      localStorage.setItem("role", response.data.data.userDetails.role);
+      localStorage.setItem(
+        "assignedOffice",
+        response.data.data.userDetails.assignedOffice
+      );
+      switch (userRole) {
+        case "admin":
+          navigate("/home");
+          break;
+        case "user":
+          navigate("/dashboard");
+          break;
+        case "officeuser":
+          navigate("/home");
+          break;
+        default:
+          console.error("Unknown user role:", userRole);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
     <>
-      <Header />
       <form className="bg-black shadow-md rounded px-8 pt-6 pb-8  w-3/12 my-36 mx-auto right-0 left-0 text-white  ">
-        <h1 className="font-bold text-3xl py-4">
-          {isSignInForm ? "Sign In" : "Sign Up"}
-        </h1>
-        <div className="mb-4">
-          {!isSignInForm && (
-            <input
-              className="shadow appearance-none border rounded py-2 px-3 w-full bg-gray-700  leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          )}
-        </div>
+        <h1 className="font-bold text-3xl py-4">Sign In</h1>
+
         <div className="mb-4">
           <input
             className="shadow appearance-none border rounded py-2 px-3 w-full bg-gray-700  leading-tight focus:outline-none focus:shadow-outline"
@@ -61,14 +87,9 @@ const Login = () => {
             type="button"
             onClick={handleSubmit}
           >
-            {isSignInForm ? "Sign In" : "Sign Up"}
+            Sign In
           </button>
         </div>
-        <p className="py-4 cursor-pointer" onClick={toggleSignInForm}>
-          {isSignInForm
-            ? "New to IV ? Sign Up Now"
-            : "Already registered ? Sign In Now"}
-        </p>
       </form>
     </>
   );

@@ -1,0 +1,56 @@
+.p-datatable .p-datatable-tbody tr:nth-child(even),
+.p-datatable .p-datatable-tfoot tr {
+  background-color: inherit;
+}
+
+/* Make the first row sticky */
+.p-datatable .p-datatable-thead th,
+.p-datatable .p-datatable-thead td {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white; /* Ensure the background matches the table */
+}
+/* Header row specific styling */
+.p-datatable .p-datatable-thead th {
+  background-color: #add8e6; /* Light blue */
+  color: #000; /* Black text for contrast */
+}
+
+/* Optional: Style for the scrollbar */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add this to your Table.css */
+.odd-row {
+  background-color: #ffffff; /* Lighter shade for odd rows */
+}
+
+.even-row {
+  background-color: #e9e9e9; /* Slightly darker shade for even rows */
+}
+
+.table-container {
+  overflow-y: auto;
+  height: 450px; /* Adjust the height as needed */
+  background-color: #f5f5f5; /* Off-white background */
+}
+
+/* Table.css */
+.header-row {
+  background-color: #add8e6;
+  color: black; /* Optional: Sets the text color for better readability */
+}
