@@ -171,6 +171,12 @@ const Admin = () => {
       headerClassName: "header-row",
       width: 150,
     },
+    {
+      field: "patientName",
+      headerName: "Patient Name",
+      headerClassName: "header-row",
+      width: 150,
+    },
   ];
 
   const handleClick = (event) => {
