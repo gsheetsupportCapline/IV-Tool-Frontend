@@ -9,6 +9,8 @@ import {
   MenuItem,
   Box,
   FormControl,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import {
@@ -19,14 +21,6 @@ import {
 
 import axios from "axios";
 
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Header from "./Header";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -38,6 +32,7 @@ const IVUsers = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const userName = localStorage.getItem("loggedinUserName");
+
   // Function to fetch appointments
   const fetchAppointments = async () => {
     try {
@@ -120,14 +115,13 @@ const IVUsers = () => {
       [field]: value,
     }));
   };
+  console.log(appointments);
+  function sortAppointments(appointments) {
+    return appointments.sort(
+      (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+    );
+  }
 
-  const appointmentsGroupedByOffice = appointments.reduce((acc, curr) => {
-    if (!acc[curr.office]) {
-      acc[curr.office] = [];
-    }
-    acc[curr.office].push(curr);
-    return acc;
-  }, {});
   return (
     <>
       <Header />
@@ -144,51 +138,41 @@ const IVUsers = () => {
           <Typography variant="h6" gutterBottom color="white">
             Assigned IVs
           </Typography>
-          {Object.keys(appointmentsGroupedByOffice).map((office) => (
-            <Accordion key={office}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls={`panel${office}-content`}
-                id={`panel${office}-header`}
-              >
-                <Typography>{office}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {appointmentsGroupedByOffice[office]
-                  .filter(
-                    (appointment) =>
-                      appointment.completionStatus !== "Completed"
-                  )
 
-                  .map((appointment) => (
-                    <ListItem
-                      key={appointment._id}
-                      onClick={() => {
-                        setSelectedAppointment(appointment);
-                        // Resetting the form fields to empty or initial values
-                        handleInputChange("source", "");
-                        handleInputChange("planType", "");
-                        handleInputChange("ivRemarks", "");
-                      }}
-                      sx={{
-                        "&:hover": {
-                          cursor: "pointer",
-                          backgroundColor: "#6b7280",
-                        },
-                      }}
-                    >
-                      <ListItemText
-                        primary={`${new Date(appointment.appointmentDate)
-                          .toISOString()
-                          .slice(0, 10)} - AptTime ${
-                          appointment.appointmentTime
-                        } - P.Id ${appointment.patientId}`}
-                      />
-                    </ListItem>
-                  ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
+          <div>
+            {sortAppointments(appointments).map((appointment) => (
+              <ListItem
+                key={appointment._id}
+                onClick={() => {
+                  setSelectedAppointment(appointment);
+                  // Resetting the form fields to empty or initial values
+                  handleInputChange("source", "");
+                  handleInputChange("planType", "");
+                  handleInputChange("ivRemarks", "");
+                }}
+                sx={{
+                  borderRadius: "8px",
+                  padding: "8px",
+                  marginBottom: "8px",
+                  transition: "background-color 0.3s ease", // Smooth background color transition
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0", // Light grey background on hover
+                    cursor: "pointer",
+                    color: "black",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={`PId (${appointment.patientId})  
+                  Date - ${new Date(appointment.appointmentDate)
+                    .toISOString()
+                    .slice(0, 10)}  Time-${appointment.appointmentTime}
+                    `}
+                />
+              </ListItem>
+            ))}
+          </div>
         </Grid>
         {selectedAppointment && (
           <Grid
