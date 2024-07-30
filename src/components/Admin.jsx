@@ -334,9 +334,24 @@ const Admin = () => {
             filteredAppointments = [];
         }
         // Sort the appointments by appointmentDate in descending order
-        filteredAppointments.sort(
-          (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
-        );
+        filteredAppointments.sort((a, b) => {
+          //new Date(b.appointmentDate) - new Date(a.appointmentDate)
+          const dateCompare =
+            new Date(b.appointmentDate) - new Date(a.appointmentDate);
+
+          // If dates are the same, compare times
+          if (dateCompare === 0) {
+            // Extract hours and minutes from the time strings
+            const [hourA, minuteA] = a.appointmentTime.split(":").map(Number);
+            const [hourB, minuteB] = b.appointmentTime.split(":").map(Number);
+
+            // Compare hours first, then minutes if hours are equal
+            return hourB - hourA || minuteB - minuteA;
+          }
+
+          // Dates are not the same, sort by date
+          return dateCompare;
+        });
         setRows(filteredAppointments);
       } else {
         setRows([]);
