@@ -44,7 +44,7 @@ const AwaitingIV = () => {
     };
 
     fetchData();
-  }, [value, selectedOffice]); // Add selectedOffice as a dependency
+  }, [value, selectedOffice]); // selectedOffice as a dependency
 
   return (
     <>
