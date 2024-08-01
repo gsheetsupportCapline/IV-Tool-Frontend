@@ -14,7 +14,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
-
+import BackgroundImg from "../utils/login.jpg";
 const defaultTheme = createTheme();
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -92,8 +92,7 @@ const SignIn = () => {
             sm={4}
             md={7}
             sx={{
-              backgroundImage:
-                'url("/static/images/templates/templates-images/sign-in-side-bg.png")',
+              backgroundImage: `url(${BackgroundImg})`,
               backgroundColor: (t) =>
                 t.palette.mode === "light"
                   ? t.palette.grey[50]
@@ -110,6 +109,9 @@ const SignIn = () => {
             component={Paper}
             elevation={6}
             square
+            sx={{
+              backgroundColor: "#FAF9F6",
+            }}
           >
             <Box
               sx={{

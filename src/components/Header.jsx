@@ -49,7 +49,7 @@ const Header = () => {
                   <img
                     className="h-8 w-auto"
                     src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                    alt="Your Company"
+                    alt="SmilePoint Dental"
                   />
                 </div>
                 <div className="hidden sm:ml-6 sm:block sm:flex-grow sm:flex sm:justify-end font-tahoma ">
