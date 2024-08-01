@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { officeNames } from "./DropdownValues.js";
+import BASE_URL from "../config/apiConfig.js";
 
 const columns = [
   { field: "office", headerName: "Office", width: 150 },
@@ -33,16 +34,14 @@ const AssignedIV = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await axios.get(
-          "http://localhost:3000/api/auth/users"
-        );
+        const userResponse = await axios.get(`${BASE_URL}/api/auth/users`);
         const usersData = userResponse.data.data;
 
         let allAppointments = [];
 
         for (let userData of usersData) {
           const appointmentsResponse = await axios.get(
-            `http://localhost:3000/api/appointments/user-appointments/${userData._id}`
+            `${BASE_URL}/api/appointments/user-appointments/${userData._id}`
           );
 
           allAppointments.push(...appointmentsResponse.data);
@@ -85,9 +84,7 @@ const AssignedIV = () => {
   useEffect(() => {
     if (selectedOffice) {
       axios
-        .get(
-          `http://localhost:3000/api/appointments/assigned-counts/${selectedOffice}`
-        )
+        .get(`${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}`)
         .then((response) => {
           const data = response.data;
           const formattedData = Object.entries(data.assignedCounts).map(

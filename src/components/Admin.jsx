@@ -12,6 +12,7 @@ import Select from "@mui/material/Select";
 import Datepicker from "react-tailwindcss-datepicker";
 import "./Table.css";
 import ShimmerTableComponent from "./ShimmerTableComponent";
+import BASE_URL from "../config/apiConfig";
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -60,9 +61,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/auth/users"
-        );
+        const response = await axios.get(`${BASE_URL}/api/auth/users`);
         setUsers(response.data.data);
       } catch (error) {
         console.error("Error fetching users", error);
@@ -205,7 +204,7 @@ const Admin = () => {
           continue;
         }
         const response = await axios.put(
-          `http://localhost:3000/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
+          `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: user._id,
             status: "Assigned",
@@ -265,7 +264,7 @@ const Admin = () => {
           (row) => row._id === id
         )?.office;
         const response = await axios.put(
-          `http://localhost:3000/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
+          `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: null, // Set userId to null or appropriate value to indicate unassignment
             status: "Unassigned",
@@ -301,7 +300,7 @@ const Admin = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/appointments/fetch-appointments/${
+        `${BASE_URL}/api/appointments/fetch-appointments/${
           selectedOffice || ""
         }`
       );

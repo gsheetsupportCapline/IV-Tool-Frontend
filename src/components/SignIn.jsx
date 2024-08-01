@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import BASE_URL from "../config/apiConfig";
 
 const defaultTheme = createTheme();
 const SignIn = () => {
@@ -46,13 +47,10 @@ const SignIn = () => {
     }
     if (isValid) {
       try {
-        const response = await axios.post(
-          "http://localhost:3000/api/auth/login",
-          {
-            email: email,
-            password: password,
-          }
-        );
+        const response = await axios.post(`${BASE_URL}/api/auth/login`, {
+          email: email,
+          password: password,
+        });
 
         await localStorage.setItem("token", response.data.token);
 

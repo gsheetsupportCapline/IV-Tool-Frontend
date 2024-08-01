@@ -24,6 +24,7 @@ import axios from "axios";
 import Header from "./Header";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import BASE_URL from "../config/apiConfig";
 
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
@@ -38,7 +39,7 @@ const IVUsers = () => {
     try {
       const userId = localStorage.getItem("loggedinUserId");
       const response = await fetch(
-        `http://localhost:3000/api/appointments/user-appointments/${userId}`
+        `${BASE_URL}/api/appointments/user-appointments/${userId}`
       );
       const data = await response.json();
 
@@ -85,7 +86,7 @@ const IVUsers = () => {
       console.log("Payload ", payload);
       // Make an API call to update the appointment details
       await axios.post(
-        `http://localhost:3000/api/appointments/update-individual-appointment-details`,
+        `${BASE_URL}/api/appointments/update-individual-appointment-details`,
         payload
       );
       // Remove the selected appointment from the appointments state

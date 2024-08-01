@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Header from "./Header";
 import Status from "./Status";
 import OfficeAndDateSelector from "./OfficeAndDateSelector";
-
+import BASE_URL from "../config/apiConfig";
 const Home = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
   const [data, setData] = useState([]);
@@ -16,7 +16,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        `http://localhost:3000/api/appointments/fetch-appointments/${selectedOffice}`
+        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}`
       );
       const responseData = await response.json();
       console.log("Fetched data:", responseData);

@@ -14,6 +14,7 @@ import { officeNames } from "./DropdownValues";
 import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import BASE_URL from "../config/apiConfig";
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
   const treatingProvider = "John";
@@ -136,7 +137,7 @@ const Rush = () => {
     console.log("Submitting payload:", payload);
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/appointments/create-new-appointment/${selectedOffice}`,
+        `${BASE_URL}/api/appointments/create-new-appointment/${selectedOffice}`,
         payload
       );
       setSnackbarOpen(true);

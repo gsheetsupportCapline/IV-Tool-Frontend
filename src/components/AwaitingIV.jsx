@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Header from "./Header";
 import Datepicker from "react-tailwindcss-datepicker";
 import { officeNames } from "./DropdownValues";
+import BASE_URL from "../config/apiConfig";
 
 const AwaitingIV = () => {
   const [value, setValue] = useState({
@@ -31,7 +32,7 @@ const AwaitingIV = () => {
       const startDateParam = value.startDate.toISOString().split("T")[0];
       const endDateParam = value.endDate.toISOString().split("T")[0];
 
-      const url = `http://localhost:3000/api/appointments/appointments-by-office-and-remarks?${params}&startDate=${startDateParam}&endDate=${endDateParam}`;
+      const url = `${BASE_URL}/api/appointments/appointments-by-office-and-remarks?${params}&startDate=${startDateParam}&endDate=${endDateParam}`;
       console.log(url);
       try {
         const response = await fetch(url);

@@ -4,6 +4,7 @@ import axios from "axios";
 
 import Datepicker from "react-tailwindcss-datepicker";
 import * as DropdownValues from "./DropdownValues";
+import BASE_URL from "../config/apiConfig";
 const ProductionIV = () => {
   const [users, setUsers] = useState([]);
   const [data, setData] = useState([]);
@@ -22,9 +23,7 @@ const ProductionIV = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/auth/users"
-        );
+        const response = await axios.get(`${BASE_URL}/api/auth/users`);
         const usersData = response.data.data;
         console.log(usersData);
         // Create a mapping of userId to user details
@@ -49,7 +48,7 @@ const ProductionIV = () => {
       const startDateParam = value.startDate.toISOString().split("T")[0];
       const endDateParam = value.endDate.toISOString().split("T")[0];
 
-      const url = `http://localhost:3000/api/appointments/completed-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
+      const url = `${BASE_URL}/api/appointments/completed-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
 
       try {
         const response = await axios.get(url);

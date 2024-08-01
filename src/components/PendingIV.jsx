@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 
 import Datepicker from "react-tailwindcss-datepicker";
 import * as DropdownValues from "./DropdownValues";
+import BASE_URL from "../config/apiConfig";
 
 const PendingIV = () => {
   const [value, setValue] = useState({
@@ -28,7 +29,7 @@ const PendingIV = () => {
       const startDateParam = value.startDate.toISOString().split("T")[0];
       const endDateParam = value.endDate.toISOString().split("T")[0];
 
-      const url = `http://localhost:3000/api/appointments/fetch-unassigned-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
+      const url = `${BASE_URL}/api/appointments/fetch-unassigned-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
 
       try {
         const response = await fetch(url);
