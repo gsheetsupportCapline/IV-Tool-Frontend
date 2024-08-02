@@ -17,7 +17,7 @@ import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
-  const treatingProvider = "John";
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -246,10 +246,10 @@ const Rush = () => {
                   required
                   id="outlined-read-only-treating-provider"
                   label="Treating Provider"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  value={treatingProvider}
+                  value={values.treatingProvider}
+                  onChange={(e) =>
+                    handleChange(e.target.value, "treatingProvider")
+                  }
                   sx={{ marginBottom: 2 }}
                   fullWidth
                 />

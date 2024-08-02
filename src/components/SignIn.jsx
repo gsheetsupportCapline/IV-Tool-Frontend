@@ -98,7 +98,7 @@ const SignIn = () => {
                   ? t.palette.grey[50]
                   : t.palette.grey[900],
               backgroundSize: "cover",
-              backgroundPosition: "left",
+              backgroundPosition: "center",
             }}
           />
           <Grid
