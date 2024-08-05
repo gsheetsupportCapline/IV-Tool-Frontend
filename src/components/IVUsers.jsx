@@ -89,15 +89,7 @@ const IVUsers = () => {
         `${BASE_URL}/api/appointments/update-individual-appointment-details`,
         payload
       );
-      // Remove the selected appointment from the appointments state
-      setAppointments(
-        appointments.filter(
-          (appointment) => appointment._id !== selectedAppointment._id
-        )
-      );
 
-      // Optionally, reset the selectedAppointment state
-      setSelectedAppointment(null);
       // Refresh the data or show a success message
       setSnackbarOpen(true);
       setSnackbarSeverity("success");
