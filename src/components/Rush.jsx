@@ -33,6 +33,7 @@ const Rush = () => {
     MIDSSN: "",
     insuranceName: "",
     insurancePhone: "",
+    noteRemarks: "",
   });
 
   const handleChange = (value, name) => {
@@ -132,6 +133,7 @@ const Rush = () => {
       MIDSSN: values.MIDSSN,
       insuranceName: values.insuranceName,
       insurancePhone: values.insurancePhone,
+      noteRemarks: values.noteRemarks,
       ivType: "Rush",
     };
     console.log("Submitting payload:", payload);
@@ -156,6 +158,7 @@ const Rush = () => {
         insurancePhone: "",
         policyHolderName: "",
         policyHolderDOB: null,
+        noteRemarks: null,
       });
       console.log("response", response.data);
     } catch (error) {
@@ -291,6 +294,14 @@ const Rush = () => {
                   onChange={(e) =>
                     handleChange(e.target.value, "policyHolderName")
                   }
+                  sx={{ marginBottom: 2 }}
+                  fullWidth
+                />
+                <TextField
+                  id="outlined-noteRemarks"
+                  label="Note Remarks"
+                  value={values.noteRemarks}
+                  onChange={(e) => handleChange(e.target.value, "noteRemarks")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
                 />
