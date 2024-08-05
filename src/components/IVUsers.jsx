@@ -32,6 +32,7 @@ const IVUsers = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [noteRemarks, setNoteRemarks] = useState("");
   const userName = localStorage.getItem("loggedinUserName");
 
   // Function to fetch appointments
@@ -81,6 +82,7 @@ const IVUsers = () => {
         source: selectedAppointment.source,
         planType: selectedAppointment.planType,
         completedBy: userName,
+        noteRemarks: noteRemarks,
       };
 
       console.log("Payload ", payload);
@@ -90,6 +92,8 @@ const IVUsers = () => {
         payload
       );
 
+      // Optionally, reset the selectedAppointment state
+      setSelectedAppointment(null);
       // Refresh the data or show a success message
       setSnackbarOpen(true);
       setSnackbarSeverity("success");
@@ -384,6 +388,17 @@ const IVUsers = () => {
                         value={userName}
                         variant="outlined"
                         InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Note Remarks"
+                        name="noteRemarks"
+                        value={noteRemarks}
+                        variant="outlined"
+                        onChange={(event) => setNoteRemarks(event.target.value)}
+                        InputProps={{ readOnly: false }}
                       />
                     </Grid>
                   </Grid>
