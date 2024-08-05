@@ -74,6 +74,9 @@ const IVUsers = () => {
       }
 
       console.log(selectedAppointment);
+      // Get the current date and time
+      const currentDate = new Date();
+      const formattedDateTime = currentDate.toISOString(); // Format as ISO string
       // Construct the payload for the API call
       const payload = {
         userAppointmentId: selectedAppointment.assignedUser,
@@ -83,6 +86,7 @@ const IVUsers = () => {
         planType: selectedAppointment.planType,
         completedBy: userName,
         noteRemarks: noteRemarks,
+        completedDate: formattedDateTime,
       };
 
       console.log("Payload ", payload);
@@ -94,6 +98,7 @@ const IVUsers = () => {
 
       // Optionally, reset the selectedAppointment state
       setSelectedAppointment(null);
+      setNoteRemarks("");
       // Refresh the data or show a success message
       setSnackbarOpen(true);
       setSnackbarSeverity("success");
