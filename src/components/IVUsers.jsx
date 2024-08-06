@@ -86,7 +86,7 @@ const IVUsers = () => {
         planType: selectedAppointment.planType,
         completedBy: userName,
         noteRemarks: noteRemarks,
-        completedDate: formattedDateTime,
+        ivCompletedDate: formattedDateTime,
       };
 
       console.log("Payload ", payload);
