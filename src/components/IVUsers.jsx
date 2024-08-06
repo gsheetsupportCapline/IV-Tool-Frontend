@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import {
-  ivRemarks,
+  ivRemarksDropdownOptions,
   sourceDropdownOptions,
   planTypeDropdownOptions,
 } from "./DropdownValues";
@@ -73,8 +73,8 @@ const IVUsers = () => {
         return;
       }
 
-      console.log(selectedAppointment);
-      // Get the current date and time
+      console.log("selected appointment ", selectedAppointment);
+
       const currentDate = new Date();
       const formattedDateTime = currentDate.toISOString(); // Format as ISO string
       // Construct the payload for the API call
@@ -117,7 +117,7 @@ const IVUsers = () => {
       [field]: value,
     }));
   };
-  console.log(appointments);
+
   function sortAppointments(appointments) {
     return appointments.sort(
       (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
@@ -147,10 +147,6 @@ const IVUsers = () => {
                 key={appointment._id}
                 onClick={() => {
                   setSelectedAppointment(appointment);
-                  // Resetting the form fields to empty or initial values
-                  handleInputChange("source", "");
-                  handleInputChange("planType", "");
-                  handleInputChange("ivRemarks", "");
                 }}
                 sx={{
                   borderRadius: "8px",
@@ -246,15 +242,15 @@ const IVUsers = () => {
                         <Select
                           labelId="demo-simple-select-label"
                           label="IV Remarks"
-                          value={selectedAppointment.remark}
+                          value={selectedAppointment.ivRemarks}
                           onChange={(event) =>
                             handleInputChange("ivRemarks", event.target.value)
                           }
                           variant="outlined"
                         >
-                          {ivRemarks.map((remark) => (
-                            <MenuItem key={remark.id} value={remark.remark}>
-                              {remark.remark}
+                          {ivRemarksDropdownOptions.map((remark) => (
+                            <MenuItem key={remark.id} value={remark.ivRemarks}>
+                              {remark.ivRemarks}
                             </MenuItem>
                           ))}
                         </Select>
