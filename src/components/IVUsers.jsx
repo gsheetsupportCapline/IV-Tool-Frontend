@@ -9,8 +9,8 @@ import {
   MenuItem,
   Box,
   FormControl,
-  ListItem,
-  ListItemText,
+  // ListItem,
+  // ListItemText,
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import {
@@ -18,6 +18,15 @@ import {
   sourceDropdownOptions,
   planTypeDropdownOptions,
 } from "./DropdownValues";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+  TableHead,
+} from "@mui/material";
 
 import axios from "axios";
 
@@ -142,7 +151,7 @@ const IVUsers = () => {
           </Typography>
 
           <div>
-            {sortAppointments(appointments).map((appointment) => (
+            {/* {sortAppointments(appointments).map((appointment) => (
               <ListItem
                 key={appointment._id}
                 onClick={() => {
@@ -169,7 +178,57 @@ const IVUsers = () => {
                     `}
                 />
               </ListItem>
-            ))}
+            ))} */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Patient ID
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Appointment Date
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Appointment Time
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Completion Status
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sortAppointments(appointments).map((appointment) => (
+                    <TableRow
+                      key={appointment._id}
+                      onClick={() => setSelectedAppointment(appointment)}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "#f0f0f0", // Light grey background on hover
+                        },
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.patientId}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {new Date(appointment.appointmentDate)
+                          .toISOString()
+                          .slice(0, 10)}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.appointmentTime}
+                      </TableCell>
+
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.completionStatus}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </div>
         </Grid>
         {selectedAppointment && (
