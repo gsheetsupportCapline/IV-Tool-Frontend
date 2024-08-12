@@ -132,6 +132,7 @@ const Rush = () => {
       MIDSSN: values.MIDSSN,
       insuranceName: values.insuranceName,
       insurancePhone: values.insurancePhone,
+
       ivType: "Rush",
     };
     console.log("Submitting payload:", payload);

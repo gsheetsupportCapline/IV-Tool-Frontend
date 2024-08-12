@@ -9,15 +9,24 @@ import {
   MenuItem,
   Box,
   FormControl,
-  ListItem,
-  ListItemText,
+  // ListItem,
+  // ListItemText,
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import {
-  ivRemarks,
+  ivRemarksDropdownOptions,
   sourceDropdownOptions,
   planTypeDropdownOptions,
 } from "./DropdownValues";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+  TableHead,
+} from "@mui/material";
 
 import axios from "axios";
 
@@ -32,6 +41,7 @@ const IVUsers = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [noteRemarks, setNoteRemarks] = useState("");
   const userName = localStorage.getItem("loggedinUserName");
 
   // Function to fetch appointments
@@ -72,7 +82,10 @@ const IVUsers = () => {
         return;
       }
 
-      console.log(selectedAppointment);
+      console.log("selected appointment ", selectedAppointment);
+
+      const currentDate = new Date();
+      const formattedDateTime = currentDate.toISOString(); // Format as ISO string
       // Construct the payload for the API call
       const payload = {
         userAppointmentId: selectedAppointment.assignedUser,
@@ -81,6 +94,8 @@ const IVUsers = () => {
         source: selectedAppointment.source,
         planType: selectedAppointment.planType,
         completedBy: userName,
+        noteRemarks: noteRemarks,
+        ivCompletedDate: formattedDateTime,
       };
 
       console.log("Payload ", payload);
@@ -89,15 +104,10 @@ const IVUsers = () => {
         `${BASE_URL}/api/appointments/update-individual-appointment-details`,
         payload
       );
-      // Remove the selected appointment from the appointments state
-      setAppointments(
-        appointments.filter(
-          (appointment) => appointment._id !== selectedAppointment._id
-        )
-      );
 
       // Optionally, reset the selectedAppointment state
       setSelectedAppointment(null);
+      setNoteRemarks("");
       // Refresh the data or show a success message
       setSnackbarOpen(true);
       setSnackbarSeverity("success");
@@ -116,7 +126,7 @@ const IVUsers = () => {
       [field]: value,
     }));
   };
-  console.log(appointments);
+
   function sortAppointments(appointments) {
     return appointments.sort(
       (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
@@ -141,15 +151,11 @@ const IVUsers = () => {
           </Typography>
 
           <div>
-            {sortAppointments(appointments).map((appointment) => (
+            {/* {sortAppointments(appointments).map((appointment) => (
               <ListItem
                 key={appointment._id}
                 onClick={() => {
                   setSelectedAppointment(appointment);
-                  // Resetting the form fields to empty or initial values
-                  handleInputChange("source", "");
-                  handleInputChange("planType", "");
-                  handleInputChange("ivRemarks", "");
                 }}
                 sx={{
                   borderRadius: "8px",
@@ -172,7 +178,57 @@ const IVUsers = () => {
                     `}
                 />
               </ListItem>
-            ))}
+            ))} */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Patient ID
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Appointment Date
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Appointment Time
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                      Completion Status
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sortAppointments(appointments).map((appointment) => (
+                    <TableRow
+                      key={appointment._id}
+                      onClick={() => setSelectedAppointment(appointment)}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "#f0f0f0", // Light grey background on hover
+                        },
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.patientId}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {new Date(appointment.appointmentDate)
+                          .toISOString()
+                          .slice(0, 10)}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.appointmentTime}
+                      </TableCell>
+
+                      <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                        {appointment.completionStatus}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </div>
         </Grid>
         {selectedAppointment && (
@@ -245,15 +301,15 @@ const IVUsers = () => {
                         <Select
                           labelId="demo-simple-select-label"
                           label="IV Remarks"
-                          value={selectedAppointment.remark}
+                          value={selectedAppointment.ivRemarks}
                           onChange={(event) =>
                             handleInputChange("ivRemarks", event.target.value)
                           }
                           variant="outlined"
                         >
-                          {ivRemarks.map((remark) => (
-                            <MenuItem key={remark.id} value={remark.remark}>
-                              {remark.remark}
+                          {ivRemarksDropdownOptions.map((remark) => (
+                            <MenuItem key={remark.id} value={remark.ivRemarks}>
+                              {remark.ivRemarks}
                             </MenuItem>
                           ))}
                         </Select>
@@ -392,6 +448,17 @@ const IVUsers = () => {
                         value={userName}
                         variant="outlined"
                         InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Note Remarks"
+                        name="noteRemarks"
+                        value={noteRemarks}
+                        variant="outlined"
+                        onChange={(event) => setNoteRemarks(event.target.value)}
+                        InputProps={{ readOnly: false }}
                       />
                     </Grid>
                   </Grid>

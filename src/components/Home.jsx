@@ -4,17 +4,19 @@ import Header from "./Header";
 import Status from "./Status";
 import OfficeAndDateSelector from "./OfficeAndDateSelector";
 import BASE_URL from "../config/apiConfig";
+import PageNotFound from "./PageNotFound";
 const Home = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
   const [data, setData] = useState([]);
+  const [error, setError] = useState(false);
 
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    try {
       const response = await fetch(
         `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}`
       );
@@ -30,18 +32,28 @@ const Home = () => {
         console.log("API did not return data ", responseData);
         setData([]);
       }
-    };
-    fetchData();
+    } catch (error) {
+      setError(error);
+    }
+  };
+  useEffect(() => {
+    if (selectedOffice.length > 0) fetchData();
   }, [selectedOffice]);
 
   return (
     <>
       <Header />
-      <OfficeAndDateSelector
-        onOfficeChange={setSelectedOffice}
-        onDateChange={(dates) => setDateRange(dates)}
-      />
-      <Status data={data} dateRange={dateRange} />
+      {error ? (
+        <PageNotFound />
+      ) : (
+        <>
+          <OfficeAndDateSelector
+            onOfficeChange={setSelectedOffice}
+            onDateChange={(dates) => setDateRange(dates)}
+          />
+          <Status data={data} dateRange={dateRange} />
+        </>
+      )}
     </>
   );
 };
