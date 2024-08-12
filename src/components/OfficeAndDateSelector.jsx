@@ -69,8 +69,9 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
 
   return (
     <div className="flex  my-1 bg-slate-400 p-2">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4  ">
         <OfficeDropdown
+         
           onSelect={handleOfficeChange}
           allowedOffices={allowedOffices}
           showAllOffices={localStorage.getItem("role") !== "officeuser"}

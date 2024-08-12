@@ -41,6 +41,8 @@ const OfficeDropdown = ({
     : officeNames.filter((name) => allowedOffices.includes(name));
 
   return (
+    <>
+   
     <select onChange={(e) => onSelect(e.target.value)}>
       <option value="">Select Office</option>
       {filteredOfficeNames.map((office) => (
@@ -49,6 +51,10 @@ const OfficeDropdown = ({
         </option>
       ))}
     </select>
+    
+ 
+    </>
+   
   );
 };
 
