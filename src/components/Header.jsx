@@ -12,35 +12,37 @@ import { useHistory } from "react-router-dom";
 //   { name: "Log Out", href: "/", current: false },
 // ];
 
-const userRole = localStorage.getItem("role");
-console.log("User Role" , userRole);
-const navigation = [
-  { link: "/schedule-patient", text: "Scheduled Patients", show: true },
-  { link: "/awaitingIV", text: "IVs Awaiting", show: true },
-  { link: "/request-rush", text: "Request a Rush", show: true },
-  {
-    link: "/admin",
-    text: "Assign IVs",
-    show: userRole == "admin" ? true : false,
-  },
-  {
-    link: "/admin-dashboard",
-    text: "Dashboard",
-    show: userRole == "admin" ? true : false,
-  },
-  {
-    link: "/dashboard",
-    text: "Dashboard",
-    show: userRole == "user" ? true : false,
-  },
-  { link: "/", text: "Log Out", show: true },
-];
+
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Header = () => {
   const history = useHistory();
+  const userRole = localStorage.getItem("role");
+console.log("User Role" , userRole);
+  const navigation = [
+    { link: "/schedule-patient", text: "Scheduled Patients", show: true },
+    { link: "/awaitingIV", text: "IVs Awaiting", show: true },
+    { link: "/request-rush", text: "Request a Rush", show: true },
+    {
+      link: "/admin",
+      text: "Assign IVs",
+      show: userRole == "admin" ? true : false,
+    },
+    {
+      link: "/admin-dashboard",
+      text: "Dashboard",
+      show: userRole == "admin" ? true : false,
+    },
+    {
+      link: "/dashboard",
+      text: "Dashboard",
+      show: userRole == "user" ? true : false,
+    },
+    { link: "/", text: "Log Out", show: true },
+  ];
   return (
     <Disclosure as="nav" className="bg-gray-800 sticky top-0 z-50">
       {({ open }) => (
