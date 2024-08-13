@@ -11,7 +11,7 @@ import { Disclosure, Transition } from "@headlessui/react";
 // ];
 
 const userRole = localStorage.getItem("role");
-
+console.log("User Role" , userRole);
 const navigation = [
   { link: "/schedule-patient", text: "Scheduled Patients", show: true },
   { link: "/awaitingIV", text: "IVs Awaiting", show: true },
