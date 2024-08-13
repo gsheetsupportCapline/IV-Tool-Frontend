@@ -1,5 +1,5 @@
 import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,7 +22,7 @@ const SignIn = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false); // State for snackbar visibility
   const [snackbarMessage, setSnackbarMessage] = useState(""); // State for snackbar message
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Default severity
-  // const navigate = useNavigate();
+   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -71,7 +71,8 @@ const SignIn = () => {
         setSnackbarMessage("Login successful!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        window.location.href = "/schedule-patient";
+        // window.location.href = "/schedule-patient";
+        navigate("/schedule-patient");
       } catch (error) {
         console.error("Login failed:", error);
         setSnackbarMessage("Invalid credentials.");
