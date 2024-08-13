@@ -31,24 +31,21 @@ const Admin = () => {
     "Azle",
     "Beaumont",
     "Benbrook",
-    "Brodie",
     "Calallen",
     "Crosby",
     "Devine",
     "Elgin",
+    "Grangerland",
     "Huffman",
     "Jasper",
     "Lavaca",
     "Liberty",
-    "Lucas",
     "Lytle",
     "Mathis",
     "Potranco",
     "Rio Bravo",
     "Riverwalk",
     "Rockdale",
-    "Rockwall",
-    "San Mateo",
     "Sinton",
     "Splendora",
     "Springtown",
@@ -56,6 +53,7 @@ const Admin = () => {
     "Victoria",
     "Westgreen",
     "Winnie",
+    "OS",
   ];
 
   useEffect(() => {
@@ -203,12 +201,15 @@ const Admin = () => {
           console.error("Office name not found for appointment ID:", id);
           continue;
         }
+        const loggedInUserName = localStorage.getItem("loggedinUserName");
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: user._id,
             status: "Assigned",
             completionStatus: "In Process",
+            ivAssignedDate: new Date().toISOString(),
+            ivAssignedByUserName: loggedInUserName,
           }
         );
         console.log("Response api", response);
@@ -269,6 +270,8 @@ const Admin = () => {
             userId: null, // Set userId to null or appropriate value to indicate unassignment
             status: "Unassigned",
             completionStatus: "IV Not Done", // Reset completionStatus or set as needed
+            ivAssignedDate: null,
+            ivAssignedByUserName: null,
           }
         );
 

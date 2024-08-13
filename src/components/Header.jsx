@@ -1,5 +1,7 @@
 import { Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
+import Logo from "../utils/Smilepoint_Dental.png";
+import { useHistory } from "react-router-dom";
 
 // const navigation = [
 //   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
@@ -38,17 +40,18 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Header = () => {
+  const history = useHistory();
   return (
-    <Disclosure as="nav" className="bg-gray-800">
+    <Disclosure as="nav" className="bg-gray-800 sticky top-0 z-50">
       {({ open }) => (
         <>
-          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-            <div className="relative flex h-16 items-center justify-between">
-              <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex flex-shrink-0 items-center">
+          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 ">
+            <div className="relative flex h-16 items-center   " >
+              <div className="flex justify-between items-center w-full px-2 sm:px-6 lg:px-8">
+                <div className="flex items-center  ">
                   <img
-                    className="h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                    className="h-11 w-auto bg-slate-100"
+                    src={Logo}
                     alt="SmilePoint Dental"
                   />
                 </div>
@@ -57,16 +60,17 @@ const Header = () => {
                     {navigation.map((item) => {
                       if (item.show)
                         return (
-                          <a
+                          <button
                             key={item.text}
-                            href={item.link}
+                            // href={item.link}
+                            onClick={() => history.push(item.link)}
                             className={classNames(
                               "bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white"
                             )}
                             aria-current={item.show ? "page" : undefined}
                           >
                             {item.text}
-                          </a>
+                          </button>
                         );
                     })}
                   </div>

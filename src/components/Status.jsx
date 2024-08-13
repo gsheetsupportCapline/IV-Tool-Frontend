@@ -21,6 +21,7 @@ const Status = ({ data, dateRange }) => {
     "Insurance Name": "insuranceName",
   };
   const filteredData = data.filter((item) => {
+   
     const startDate = new Date(dateRange.startDate);
     const endDate = new Date(dateRange.endDate);
     const itemDate = new Date(item.appointmentDate);
@@ -30,6 +31,7 @@ const Status = ({ data, dateRange }) => {
     console.log("item dat", itemDate);
 
     const isInDateRange = startDate <= itemDate && endDate >= itemDate;
+     
     switch (selectedOption) {
       case "yes":
         return isInDateRange; // No additional filtering, show all items
@@ -41,7 +43,7 @@ const Status = ({ data, dateRange }) => {
         return false; // Hide items that don't match any filter
     }
   });
-  // Sort the filteredData by appointment date and time in descending order
+   
   // Sort the filteredData by appointment date and time in descending order
   filteredData.sort((a, b) => {
     // Construct full date-time strings for comparison

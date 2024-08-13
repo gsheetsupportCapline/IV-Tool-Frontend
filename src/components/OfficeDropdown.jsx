@@ -10,24 +10,21 @@ const OfficeDropdown = ({
     "Azle",
     "Beaumont",
     "Benbrook",
-    "Brodie",
     "Calallen",
     "Crosby",
     "Devine",
     "Elgin",
+    "Grangerland",
     "Huffman",
     "Jasper",
     "Lavaca",
     "Liberty",
-    "Lucas",
     "Lytle",
     "Mathis",
     "Potranco",
     "Rio Bravo",
     "Riverwalk",
     "Rockdale",
-    "Rockwall",
-    "San Mateo",
     "Sinton",
     "Splendora",
     "Springtown",
@@ -35,6 +32,7 @@ const OfficeDropdown = ({
     "Victoria",
     "Westgreen",
     "Winnie",
+    "OS",
   ];
   // Check if officeOptions is null (indicating admin role)
   // If not null, filter officeNames based on officeOptions
@@ -43,6 +41,8 @@ const OfficeDropdown = ({
     : officeNames.filter((name) => allowedOffices.includes(name));
 
   return (
+    <>
+   
     <select onChange={(e) => onSelect(e.target.value)}>
       <option value="">Select Office</option>
       {filteredOfficeNames.map((office) => (
@@ -51,6 +51,10 @@ const OfficeDropdown = ({
         </option>
       ))}
     </select>
+    
+ 
+    </>
+   
   );
 };
 
