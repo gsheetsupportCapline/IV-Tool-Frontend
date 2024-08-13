@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
-import Logo from "../utils/Smilepoint_Dental.png"
+import Logo from "../utils/Smilepoint_Dental.png";
+import { useHistory } from "react-router-dom";
 
 // const navigation = [
 //   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
@@ -39,6 +40,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Header = () => {
+  const history = useHistory();
   return (
     <Disclosure as="nav" className="bg-gray-800 sticky top-0 z-50">
       {({ open }) => (
@@ -58,16 +60,17 @@ const Header = () => {
                     {navigation.map((item) => {
                       if (item.show)
                         return (
-                          <a
+                          <button
                             key={item.text}
-                            href={item.link}
+                            // href={item.link}
+                            onClick={() => history.push(item.link)}
                             className={classNames(
                               "bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white"
                             )}
                             aria-current={item.show ? "page" : undefined}
                           >
                             {item.text}
-                          </a>
+                          </button>
                         );
                     })}
                   </div>
