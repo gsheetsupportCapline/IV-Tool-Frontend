@@ -13,7 +13,9 @@ import { useHistory } from "react-router-dom";
 // ];
 
 const userRole = localStorage.getItem("role");
-console.log("User Role" , userRole);
+ 
+console.log("User Role of loggedinuser ", userRole)
+ 
 const navigation = [
   { link: "/schedule-patient", text: "Scheduled Patients", show: true },
   { link: "/awaitingIV", text: "IVs Awaiting", show: true },
