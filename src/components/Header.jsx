@@ -1,3 +1,4 @@
+import {useState ,useEffect} from "react"
 import { Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import Logo from "../utils/Smilepoint_Dental.png";
@@ -11,36 +12,45 @@ import { useHistory } from "react-router-dom";
 //   { name: "Dashboard", href: "/admin-dashboard", current: false },
 //   { name: "Log Out", href: "/", current: false },
 // ];
-
-const userRole = localStorage.getItem("role");
-console.log("User Role" , userRole);
-const navigation = [
-  { link: "/schedule-patient", text: "Scheduled Patients", show: true },
-  { link: "/awaitingIV", text: "IVs Awaiting", show: true },
-  { link: "/request-rush", text: "Request a Rush", show: true },
-  {
-    link: "/admin",
-    text: "Assign IVs",
-    show: userRole == "admin" ? true : false,
-  },
-  {
-    link: "/admin-dashboard",
-    text: "Dashboard",
-    show: userRole == "admin" ? true : false,
-  },
-  {
-    link: "/dashboard",
-    text: "Dashboard",
-    show: userRole == "user" ? true : false,
-  },
-  { link: "/", text: "Log Out", show: true },
-];
-
+ 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Header = () => {
   const history = useHistory();
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+     
+    const storedUserRole = localStorage.getItem('role');
+    if (storedUserRole) {
+      setUserRole(storedUserRole);
+    }
+  }, []);
+
+
+
+  const navigation = [
+    { link: "/schedule-patient", text: "Scheduled Patients", show: true },
+    { link: "/awaitingIV", text: "IVs Awaiting", show: true },
+    { link: "/request-rush", text: "Request a Rush", show: true },
+    {
+      link: "/admin",
+      text: "Assign IVs",
+      show: userRole == "admin" ? true : false,
+    },
+    {
+      link: "/admin-dashboard",
+      text: "Dashboard",
+      show: userRole == "admin" ? true : false,
+    },
+    {
+      link: "/dashboard",
+      text: "Dashboard",
+      show: userRole == "user" ? true : false,
+    },
+    { link: "/", text: "Log Out", show: true },
+  ];
   return (
     <Disclosure as="nav" className="bg-gray-800 sticky top-0 z-50">
       {({ open }) => (
