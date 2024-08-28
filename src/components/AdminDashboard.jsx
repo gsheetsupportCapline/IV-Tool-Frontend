@@ -1,9 +1,10 @@
 // src/components/AdminDashboard.jsx
 
-import React, { useState } from "react";
+import { useState } from "react";
 import PendingIV from "./PendingIV";
 import AssignedIV from "./AssignedIV";
 import ProductionIV from "./ProductionIV";
+ 
 import Header from "./Header";
 
 const AdminDashboard = () => {
@@ -14,7 +15,7 @@ const AdminDashboard = () => {
       <Header />
       <div className="flex sticky">
         {/* Sidebar */}
-        <div className="w-1/5 border-r border-gray-300 p-4 bg-slate-700 rounded-lg shadow-lg">
+        <div className="w-1/5 border-r border-gray-300 p-4  rounded-lg shadow-lg" style={{ backgroundColor: '#374e76'}}>
           <h2 className="text-lg text-white font-semibold font-tahoma">
             IV Status
           </h2>
@@ -43,14 +44,17 @@ const AdminDashboard = () => {
             >
               IV Team Production
             </li>
+           
+
           </ul>
         </div>
 
         {/* Content Area */}
-        <div className="w-4/5 p-4 bg-slate-100 rounded-lg shadow-lg sticky top-0">
+        <div className="w-4/5 p-4   rounded-lg shadow-lg sticky top-0" style={{ backgroundColor: '#eeeeee'}}>
           {selectedItem === "PendingIV" && <PendingIV />}
           {selectedItem === "AssignedIV" && <AssignedIV />}
           {selectedItem === "ProductionIV" && <ProductionIV />}
+         
         </div>
       </div>
     </>

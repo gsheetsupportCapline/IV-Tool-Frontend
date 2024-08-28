@@ -27,7 +27,7 @@ const AssignedIV = () => {
   const [users, setUsers] = useState([]);
   const [appointments, setAppointments] = useState({});
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [loading, setLoading] = useState(true);
+  
   const [selectedOffice, setSelectedOffice] = useState("");
   const [assignedCounts, setAssignedCounts] = useState({});
 
@@ -71,10 +71,10 @@ const AssignedIV = () => {
 
         setUsers(usersWithName);
         setAppointments(groupedAppointments);
-        setLoading(false);
+        
       } catch (error) {
         console.error("Error fetching data", error);
-        setLoading(false);
+         
       }
     };
 
@@ -103,9 +103,7 @@ const AssignedIV = () => {
     }
   }, [selectedOffice, users]); // Dependency array ensures effect runs when selectedOffice changes
 
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
+
 
   const handleUserChange = (event) => {
     setSelectedUserId(event.target.value);
@@ -157,13 +155,13 @@ const AssignedIV = () => {
           {selectedUserId && (
             <Card
               sx={{
-                backgroundColor: "#cbd5e1",
+                backgroundColor: "#dbeafe",
                 maxWidth: "600px",
                 margin: "auto",
               }}
             >
               <CardContent>
-                <Typography variant="h5">Assigned IVs</Typography>
+                <Typography variant="h6">Assigned(Pending/InProgress Ivs)</Typography>
 
                 <DataGrid
                   rows={rows}
@@ -196,7 +194,7 @@ const AssignedIV = () => {
           {selectedOffice && (
             <Card
               sx={{
-                backgroundColor: "#F9F6EE",
+                backgroundColor: "#dbeafe",
                 maxWidth: "700px",
                 margin: "auto",
               }}
@@ -211,6 +209,7 @@ const AssignedIV = () => {
                   checkboxSelection={false}
                   disableSelectionOnClick
                   getRowId={(row) => `${row.userName}-${row.count}`}
+                   
                 />
               </CardContent>
             </Card>

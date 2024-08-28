@@ -15,6 +15,7 @@
 .p-datatable .p-datatable-thead th {
   background-color: #add8e6; /* Light blue */
   color: #000; /* Black text for contrast */
+  font-family: Mullish;
 }
 
 /* Optional: Style for the scrollbar */

@@ -110,7 +110,7 @@ const ProductionIV = () => {
                 index % 2 === 0 ? "bg-white" : "bg-gray-100"
               }`}
             >
-              <td className="border px-4 py-2 text-center">
+              <td className="border px-4 py-2 text-left">
                 {officeNameObj.officeName}
               </td>
 
@@ -128,8 +128,8 @@ const ProductionIV = () => {
 
   return (
     <>
-      <div className="flex items-center my-1 bg-slate-400">
-        <p className="mr-4 ml-10 font-tahoma">Appointment Date</p>
+      <div className="flex items-center my-1 bg-slate-400" >
+        <p className="mr-4 ml-10 font-tahoma "  >Appointment Date</p>
         <div className="w-1/4">
           <Datepicker value={value} onChange={handleValueChange} />
         </div>

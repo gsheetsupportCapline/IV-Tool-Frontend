@@ -141,7 +141,7 @@ const IVUsers = () => {
           item
           xs={3}
           sx={{
-            backgroundColor: "#334155",
+            backgroundColor: "#374e76",
             padding: "10px",
             borderRadius: "8px",
           }}
@@ -183,16 +183,16 @@ const IVUsers = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1  ,  fontFamily: "'Tahoma', sans-serif" }}>
                       Patient ID
                     </TableCell>
-                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 ,  fontFamily: "'Tahoma', sans-serif" }}>
                       Appointment Date
                     </TableCell>
-                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 ,  fontFamily: "'Tahoma', sans-serif"}}>
                       Appointment Time
                     </TableCell>
-                    <TableCell sx={{ fontSize: "0.8rem", px: 1 }}>
+                    <TableCell sx={{ fontSize: "0.8rem", px: 1 , fontFamily: "'Tahoma', sans-serif"}}>
                       Completion Status
                     </TableCell>
                   </TableRow>
@@ -235,9 +235,9 @@ const IVUsers = () => {
           <Grid
             item
             xs={9}
-            sx={{ backgroundColor: "#94a3b8", padding: "10px" }}
+            sx={{ backgroundColor: "#dbeafe", padding: "10px" }}
           >
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom style={{ fontFamily: "'Tahoma', sans-serif" }}>
               Appointment Details
             </Typography>
 
@@ -436,6 +436,16 @@ const IVUsers = () => {
                         label="Member Id"
                         name="memberId"
                         value={selectedAppointment.memberId}
+                        variant="outlined"
+                        InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="MID/SSN"
+                        name="MIDSSN"
+                        value={selectedAppointment.MIDSSN}
                         variant="outlined"
                         InputProps={{ readOnly: true }}
                       />

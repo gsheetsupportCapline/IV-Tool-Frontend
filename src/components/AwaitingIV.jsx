@@ -50,9 +50,9 @@ const AwaitingIV = () => {
   return (
     <>
       <Header />
-      <div className="flex items-center my-1 bg-slate-400 p-2">
+      <div className="flex items-center my-1 bg-blue-200 p-2">
         <div className="flex space-x-4">
-          <select className="form-select mt-2" onChange={handleOfficeChange}>
+          <select className="form-select mt-2 " onChange={handleOfficeChange}>
             <option value="">Office</option>
             {officeNames.map((office) => (
               <option key={office.id} value={office.officeName}>
@@ -60,8 +60,8 @@ const AwaitingIV = () => {
               </option>
             ))}
           </select>
-          <div className="flex items-center my-1 bg-slate-400">
-            <p className="mr-6 ml-10 whitespace-nowrap text-sm">
+          <div className="flex items-center my-1 bg-blue-200">
+            <p className="mr-6 ml-10 whitespace-nowrap">
               Appointment Date
             </p>
             <div className="w-full">
@@ -71,7 +71,7 @@ const AwaitingIV = () => {
         </div>
       </div>
       {/* Render Appointments in a Table */}
-      <div className="mt-4 p-4 bg-white shadow-md rounded-lg w-full">
+      <div className="mt-4 p-4   shadow-md rounded-lg w-full" style={{background :'#c9daf8' , fontFamily :"Mullish"}}>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-light-blue text-black">
             <tr>
@@ -101,7 +101,7 @@ const AwaitingIV = () => {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-blue-100 divide-y divide-gray-200">
             {appointments.map((appointment, index) => (
               <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : ""}>
                 <td className="px-6 py-2">{appointment.ivRemarks}</td>

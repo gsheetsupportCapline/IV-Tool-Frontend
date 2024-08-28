@@ -15,6 +15,8 @@ import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
+import {insuranceNames} from "./DropdownValues";
+import { Autocomplete } from '@mui/material';
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
 
@@ -100,8 +102,7 @@ const Rush = () => {
       !values.patientName ||
       !values.patientDOB ||
       !values.MIDSSN ||
-      !values.insuranceName ||
-      !values.insurancePhone
+      !values.insuranceName  
     ) {
       errorMessage = "Please fill all the required fields.";
     }
@@ -130,7 +131,7 @@ const Rush = () => {
         ? formatDate(values.policyHolderDOB)
         : undefined,
       MIDSSN: values.MIDSSN,
-      insuranceName: values.insuranceName,
+      insuranceName: values.insuranceName.name,
       insurancePhone: values.insurancePhone,
 
       ivType: "Rush",
@@ -177,10 +178,12 @@ const Rush = () => {
         sx={{
           width: "100vw", // Full viewport width
 
-          backgroundColor: "#cbd5e1", // Set the background color
+           backgroundColor: "#eee", // Set the background color
+         // backgroundColor : "#dbeafe",
           display: "flex",
           justifyContent: "center", // Center the Card horizontally
           alignItems: "center", // Center the Card vertically
+        
         }}
       >
         <Card
@@ -194,7 +197,10 @@ const Rush = () => {
             alignItems: "center",
             margin: "auto", // Center the card horizontally
             marginTop: "10px", // Adjust top margin to avoid sticking to the header
-            backgroundColor: "#334155",
+            // backgroundColor: "#334155",
+            backgroundColor: "#374e76",
+          
+           
           }}
         >
           <Typography
@@ -274,17 +280,29 @@ const Rush = () => {
                   fullWidth
                 />
 
-                <TextField
-                  required
-                  id="outlined-insurance-name"
-                  label="Insurance Name"
-                  value={values.insuranceName}
-                  onChange={(e) =>
-                    handleChange(e.target.value, "insuranceName")
-                  }
-                  sx={{ marginBottom: 2 }}
-                  fullWidth
-                />
+ 
+
+<FormControl fullWidth sx={{ marginBottom: 2 }}>
+ 
+  <Autocomplete
+            labelId="insurance-name-label"
+            id="insurance-name-autocomplete"
+            options={insuranceNames}
+            getOptionLabel={(option) => option.name}
+            value={values.name}
+            onChange={(event, newValue) => 
+              handleChange(newValue, "insuranceName")
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Insurance Name"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
+</FormControl>
                 <TextField
                   id="outlined-policy-holder-name"
                   label="Policy Holder Name"
@@ -338,7 +356,7 @@ const Rush = () => {
                 />
 
                 <TextField
-                  required
+                 
                   id="outlined-insurance-contact"
                   label="Insurance Contact"
                   value={values.insurancePhone}

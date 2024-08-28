@@ -43,7 +43,7 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
         "Victoria",
         "Westgreen",
         "Winnie",
-        "OS",
+         
       ]);
     } else if (role === "officeuser") {
       // Office users see only their assigned offices
@@ -68,14 +68,13 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
   };
 
   return (
-    <div className="flex  my-1 bg-slate-400 p-2">
-      <div className="flex items-center space-x-4  ">
+    <div className="flex  my-1 bg-blue-200 p-2">
+      <div className="flex items-center space-x-4  my-1">  
         <OfficeDropdown
-         
-          onSelect={handleOfficeChange}
+         onSelect={handleOfficeChange}
           allowedOffices={allowedOffices}
           showAllOffices={localStorage.getItem("role") !== "officeuser"}
-        />
+      />
         <DatePicker onDateChange={handleDateChange} />
       </div>
     </div>

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Table from "./Table";
 import { useEffect } from "react";
+
 const Status = ({ data, dateRange }) => {
   // State to keep track of the selected radio button
-  const [selectedOption, setSelectedOption] = useState("yes");
+  const [selectedOption, setSelectedOption] = useState("no");   // default In Process IVs
   const [allFilteredAppointmentCount, setAllFilteredAppointmentCount] =
     useState(0);
   const [inProcessCount, setInProcessCount] = useState(0);
@@ -155,11 +156,12 @@ const Status = ({ data, dateRange }) => {
               className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-gray-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="yes"
             >
-              All Appointments {allFilteredAppointmentCount}
+              <p className="mr-4 ml-10 font-tahoma">All Appointments [{allFilteredAppointmentCount}]</p>
+             
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yes" && (
-              <div className="absolute bg-white shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
                 <Table data={transformedData} headers={headers} />
               </div>
             )}
@@ -178,11 +180,12 @@ const Status = ({ data, dateRange }) => {
               className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
               htmlFor="no"
             >
-              In-Process IVs {inProcessCount}
+               <p className="mr-4 ml-10 font-tahoma">In-Process IVs [{inProcessCount}]</p>
+              
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "no" && (
-              <div className="absolute bg-white shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
                 <Table data={transformedData} headers={headers} />
               </div>
             )}
@@ -201,11 +204,12 @@ const Status = ({ data, dateRange }) => {
               className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out "
               htmlFor="yesno"
             >
-              Completed IVs {completedCount}
+               <p className="mr-4 ml-10 font-tahoma">Completed IVs [{completedCount}]</p>
+           
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yesno" && (
-              <div className="absolute bg-white shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
                 <Table data={transformedData} headers={headers} />
               </div>
             )}
