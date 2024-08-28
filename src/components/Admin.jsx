@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
-import Datepicker from "react-tailwindcss-datepicker";
+// import Datepicker from "react-tailwindcss-datepicker";
 import "./Table.css";
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
@@ -21,10 +21,10 @@ const Admin = () => {
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [valueDate, setValueDate] = useState({
-    startDate: null,
-    endDate: null,
-  });
+  // const [valueDate, setValueDate] = useState({
+  //   startDate: null,
+  //   endDate: null,
+  // });
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -53,7 +53,7 @@ const Admin = () => {
     "Victoria",
     "Westgreen",
     "Winnie",
-    "OS",
+     
   ];
 
   useEffect(() => {
@@ -109,6 +109,13 @@ const Admin = () => {
       headerClassName: "header-row",
     },
     {
+      field: "ivAssignedDate",
+      headerName: "Assigned Date",
+      width: 150,
+      
+      headerClassName: "header-row",
+    },
+    {
       field: "appointmentType",
       headerName: "Appointment Type",
       headerClassName: "header-row",
@@ -159,6 +166,12 @@ const Admin = () => {
     {
       field: "memberId",
       headerName: "Member Id",
+      headerClassName: "header-row",
+      width: 100,
+    },
+    {
+      field: "MIDSSN",
+      headerName: "MID/SSN",
       headerClassName: "header-row",
       width: 100,
     },
@@ -237,7 +250,13 @@ const Admin = () => {
   };
 
   const handleSelectionChange = (newSelection) => {
-    const selectedRows = newSelection.map((id) =>
+     // Filter out rows with completionStatus "Completed"
+  const filteredSelection = newSelection.filter(id => {
+    const row = rows.find(row => row._id === id);
+    return row && row.completionStatus !== "Completed";
+  });
+  console.log(filteredSelection)
+    const selectedRows = filteredSelection.map((id) =>
       rows.find((row) => row._id === id)
     );
     console.log("Selected Rows ", selectedRows);
@@ -312,32 +331,48 @@ const Admin = () => {
         console.log("Appointment data", responseData.appointments);
 
         // Check if a date range is selected
-        const startDate = valueDate.startDate;
-        const endDate = valueDate.endDate;
+        // const startDate = valueDate.startDate;
+        
+      //  const startDate =valueDate.startDate  ;
+      //   const endDate = valueDate.endDate;
+
+        // console.log("start date selected",startDate)
 
         let filteredAppointments = responseData.appointments;
+ 
+ // Get today's date and add 15 days
+const startDate = new Date();
+const endDate = new Date(startDate);
+endDate.setDate(endDate.getDate() + 15);
 
-        // If a date range is selected, filter appointments
-        if (startDate && endDate) {
+// Format the dates according to the database format
+const formattedStartDate = startDate.toISOString().split('T')[0];
+const formattedEndDate = endDate.toISOString().split('T')[0];
+
+        
+        if (formattedStartDate && formattedEndDate) {
           filteredAppointments = responseData.appointments.filter(
             (appointment) =>
-              startDate <= appointment.appointmentDate &&
-              appointment.appointmentDate <= endDate
+              new Date(formattedStartDate) <= new Date(appointment.appointmentDate) &&
+              new Date(appointment.appointmentDate) <= new Date(formattedEndDate)
           );
         }
         switch (tabValue) {
-          case 0: // All appointments
+          case 0: // Unassigned appointments
+          filteredAppointments = filteredAppointments.filter(
+            (appointment) => appointment.status === "Unassigned" 
+           
+          );
             break;
           case 1: // Assigned appointments
-            filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === "Assigned"
-            );
+          filteredAppointments = filteredAppointments.filter(
+            (appointment) => appointment.status === "Assigned" 
+           
+          );
+           
             break;
-          case 2: // Unassigned appointments
-            filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === "Unassigned"
-            );
-            break;
+           
+          
           default:
             filteredAppointments = [];
         }
@@ -374,12 +409,12 @@ const Admin = () => {
 
   useEffect(() => {
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
-  }, [value, valueDate, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes
+  }, [value, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
 
-  const handleValueChange = (newValue) => {
-    console.log("newValue:", newValue);
-    setValueDate(newValue);
-  };
+  // const handleValueChange = (newValue) => {
+  //   console.log("newValue:", newValue);
+  //   setValueDate(newValue);
+  // };
   return (
     <>
       <Header />
@@ -390,16 +425,17 @@ const Admin = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "20px",
-          backgroundColor: "#94a3b8",
+          backgroundColor:"#9fc5e8",//  "#94a3b8",   
           px: 2,
         }}
       >
-        <div className="flex items-center my-1 bg-slate-400">
+        <div className="flex items-center my-1 ">
           <Select
             value={selectedOffice}
             onChange={(e) => setSelectedOffice(e.target.value)}
             displayEmpty
             inputProps={{ "aria-label": "Select Office" }}
+            sx={{background:"#1976d2" , color : "white"}}
           >
             <MenuItem value="">
               <em>Select Office</em>
@@ -411,13 +447,7 @@ const Admin = () => {
             ))}
           </Select>
 
-          <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
-            Appointment
-          </p>
-          <div className="w-full">
-            <Datepicker value={valueDate} onChange={handleValueChange} />
-          </div>
-        </div>
+ 
         <Tabs
           value={value}
           onChange={handleChange}
@@ -428,14 +458,19 @@ const Admin = () => {
               color: "white",
             },
             "& .MuiTab-root": {
+               
               color: "white", // Change the text color to white for all tabs
             },
           }}
+          className="ml-4"
         >
-          <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
-          <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
-          <Tab label="Unassigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
+          {/* <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} /> */}
+          <Tab label="Unassigned" sx={{ fontFamily: "'Tahoma', sans-serif" ,mr:"2px"}} />
+          <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif"  }} />
+          
         </Tabs>
+        </div> 
+      
         <Box sx={{ display: "flex", gap: 1, p: 2 }}>
           {" "}
           {/* Add this Box around the buttons */}

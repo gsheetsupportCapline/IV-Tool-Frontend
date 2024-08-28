@@ -15,6 +15,7 @@ export default {
       fontFamily: {
         tahoma: ["Tahoma", "sans-serif"],
       },
+      
     },
   },
   plugins: [],

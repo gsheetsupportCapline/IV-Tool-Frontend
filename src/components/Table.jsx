@@ -3,7 +3,7 @@ import { Column } from "primereact/column";
 import "./Table.css";
 const Table = ({ data, headers }) => {
   return (
-    <div className="table-container">
+    <div className="table-container ">
       <DataTable
         value={data}
         paginator
