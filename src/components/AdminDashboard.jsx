@@ -6,6 +6,7 @@ import AssignedIV from "./AssignedIV";
 import ProductionIV from "./ProductionIV";
  
 import Header from "./Header";
+import DropdownDashboard from "./DropdownDashboard";
 
 const AdminDashboard = () => {
   const [selectedItem, setSelectedItem] = useState("PendingIV");
@@ -44,6 +45,15 @@ const AdminDashboard = () => {
             >
               IV Team Production
             </li>
+
+            <li
+              className={`cursor-pointer px-4 rounded-lg  py-2 font-tahoma  hover:shadow ${
+                selectedItem === "DropdownValues" ? "bg-gray-500 text-white" : ""
+              }`}
+              onClick={() => setSelectedItem("DropdownValues")}
+            >
+             Dropdown Values
+            </li>
            
 
           </ul>
@@ -54,7 +64,7 @@ const AdminDashboard = () => {
           {selectedItem === "PendingIV" && <PendingIV />}
           {selectedItem === "AssignedIV" && <AssignedIV />}
           {selectedItem === "ProductionIV" && <ProductionIV />}
-         
+          {selectedItem === "DropdownValues" && <DropdownDashboard />}
         </div>
       </div>
     </>
