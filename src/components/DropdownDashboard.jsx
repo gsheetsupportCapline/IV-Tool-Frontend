@@ -1,119 +1,101 @@
-// DropdownDashboard.jsx
+import React, { useState } from 'react';
+import { Button } from '@mui/material';
+import { TextField } from '@mui/material';
+import {Plus , Trash2} from 'lucide-react';
+import { MenuItem, FormControl, InputLabel, Select } from '@mui/material';
+import { Card, CardContent, CardHeader } from '@mui/material';
 
-import React, { useState, useEffect } from 'react';
-import { getDropdownValues, updateDropdownValues } from './DropdownValues';
-import Dropdown from './Dropdown';
+// Simulating the DropdownValues.js file
+const initialDropdownValues = {
+  Source: ['Source 1', 'Source 2', 'Source 3'],
+  PlanType: ['Plan A', 'Plan B', 'Plan C'],
+  IVRemarks: ['Remark 1', 'Remark 2', 'Remark 3'],
+};
 
 const DropdownDashboard = () => {
-  const [ivRemarks, setIvRemarks] = useState([]);
-  const [source, setSource] = useState([]);
-  const [planType, setPlanType] = useState([]);
-  const [officeNames, setOfficeNames] = useState([]);
-  const [insuranceNames, setInsuranceNames] = useState([]);
-  const [newItem, setNewItem] = useState('');
+  const [dropdownValues, setDropdownValues] = useState(initialDropdownValues);
+  const [newItems, setNewItems] = useState({
+    Source: '',
+    PlanType: '',
+    IVRemarks: '',
+  });
+  const [selectedItems, setSelectedItems] = useState({
+    Source: [],
+    PlanType: [],
+    IVRemarks: [],
+  });
 
-  useEffect(() => {
-    const { ivRemarksDropdownOptions, sourceDropdownOptions, planTypeDropdownOptions, officeNames, insuranceNames } = getDropdownValues();
-    setIvRemarks(ivRemarksDropdownOptions);
-    setSource(sourceDropdownOptions);
-    setPlanType(planTypeDropdownOptions);
-    setOfficeNames(officeNames);
-    setInsuranceNames(insuranceNames);
-  }, []);
-
-  const handleAddItem = (type, newItem) => {
-    switch (type) {
-      case 'ivRemarks':
-        setIvRemarks([...ivRemarks, { id: Date.now(), ivRemarks: newItem }]);
-        break;
-      case 'source':
-        setSource([...source, { id: Date.now(), source: newItem }]);
-        break;
-      case 'planType':
-        setPlanType([...planType, { id: Date.now(), planType: newItem }]);
-        break;
-      case 'officeNames':
-        setOfficeNames([...officeNames, { id: Date.now(), officeName: newItem }]);
-        break;
-      case 'insuranceNames':
-        setInsuranceNames([...insuranceNames, { id: Date.now(), name: newItem }]);
-        break;
-      default:
-        break;
+  const handleAddItem = (category) => {
+    if (newItems[category].trim() !== '') {
+      setDropdownValues((prev) => ({
+        ...prev,
+        [category]: [...prev[category], newItems[category]],
+      }));
+      setNewItems((prev) => ({ ...prev, [category]: '' }));
+      console.log(`Added ${newItems[category]} to ${category}`);
     }
-    setNewItem('');
-    updateDropdownValues({
-      ivRemarksDropdownOptions: ivRemarks,
-      sourceDropdownOptions: source,
-      planTypeDropdownOptions: planType,
-      officeNames: officeNames,
-      insuranceNames: insuranceNames
-    });
   };
 
-  const handleDeleteItem = (type) => {
-    switch (type) {
-      case 'ivRemarks':
-        setIvRemarks(ivRemarks.slice(0, -1));
-        break;
-      case 'source':
-        setSource(source.slice(0, -1));
-        break;
-      case 'planType':
-        setPlanType(planType.slice(0, -1));
-        break;
-      case 'officeNames':
-        setOfficeNames(officeNames.slice(0, -1));
-        break;
-      case 'insuranceNames':
-        setInsuranceNames(insuranceNames.slice(0, -1));
-        break;
-      default:
-        break;
-    }
-    updateDropdownValues({
-      ivRemarksDropdownOptions: ivRemarks,
-      sourceDropdownOptions: source,
-      planTypeDropdownOptions: planType,
-      officeNames: officeNames,
-      insuranceNames: insuranceNames
-    });
+  const handleDeleteItems = (category) => {
+    setDropdownValues((prev) => ({
+      ...prev,
+      [category]: prev[category].filter((item) => !selectedItems[category].includes(item)),
+    }));
+    setSelectedItems((prev) => ({ ...prev, [category]: [] }));
+    console.log(`Deleted ${selectedItems[category].join(', ')} from ${category}`);
+  };
+
+  const handleSelectChange = (category, value) => {
+    setSelectedItems((prev) => ({
+      ...prev,
+      [category]: prev[category].includes(value)
+        ? prev[category].filter((item) => item !== value)
+        : [...prev[category], value],
+    }));
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Dropdown Dashboard</h1>
-      
-      {Object.entries({
-        ivRemarks: ivRemarks,
-        source: source,
-        planType: planType,
-        officeNames: officeNames,
-        insuranceNames: insuranceNames
-      }).map(([key, items]) => (
-        <div key={key} className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">{key.replace(/([A-Z])/g, ' $1').trim()}</h2>
-          <Dropdown type={key} value={items[0]?.id || ''} onChange={(e) => console.log(e.target.value)} />
-          <input
-            type="text"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            className="w-full p-2 mb-2"
-            placeholder={`Enter new ${key.replace(/([A-Z])/g, ' $1').trim()}`}
-          />
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={() => handleAddItem(key, newItem)}
-          >
-            Add New {key.replace(/([A-Z])/g, ' $1').trim()}
-          </button>
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded ml-2"
-            onClick={() => handleDeleteItem(key)}
-          >
-            Delete Last Item
-          </button>
-        </div>
+    <div className="space-y-4">
+      {Object.entries(dropdownValues).map(([category, items]) => (
+        // eslint-disable-next-line react/jsx-key
+        <Card sx={{ width: '100%', maxWidth: 500 }}>
+          <CardHeader>
+        {category}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <FormControl fullWidth>
+                <InputLabel id={`${category}-label`}>{category}</InputLabel>
+                <Select
+                  labelId={`${category}-label`}
+                  id={`${category}-select`}
+                  value={selectedItems[category]}
+                  onChange={(e) => handleSelectChange(category, e.target.value)}
+                  label={category}
+                >
+                  {items.map((item) => (
+                    <MenuItem key={item} value={item}>
+                      {item}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <div className="flex space-x-2">
+                <TextField
+                  placeholder={`New ${category} item`}
+                  value={newItems[category]}
+                  onChange={(e) => setNewItems({ ...newItems, [category]: e.target.value })}
+                />
+                <Button  color ="secondary" onClick={() => handleAddItem(category)}>
+                  <Plus className="mr-2 h-4 w-4 " /> Add
+                </Button>
+                <Button color="error" onClick={() => handleDeleteItems(category)} variant="outlined">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
