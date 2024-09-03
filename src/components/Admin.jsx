@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
-// import Datepicker from "react-tailwindcss-datepicker";
+ import Datepicker from "react-tailwindcss-datepicker";
 import "./Table.css";
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
@@ -21,10 +21,11 @@ const Admin = () => {
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  // const [valueDate, setValueDate] = useState({
-  //   startDate: null,
-  //   endDate: null,
-  // });
+  const [valueDate, setValueDate] = useState({
+    startDate: null,
+    endDate: null,
+  });
+ 
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -265,6 +266,7 @@ const Admin = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  
     fetchAndFilterAppointments(newValue);
   };
 
@@ -329,34 +331,18 @@ const Admin = () => {
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
         console.log("Appointment data", responseData.appointments);
+      let filteredAppointments = responseData.appointments;
+      // Apply date filtering only for Assigned tab
+      if (tabValue === 1 && valueDate.startDate && valueDate.endDate) {
+        const startDate = valueDate.startDate;
+        const endDate = valueDate.endDate;
 
-        // Check if a date range is selected
-        // const startDate = valueDate.startDate;
-        
-      //  const startDate =valueDate.startDate  ;
-      //   const endDate = valueDate.endDate;
-
-        // console.log("start date selected",startDate)
-
-        let filteredAppointments = responseData.appointments;
- 
- // Get today's date and add 15 days
-const startDate = new Date();
-const endDate = new Date(startDate);
-endDate.setDate(endDate.getDate() + 15);
-
-// Format the dates according to the database format
-const formattedStartDate = startDate.toISOString().split('T')[0];
-const formattedEndDate = endDate.toISOString().split('T')[0];
-
-        
-        if (formattedStartDate && formattedEndDate) {
-          filteredAppointments = responseData.appointments.filter(
-            (appointment) =>
-              new Date(formattedStartDate) <= new Date(appointment.appointmentDate) &&
-              new Date(appointment.appointmentDate) <= new Date(formattedEndDate)
-          );
-        }
+        filteredAppointments = filteredAppointments.filter(
+          (appointment) =>
+            startDate <= appointment.appointmentDate &&
+            appointment.appointmentDate <= endDate
+        );
+      }
         switch (tabValue) {
           case 0: // Unassigned appointments
           filteredAppointments = filteredAppointments.filter(
@@ -409,12 +395,12 @@ const formattedEndDate = endDate.toISOString().split('T')[0];
 
   useEffect(() => {
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
-  }, [value, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
+  }, [value,valueDate, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
 
-  // const handleValueChange = (newValue) => {
-  //   console.log("newValue:", newValue);
-  //   setValueDate(newValue);
-  // };
+  const handleValueChange = (newValue) => {
+    console.log("newValue:", newValue);
+    setValueDate(newValue);
+  };
   return (
     <>
       <Header />
@@ -429,7 +415,7 @@ const formattedEndDate = endDate.toISOString().split('T')[0];
           px: 2,
         }}
       >
-        <div className="flex items-center my-1 ">
+  <div className="flex items-center my-1 ">
           <Select
             value={selectedOffice}
             onChange={(e) => setSelectedOffice(e.target.value)}
@@ -446,7 +432,6 @@ const formattedEndDate = endDate.toISOString().split('T')[0];
               </MenuItem>
             ))}
           </Select>
-
  
         <Tabs
           value={value}
@@ -469,7 +454,19 @@ const formattedEndDate = endDate.toISOString().split('T')[0];
           <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif"  }} />
           
         </Tabs>
-        </div> 
+  
+  {value === 1 && (
+  < >
+  <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
+      Appointment
+    </p>
+    <div className="w-1/">
+      <Datepicker value={valueDate} onChange={handleValueChange} />
+    </div> 
+  </>
+
+)} 
+ </div>  
       
         <Box sx={{ display: "flex", gap: 1, p: 2 }}>
           {" "}
