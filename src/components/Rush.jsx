@@ -16,7 +16,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
 import {insuranceNames} from "./DropdownValues";
-import { Autocomplete } from '@mui/material';
+import { Autocomplete ,InputAdornment, IconButton} from '@mui/material';
+import { Upload } from 'lucide-react';
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
 
@@ -36,6 +37,7 @@ const Rush = () => {
     insuranceName: "",
     insurancePhone: "",
   });
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleChange = (value, name) => {
     console.log(value, name);
@@ -170,7 +172,11 @@ const Rush = () => {
       setSnackbarMessage("Failed to create IV");
     }
   };
-
+  const handleUpload = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+    // You can add additional logic here to handle the selected file
+  };
   return (
     <>
       <Header />
@@ -345,6 +351,13 @@ const Rush = () => {
                   sx={{ marginBottom: 2 }}
                   fullWidth
                 />
+                  <input
+      type="file"
+      accept=".pdf,.jpg,.png" // Specify allowed file types
+      style={{ display: 'none' }}
+      id="upload-file-input"
+      onChange={handleUpload}
+    />
                 <TextField
                   required
                   id="outlined-mid-ssn"
@@ -353,8 +366,19 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "MIDSSN")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton edge="end" size="small"  onClick={() => document.getElementById('upload-file-input').click()}>
+                          <Upload size={20} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
-
+{selectedFile && (
+      <p>Selected file: {selectedFile.name}</p>
+    )}
                 <TextField
                  
                   id="outlined-insurance-contact"
