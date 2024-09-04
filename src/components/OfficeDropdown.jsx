@@ -32,7 +32,7 @@ const OfficeDropdown = ({
     "Victoria",
     "Westgreen",
     "Winnie",
-    "OS",
+     
   ];
   // Check if officeOptions is null (indicating admin role)
   // If not null, filter officeNames based on officeOptions
