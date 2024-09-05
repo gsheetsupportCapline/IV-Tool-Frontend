@@ -13,11 +13,11 @@ import {
   // ListItemText,
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
-import {
-  ivRemarksDropdownOptions,
-  sourceDropdownOptions,
-  planTypeDropdownOptions,
-} from "./DropdownValues";
+// import {
+//   ivRemarksDropdownOptions,
+//   sourceDropdownOptions,
+//   planTypeDropdownOptions,
+// } from "./DropdownValues";
 import {
   Table,
   TableBody,
@@ -35,6 +35,18 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
 
+
+
+const fetchDropdownOptions = async (category) => {
+  try {
+    const encodedCategory = encodeURIComponent(category);
+    const response = await axios.get(`${BASE_URL}/api/dropdownValues/${encodedCategory}`);
+    return response.data.options;
+  } catch (error) {
+    console.error(`Error fetching ${category} options:`, error);
+    return [];
+  }
+};
 const IVUsers = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -42,7 +54,24 @@ const IVUsers = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [noteRemarks, setNoteRemarks] = useState("");
+  const [sourceOptions, setSourceOptions] = useState([]);
+  const [planTypeOptions, setPlanTypeOptions] = useState([]);
+  const [ivRemarksOptions, setIvRemarksOptions] = useState([]);
   const userName = localStorage.getItem("loggedinUserName");
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      const sourceOptions = await fetchDropdownOptions("Source");
+      const planTypeOptions = await fetchDropdownOptions("Plan Type");
+      const ivRemarksOptions = await fetchDropdownOptions("IV Remarks");
+      
+      setSourceOptions(sourceOptions);
+      setPlanTypeOptions(planTypeOptions);
+      setIvRemarksOptions(ivRemarksOptions);
+    };
+
+    loadOptions();
+  }, []);
 
   // Function to fetch appointments
   const fetchAppointments = async () => {
@@ -263,9 +292,9 @@ const IVUsers = () => {
                             handleInputChange("source", event.target.value)
                           }
                         >
-                          {sourceDropdownOptions.map((source) => (
-                            <MenuItem key={source.id} value={source.source}>
-                              {source.source}
+                          {sourceOptions.map((source) => (
+                            <MenuItem key={source.id} value={source.name}>
+                              {source.name}
                             </MenuItem>
                           ))}
                         </Select>
@@ -285,9 +314,9 @@ const IVUsers = () => {
                             handleInputChange("planType", event.target.value)
                           }
                         >
-                          {planTypeDropdownOptions.map((plan) => (
-                            <MenuItem key={plan.id} value={plan.planType}>
-                              {plan.planType}
+                          {planTypeOptions.map((plan) => (
+                            <MenuItem key={plan.id} value={plan.name}>
+                              {plan.name}
                             </MenuItem>
                           ))}
                         </Select>
@@ -307,9 +336,9 @@ const IVUsers = () => {
                           }
                           variant="outlined"
                         >
-                          {ivRemarksDropdownOptions.map((remark) => (
-                            <MenuItem key={remark.id} value={remark.ivRemarks}>
-                              {remark.ivRemarks}
+                          {ivRemarksOptions.map((remark) => (
+                            <MenuItem key={remark.id} value={remark.name}>
+                              {remark.name}
                             </MenuItem>
                           ))}
                         </Select>
