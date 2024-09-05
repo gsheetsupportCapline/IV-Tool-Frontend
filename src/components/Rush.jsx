@@ -172,10 +172,23 @@ const Rush = () => {
       setSnackbarMessage("Failed to create IV");
     }
   };
-  const handleUpload = (event) => {
+  const handleUpload =async (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
-    // You can add additional logic here to handle the selected file
+    const formData  = new FormData();
+    formData.append('file',file);
+    try {
+      const response = await axios.post(`/upload`,formData);
+      const imageUrl = response.data.url;
+      setValues(prevValues => ({
+                ...prevValues,
+                imageUrl: imageUrl
+            }));
+      console.log('Image uploaded successfully:', imageUrl);
+    } catch (error) {
+      console.error('Error uploading image:',error);
+    }
+    
   };
   return (
     <>
@@ -350,13 +363,14 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "patientName")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
-                />
-                  <input
+                />, 
+  <input
       type="file"
       accept=".pdf,.jpg,.png" // Specify allowed file types
       style={{ display: 'none' }}
       id="upload-file-input"
       onChange={handleUpload}
+      encType="multipart/form-data" 
     />
                 <TextField
                   required
