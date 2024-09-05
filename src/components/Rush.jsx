@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Header from "./Header";
@@ -10,14 +10,26 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import axios from "axios"; // Import Axios
 import moment from "moment";
-import { officeNames } from "./DropdownValues";
+// import { officeNames } from "./DropdownValues";
 import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
-import {insuranceNames} from "./DropdownValues";
+// import {insuranceNames} from "./DropdownValues";
 import { Autocomplete ,InputAdornment, IconButton} from '@mui/material';
 import { Upload } from 'lucide-react';
+const fetchDropdownOptions = async (category) => {
+  try {
+    const encodedCategory = encodeURIComponent(category);
+    const response = await axios.get(`${BASE_URL}/api/dropdownValues/${encodedCategory}`);
+    return response.data.options;
+  } catch (error) {
+    console.error(`Error fetching ${category} options:`, error);
+    return [];
+  }
+};
+
+
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
 
@@ -38,6 +50,21 @@ const Rush = () => {
     insurancePhone: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [insuranceOptions, setInsuranceOptions] = useState([]);
+  const [officeOptions ,setOfficeOptions] =useState([]);
+ 
+  useEffect(() => {
+    const loadOptions = async () => {
+      const officeOptions = await fetchDropdownOptions("Office");
+      const insuranceOptions = await fetchDropdownOptions("Insurance Name");
+      
+      setOfficeOptions(officeOptions);
+      setInsuranceOptions(insuranceOptions);
+   
+    };
+
+    loadOptions();
+  }, []);
 
   const handleChange = (value, name) => {
     console.log(value, name);
@@ -175,6 +202,9 @@ const Rush = () => {
   const handleUpload =async (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
+    setSnackbarOpen(true);
+    setSnackbarSeverity("info");
+    setSnackbarMessage(`File selected: ${file.name}`);
     const formData  = new FormData();
     formData.append('file',file);
     try {
@@ -260,9 +290,9 @@ const Rush = () => {
                     onChange={(e) => handleOfficeChange(e.target.value)}
                     label="Office"
                   >
-                    {officeNames.map((office) => (
-                      <MenuItem key={office.id} value={office.officeName}>
-                        {office.officeName}
+                    {officeOptions.map((office) => (
+                      <MenuItem key={office.id} value={office.name}>
+                        {office.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -306,7 +336,7 @@ const Rush = () => {
   <Autocomplete
             labelId="insurance-name-label"
             id="insurance-name-autocomplete"
-            options={insuranceNames}
+            options={insuranceOptions}
             getOptionLabel={(option) => option.name}
             value={values.name}
             onChange={(event, newValue) => 
@@ -363,7 +393,7 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "patientName")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
-                />, 
+                />
   <input
       type="file"
       accept=".pdf,.jpg,.png" // Specify allowed file types
@@ -390,9 +420,7 @@ const Rush = () => {
                     ),
                   }}
                 />
-{selectedFile && (
-      <p>Selected file: {selectedFile.name}</p>
-    )}
+ 
                 <TextField
                  
                   id="outlined-insurance-contact"
