@@ -89,16 +89,7 @@ const Status = ({ data, dateRange }) => {
     setSelectedOption(event.target.value);
   };
 
-  const headers = [
-    "Patient ID",
-    "Appointment Date",
-    // "Appointment Time",
-    "Completion Status",
-    "Plan Type",
-    "IV Type",
-    "Remarks",
-    "Insurance Name",
-  ];
+ 
   // const allFilteredAppointment = filteredData.length;
   // const inProcessCount = filteredData.filter(
   //   (item) => item.completionStatus === "In Process"
@@ -161,9 +152,10 @@ const Status = ({ data, dateRange }) => {
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yes" && (
-              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformedData} headers={headers} />
+               <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh]  mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+              <Table data={transformedData} headers={Object.keys(dataHeaderMapping)} />
               </div>
+              
             )}
           </li>
           <li className="">
@@ -185,8 +177,8 @@ const Status = ({ data, dateRange }) => {
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "no" && (
-              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformedData} headers={headers} />
+              <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+                <Table data={transformedData} headers={Object.keys(dataHeaderMapping)} />
               </div>
             )}
           </li>
@@ -209,8 +201,8 @@ const Status = ({ data, dateRange }) => {
             </label>
             {/* Conditional rendering based on the selected option */}
             {selectedOption === "yesno" && (
-              <div className="absolute bg-blue-100 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[97vw] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformedData} headers={headers} />
+              <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
+                <Table data={transformedData} headers={Object.keys(dataHeaderMapping)} />
               </div>
             )}
           </li>

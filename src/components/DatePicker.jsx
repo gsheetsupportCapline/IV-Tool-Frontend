@@ -23,6 +23,7 @@ const DatePicker = ({ onDateChange }) => {
           onChange={handleValueChange}
           showShortcuts={true}
           primaryColor={"blue"}
+      
         />
       </div>
     </div>

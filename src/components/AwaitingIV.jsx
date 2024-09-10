@@ -4,7 +4,8 @@ import Header from "./Header";
 import Datepicker from "react-tailwindcss-datepicker";
 import { officeNames } from "./DropdownValues";
 import BASE_URL from "../config/apiConfig";
-
+import { DataGrid } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
 const AwaitingIV = () => {
   const [value, setValue] = useState({
     startDate: null,
@@ -50,9 +51,9 @@ const AwaitingIV = () => {
   return (
     <>
       <Header />
-      <div className="flex items-center my-1 bg-blue-200 p-2">
-        <div className="flex space-x-4">
-          <select className="form-select mt-2 " onChange={handleOfficeChange}>
+      <div className="flex items-center my-1 bg-blue-200 p-2 rounded">
+        <div className="flex space-x-4 rounded ">
+          <select className="form-select mt-2 rounded" onChange={handleOfficeChange}>
             <option value="">Office</option>
             {officeNames.map((office) => (
               <option key={office.id} value={office.officeName}>
@@ -60,8 +61,8 @@ const AwaitingIV = () => {
               </option>
             ))}
           </select>
-          <div className="flex items-center my-1 bg-blue-200">
-            <p className="mr-6 ml-10 whitespace-nowrap">
+          <div className="flex items-center my-1 bg-blue-500 rounded">
+            <p className="mr-6 ml-10 text-white whitespace-nowrap font-tahoma">
               Appointment Date
             </p>
             <div className="w-full">
@@ -71,52 +72,25 @@ const AwaitingIV = () => {
         </div>
       </div>
       {/* Render Appointments in a Table */}
-      <div className="mt-4 p-4   shadow-md rounded-lg w-full" style={{background :'#c9daf8' , fontFamily :"Mullish"}}>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-light-blue text-black">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                IV Remarks
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                IV Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Plan Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Appt. Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Appt. Time
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Patient ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Ins Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Pt Name
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-blue-100 divide-y divide-gray-200">
-            {appointments.map((appointment, index) => (
-              <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : ""}>
-                <td className="px-6 py-2">{appointment.ivRemarks}</td>
-                <td className="px-6 py-2">{appointment.ivType}</td>
-                <td className="px-6 py-2">{appointment.planType}</td>
-                <td className="px-6 py-2">{appointment.appointmentDate}</td>
-                <td className="px-6 py-2">{appointment.appointmentTime}</td>
-                <td className="px-6 py-2">{appointment.patientId}</td>
-                <td className="px-6 py-2">{appointment.insuranceName}</td>
-                <td className="px-6 py-2">{appointment.patientName}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+       
+      <Box sx={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={appointments}
+          columns={[
+            { field: 'ivRemarks', headerName: 'IV Remarks', flex: 1 },
+            { field: 'ivType', headerName: 'IV Type', flex: 1 },
+            { field: 'planType', headerName: 'Plan Type', flex: 1 },
+            { field: 'appointmentDate', headerName: 'Appointment Date', flex: 1 },
+            { field: 'appointmentTime', headerName: 'Appointment Time', flex: 1 },
+            { field: 'patientId', headerName: 'Patient ID', flex: 1 },
+            { field: 'insuranceName', headerName: 'Insurance Name', flex: 1 },
+            { field: 'patientName', headerName: 'Patient Name', flex: 1 },
+          ]}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+          getRowId={(row) => row._id} 
+        />
+      </Box>
     </>
   );
 };

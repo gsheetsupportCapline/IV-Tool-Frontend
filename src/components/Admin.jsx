@@ -10,7 +10,7 @@ import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
  import Datepicker from "react-tailwindcss-datepicker";
-import "./Table.css";
+
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
 const Admin = () => {
@@ -76,6 +76,9 @@ const Admin = () => {
     // Return the user's name if found, otherwise return the userId
     return user ? user.name : params.row.assignedUser;
   };
+
+ 
+  
 
   const columns = [
     {
@@ -175,7 +178,9 @@ const Admin = () => {
       headerName: "MID/SSN",
       headerClassName: "header-row",
       width: 100,
+      
     },
+    
     {
       field: "employerName",
       headerName: "Employer Name",
@@ -455,7 +460,7 @@ const Admin = () => {
           
         </Tabs>
   
-  {value === 1 && (
+  {value === 1 && ( 
   < >
   <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
       Appointment
@@ -496,7 +501,7 @@ const Admin = () => {
         </Menu>
       </Box>
       <div className="flex justify-center">
-        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full ">
+        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full">
           {isLoading ? (
             <ShimmerTableComponent />
           ) : (

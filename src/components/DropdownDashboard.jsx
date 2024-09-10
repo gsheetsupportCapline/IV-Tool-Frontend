@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from '@mui/material';
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from '../config/apiConfig';
-
+import { Grid, Box } from '@mui/material';
 const initialDropdownValues = {
   ivRemarksDropdownOptions: [],
   sourceDropdownOptions: [],
@@ -32,6 +32,8 @@ const DropdownDashboard = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [username, setUsername] = useState(localStorage.getItem('loggedinUserName'));
+const [timestamp, setTimestamp] = useState(new Date().toISOString());
   useEffect(() => {
     fetch(`${BASE_URL}/api/dropdownValues/`)
       .then(response => {
@@ -80,7 +82,8 @@ const DropdownDashboard = () => {
           },
           body: JSON.stringify({
             category,
-            options: [{ id: nextId, name: newItems[category] }]
+            options: [{ id: nextId, name: newItems[category] , username: username,
+              timestamp: timestamp}]
           }),
         });
 
@@ -94,7 +97,8 @@ const DropdownDashboard = () => {
         // Update local state
         setDropdownValues(prev => ({
           ...prev,
-          [category]: [...prev[category], { id: nextId.toString(), name: newItems[category] }]
+          [category]: [...prev[category], { id: nextId.toString(), name: newItems[category] , username: username,
+            timestamp: timestamp}]
         }));
         setNewItems(prev => ({ ...prev, [category]: '' }));
         console.log(`Added ${newItems[category]} to ${category}`);
@@ -128,7 +132,8 @@ const DropdownDashboard = () => {
           },
           body: JSON.stringify({
             category,
-            optionIds: selectedIds
+            optionIds:selectedIds
+           
           }),
         });
   
@@ -171,18 +176,20 @@ const DropdownDashboard = () => {
           [category]: prev[category].includes(value)
             ? prev[category].filter(item => item !== value)
             : [...prev[category], value]
-        };
+        }; 
     });
   };
 
   return (
     <>
-    <div className="space-y-4">
-      {Object.entries(dropdownValues).map(([category, items]) => (
+    <Grid container spacing={2}>
+       {Object.entries(dropdownValues).map(([category, items]) => (
         // eslint-disable-next-line react/jsx-key
-        <Card sx={{ width: '100%', maxWidth: 500 }}>
-          <CardHeader>{category}</CardHeader>
-          <CardContent>
+        <Grid item xs={12} sm={6} md={6} lg={6} xl={6}>
+          <Box sx={{ height: '100%' }}>
+            <Card sx={{ width: '100%', maxWidth: 500 }}>
+             <CardHeader>{category}</CardHeader>
+              <CardContent>
             <div className="space-y-2">
               <FormControl fullWidth>
                 <InputLabel id={`${category}-label`}>{category}</InputLabel>
@@ -215,9 +222,11 @@ const DropdownDashboard = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
-      ))}
-    </div>
+             </Card>
+         </Box>
+        </Grid>
+          ))}
+    </Grid>
     <Snackbar
   open={openSnackbar}
   anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position at top right
