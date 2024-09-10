@@ -371,7 +371,7 @@ const Admin = () => {
         filteredAppointments.sort((a, b) => {
           //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
           const dateCompare =
-            new Date(b.appointmentDate) - new Date(a.appointmentDate);
+            new Date(a.appointmentDate) - new Date(b.appointmentDate);
 
           // If dates are the same, compare times
           if (dateCompare === 0) {
@@ -380,7 +380,7 @@ const Admin = () => {
             const [hourB, minuteB] = b.appointmentTime.split(":").map(Number);
 
             // Compare hours first, then minutes if hours are equal
-            return hourB - hourA || minuteB - minuteA;
+            return hourA - hourB || minuteA - minuteB;
           }
 
           // Dates are not the same, sort by date
