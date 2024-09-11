@@ -9,10 +9,12 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
- import Datepicker from "react-tailwindcss-datepicker";
-
+import Datepicker from "react-tailwindcss-datepicker";
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
+ 
+import ImageViewer from 'react-simple-image-viewer';
+
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -25,7 +27,9 @@ const Admin = () => {
     startDate: null,
     endDate: null,
   });
- 
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [images, setImages] = useState([]);
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -76,9 +80,18 @@ const Admin = () => {
     // Return the user's name if found, otherwise return the userId
     return user ? user.name : params.row.assignedUser;
   };
+  const handleViewImage = (imageUrl) => {
+    const imagesArray = [imageUrl];
+    setCurrentImage(0);
+    setIsViewerOpen(true);
+    setImages(imagesArray);
+     
+  };
 
- 
-  
+  const closeImageViewer = () => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
+  };
 
   const columns = [
     {
@@ -179,6 +192,26 @@ const Admin = () => {
       headerClassName: "header-row",
       width: 100,
       
+    },
+    {
+      field: "imageUrl",
+      headerName: "Image",
+      headerClassName: "header-row",
+      width: 100,
+      renderCell: (params) => {
+        console.log('Current row', params.row);
+        return (
+        <>
+         
+        {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
+          <button onClick={() => handleViewImage(params.row.imageUrl)} className="size-10  w-20 rounded-md bg-black text-white px-2 py-1 text-xs">
+            View Image
+          </button>
+        ) : null}
+         
+      </>
+      )
+     }
     },
     
     {
@@ -406,6 +439,10 @@ const Admin = () => {
     console.log("newValue:", newValue);
     setValueDate(newValue);
   };
+
+
+  
+
   return (
     <>
       <Header />
@@ -518,6 +555,15 @@ const Admin = () => {
           )}
         </div>
       </div>
+      {isViewerOpen && (
+        <ImageViewer
+          src={images}
+          currentIndex={currentImage}
+          onClose={closeImageViewer}
+          disableScroll={true}
+          closeOnClickOutside={true}
+        />
+      )}
     </>
   );
 };

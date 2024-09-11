@@ -48,6 +48,7 @@ const Rush = () => {
     MIDSSN: "",
     insuranceName: "",
     insurancePhone: "",
+    imageUrl:""
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [insuranceOptions, setInsuranceOptions] = useState([]);
@@ -162,7 +163,7 @@ const Rush = () => {
       MIDSSN: values.MIDSSN,
       insuranceName: values.insuranceName.name,
       insurancePhone: values.insurancePhone,
-
+      imageUrl: values.imageUrl,
       ivType: "Rush",
     };
     console.log("Submitting payload:", payload);
@@ -189,7 +190,7 @@ const Rush = () => {
         policyHolderDOB: null,
       });
       console.log("response", response.data);
-    } catch (error) {
+    } catch (error) {  
       console.error(
         "Error creating new appointment:",
         error.response ? error.response.data : error.message
@@ -206,10 +207,12 @@ const Rush = () => {
     setSnackbarSeverity("info");
     setSnackbarMessage(`File selected: ${file.name}`);
     const formData  = new FormData();
-    formData.append('file',file);
+    formData.append('image',file);
     try {
-      const response = await axios.post(`/upload`,formData);
-      const imageUrl = response.data.url;
+      const response = await axios.post(`${BASE_URL}/api/image-upload/upload`,formData);
+      console.log(response);
+      const imageUrl = response.data.fileInfo.url;
+      console.log("image",imageUrl)
       setValues(prevValues => ({
                 ...prevValues,
                 imageUrl: imageUrl
