@@ -69,7 +69,7 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
 
   return (
     <div className="flex  my-1 bg-blue-200 p-2">
-      <div className="flex items-center space-x-4  my-1">  
+      <div className="flex space-x-4 rounded">  
         <OfficeDropdown
          onSelect={handleOfficeChange}
           allowedOffices={allowedOffices}

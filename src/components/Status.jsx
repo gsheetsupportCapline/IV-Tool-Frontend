@@ -56,11 +56,11 @@ const Status = ({ data, dateRange }) => {
     const dateTimeB = new Date(dateTimeStringB);
 
     // Compare dates
-    if (dateTimeA > dateTimeB) {
-      return -1; // a comes before b, a is later
+    if (dateTimeB > dateTimeA) {
+      return -1; // b comes before a, b is later
     }
-    if (dateTimeA < dateTimeB) {
-      return 1; // a comes after b, a is earlier
+    if (dateTimeB < dateTimeA) {
+      return 1; // b comes after a, b is earlier
     }
 
     // Dates are equal, no change in order
