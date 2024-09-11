@@ -121,6 +121,8 @@ const Rush = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const currentTime = new Date().toISOString();
+
     // Initialize an error message if any required field is missing
     let errorMessage = "";
 
@@ -164,6 +166,7 @@ const Rush = () => {
       insuranceName: values.insuranceName.name,
       insurancePhone: values.insurancePhone,
       imageUrl: values.imageUrl,
+      ivRequestedDate :currentTime,
       ivType: "Rush",
     };
     console.log("Submitting payload:", payload);
