@@ -51,10 +51,10 @@ const AwaitingIV = () => {
   return (
     <>
       <Header />
-      <div className="flex items-center my-1 bg-blue-200 p-2 rounded">
+      <div className="flex items-center my-1 bg-slate-400 p-2 rounded">
         <div className="flex space-x-4 rounded ">
           <select className="form-select mt-2 rounded" onChange={handleOfficeChange}>
-            <option value="">Office</option>
+            <option value="">Select Office</option>
             {officeNames.map((office) => (
               <option key={office.id} value={office.officeName}>
                 {office.officeName}

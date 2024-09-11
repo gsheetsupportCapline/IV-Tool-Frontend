@@ -459,7 +459,7 @@ const Admin = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "20px",
-          backgroundColor:"#9fc5e8",//  "#94a3b8",   
+          backgroundColor:"#94a3b8" ,//"#9fc5e8"   
           px: 2,
         }}
       >
@@ -505,14 +505,16 @@ const Admin = () => {
   
   {value === 1 && ( 
   < >
-  <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
+  <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
+  <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
       Appointment
     </p>
-    <div className="w-1/">
+    <div className="w-full">
       <Datepicker value={valueDate} onChange={handleValueChange} />
     </div> 
+    </div>
   </>
-
+ 
 )} 
  </div>  
       
