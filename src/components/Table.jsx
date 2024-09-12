@@ -1,29 +1,34 @@
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import "./Table.css";
+import React from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
+
 const Table = ({ data, headers }) => {
+  // Ensure each row has a unique id
+  const rowsWithIds = data.map((row, index) => ({
+    ...row,
+    id: index.toString(), // Use a string id for simplicity
+  }));
+
+  const columns = headers.map((header, index) => ({
+    field: header,
+    headerName: header,
+    flex: 1,
+  }));
+
   return (
-    <div className="table-container ">
-      <DataTable
-        value={data}
-        paginator
-        rows={5}
-        rowsPerPageOptions={[5, 10, 25, 50, 100]}
-        tableStyle={{ minWidth: "50rem" }}
-        rowClassName={(rowData, rowIndex) =>
-          rowIndex % 2 === 0 ? "even-row" : "odd-row"
-        }
-      >
-        {headers.map((header, index) => (
-          <Column
-            key={index}
-            field={header}
-            header={header}
-            style={{ width: "5%" }}
-          />
-        ))}
-      </DataTable>
-    </div>
+    <Box sx={{ height: 500, width: '100%' }}>
+      <DataGrid
+        rows={rowsWithIds}
+        columns={columns}
+        pageSize={5}
+        rowsPerPageOptions={[ 50,100]}
+        sx={{
+          '.MuiDataGrid-columnHeader': {
+            fontFamily: 'Tahoma',
+          },
+        }}
+      />
+    </Box>
   );
 };
 

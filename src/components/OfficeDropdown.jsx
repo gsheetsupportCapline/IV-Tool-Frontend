@@ -42,15 +42,20 @@ const OfficeDropdown = ({
 
   return (
     <>
-   
-    <select onChange={(e) => onSelect(e.target.value)}>
-      <option value="">Select Office</option>
-      {filteredOfficeNames.map((office) => (
-        <option key={office} value={office}>
-          {office}
-        </option>
-      ))}
-    </select>
+    <select className="form-select mt-2 rounded" onChange={(e) => onSelect(e.target.value)}>
+        {filteredOfficeNames.length > 0 && (
+          <>
+            {filteredOfficeNames.length > 1 && (
+              <option value="" >Select Office</option>
+            )}
+            {filteredOfficeNames.map((office) => (
+              <option key={office} value={office}>
+                {office}
+              </option>
+            ))}
+          </>
+        )}
+      </select>
     
  
     </>

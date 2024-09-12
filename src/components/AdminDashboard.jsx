@@ -52,7 +52,7 @@ const AdminDashboard = () => {
               }`}
               onClick={() => setSelectedItem("DropdownValues")}
             >
-             Dropdown Values
+            Validations
             </li>
            
 

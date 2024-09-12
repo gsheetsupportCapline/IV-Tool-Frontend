@@ -9,10 +9,12 @@ import Box from "@mui/material/Box";
 import axios from "axios";
 import Header from "./Header";
 import Select from "@mui/material/Select";
- import Datepicker from "react-tailwindcss-datepicker";
-import "./Table.css";
+import Datepicker from "react-tailwindcss-datepicker";
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
+ 
+import ImageViewer from 'react-simple-image-viewer';
+
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -25,7 +27,9 @@ const Admin = () => {
     startDate: null,
     endDate: null,
   });
- 
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [images, setImages] = useState([]);
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -75,6 +79,18 @@ const Admin = () => {
 
     // Return the user's name if found, otherwise return the userId
     return user ? user.name : params.row.assignedUser;
+  };
+  const handleViewImage = (imageUrl) => {
+    const imagesArray = [imageUrl];
+    setCurrentImage(0);
+    setIsViewerOpen(true);
+    setImages(imagesArray);
+     
+  };
+
+  const closeImageViewer = () => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
   };
 
   const columns = [
@@ -141,6 +157,12 @@ const Admin = () => {
       width: 100,
     },
     {
+      field: "ivRequestedDate",
+      headerName: "IV Requested Date",
+      headerClassName: "header-row",
+      width: 100,
+    },
+    {
       field: "insuranceName",
       headerName: "Insurance Name",
       headerClassName: "header-row",
@@ -175,7 +197,29 @@ const Admin = () => {
       headerName: "MID/SSN",
       headerClassName: "header-row",
       width: 100,
+      
     },
+    {
+      field: "imageUrl",
+      headerName: "Image",
+      headerClassName: "header-row",
+      width: 100,
+      renderCell: (params) => {
+        console.log('Current row', params.row);
+        return (
+        <>
+         
+        {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
+          <button onClick={() => handleViewImage(params.row.imageUrl)} className="size-10  w-20 rounded-md bg-black text-white px-2 py-1 text-xs">
+            View Image
+          </button>
+        ) : null}
+         
+      </>
+      )
+     }
+    },
+    
     {
       field: "employerName",
       headerName: "Employer Name",
@@ -366,7 +410,7 @@ const Admin = () => {
         filteredAppointments.sort((a, b) => {
           //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
           const dateCompare =
-            new Date(b.appointmentDate) - new Date(a.appointmentDate);
+            new Date(a.appointmentDate) - new Date(b.appointmentDate);
 
           // If dates are the same, compare times
           if (dateCompare === 0) {
@@ -375,7 +419,7 @@ const Admin = () => {
             const [hourB, minuteB] = b.appointmentTime.split(":").map(Number);
 
             // Compare hours first, then minutes if hours are equal
-            return hourB - hourA || minuteB - minuteA;
+            return hourA - hourB || minuteA - minuteB;
           }
 
           // Dates are not the same, sort by date
@@ -401,6 +445,10 @@ const Admin = () => {
     console.log("newValue:", newValue);
     setValueDate(newValue);
   };
+
+
+  
+
   return (
     <>
       <Header />
@@ -411,7 +459,7 @@ const Admin = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "20px",
-          backgroundColor:"#9fc5e8",//  "#94a3b8",   
+          backgroundColor:"#94a3b8" ,//"#9fc5e8"   
           px: 2,
         }}
       >
@@ -455,16 +503,18 @@ const Admin = () => {
           
         </Tabs>
   
-  {value === 1 && (
+  {value === 1 && ( 
   < >
-  <p className="mr-6 ml-10 whitespace-nowrap text-sm font-tahoma">
+  <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
+  <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
       Appointment
     </p>
-    <div className="w-1/">
+    <div className="w-full">
       <Datepicker value={valueDate} onChange={handleValueChange} />
     </div> 
+    </div>
   </>
-
+ 
 )} 
  </div>  
       
@@ -496,7 +546,7 @@ const Admin = () => {
         </Menu>
       </Box>
       <div className="flex justify-center">
-        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full ">
+        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full">
           {isLoading ? (
             <ShimmerTableComponent />
           ) : (
@@ -513,6 +563,15 @@ const Admin = () => {
           )}
         </div>
       </div>
+      {isViewerOpen && (
+        <ImageViewer
+          src={images}
+          currentIndex={currentImage}
+          onClose={closeImageViewer}
+          disableScroll={true}
+          closeOnClickOutside={true}
+        />
+      )}
     </>
   );
 };

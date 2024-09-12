@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Header from "./Header";
@@ -10,13 +10,26 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import axios from "axios"; // Import Axios
 import moment from "moment";
-import { officeNames } from "./DropdownValues";
+// import { officeNames } from "./DropdownValues";
 import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
-import {insuranceNames} from "./DropdownValues";
-import { Autocomplete } from '@mui/material';
+// import {insuranceNames} from "./DropdownValues";
+import { Autocomplete ,InputAdornment, IconButton} from '@mui/material';
+import { Upload } from 'lucide-react';
+const fetchDropdownOptions = async (category) => {
+  try {
+    const encodedCategory = encodeURIComponent(category);
+    const response = await axios.get(`${BASE_URL}/api/dropdownValues/${encodedCategory}`);
+    return response.data.options;
+  } catch (error) {
+    console.error(`Error fetching ${category} options:`, error);
+    return [];
+  }
+};
+
+
 const Rush = () => {
   const [selectedOffice, setSelectedOffice] = useState("");
 
@@ -35,7 +48,24 @@ const Rush = () => {
     MIDSSN: "",
     insuranceName: "",
     insurancePhone: "",
+    imageUrl:""
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [insuranceOptions, setInsuranceOptions] = useState([]);
+  const [officeOptions ,setOfficeOptions] =useState([]);
+ 
+  useEffect(() => {
+    const loadOptions = async () => {
+      const officeOptions = await fetchDropdownOptions("Office");
+      const insuranceOptions = await fetchDropdownOptions("Insurance Name");
+      
+      setOfficeOptions(officeOptions);
+      setInsuranceOptions(insuranceOptions);
+   
+    };
+
+    loadOptions();
+  }, []);
 
   const handleChange = (value, name) => {
     console.log(value, name);
@@ -91,6 +121,8 @@ const Rush = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const currentTime = new Date().toISOString();
+
     // Initialize an error message if any required field is missing
     let errorMessage = "";
 
@@ -133,7 +165,8 @@ const Rush = () => {
       MIDSSN: values.MIDSSN,
       insuranceName: values.insuranceName.name,
       insurancePhone: values.insurancePhone,
-
+      imageUrl: values.imageUrl,
+      ivRequestedDate :currentTime,
       ivType: "Rush",
     };
     console.log("Submitting payload:", payload);
@@ -160,7 +193,7 @@ const Rush = () => {
         policyHolderDOB: null,
       });
       console.log("response", response.data);
-    } catch (error) {
+    } catch (error) {  
       console.error(
         "Error creating new appointment:",
         error.response ? error.response.data : error.message
@@ -170,7 +203,29 @@ const Rush = () => {
       setSnackbarMessage("Failed to create IV");
     }
   };
-
+  const handleUpload =async (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+    setSnackbarOpen(true);
+    setSnackbarSeverity("info");
+    setSnackbarMessage(`File selected: ${file.name}`);
+    const formData  = new FormData();
+    formData.append('image',file);
+    try {
+      const response = await axios.post(`${BASE_URL}/api/image-upload/upload`,formData);
+      console.log(response);
+      const imageUrl = response.data.fileInfo.url;
+      console.log("image",imageUrl)
+      setValues(prevValues => ({
+                ...prevValues,
+                imageUrl: imageUrl
+            }));
+      console.log('Image uploaded successfully:', imageUrl);
+    } catch (error) {
+      console.error('Error uploading image:',error);
+    }
+    
+  };
   return (
     <>
       <Header />
@@ -241,9 +296,9 @@ const Rush = () => {
                     onChange={(e) => handleOfficeChange(e.target.value)}
                     label="Office"
                   >
-                    {officeNames.map((office) => (
-                      <MenuItem key={office.id} value={office.officeName}>
-                        {office.officeName}
+                    {officeOptions.map((office) => (
+                      <MenuItem key={office.id} value={office.name}>
+                        {office.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -287,7 +342,7 @@ const Rush = () => {
   <Autocomplete
             labelId="insurance-name-label"
             id="insurance-name-autocomplete"
-            options={insuranceNames}
+            options={insuranceOptions}
             getOptionLabel={(option) => option.name}
             value={values.name}
             onChange={(event, newValue) => 
@@ -345,6 +400,14 @@ const Rush = () => {
                   sx={{ marginBottom: 2 }}
                   fullWidth
                 />
+  <input
+      type="file"
+      accept=".pdf,.jpg,.png" // Specify allowed file types
+      style={{ display: 'none' }}
+      id="upload-file-input"
+      onChange={handleUpload}
+      encType="multipart/form-data" 
+    />
                 <TextField
                   required
                   id="outlined-mid-ssn"
@@ -353,8 +416,17 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "MIDSSN")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton edge="end" size="small"  onClick={() => document.getElementById('upload-file-input').click()}>
+                          <Upload size={20} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
-
+ 
                 <TextField
                  
                   id="outlined-insurance-contact"
