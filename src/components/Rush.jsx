@@ -76,6 +76,7 @@ const Rush = () => {
   };
   const handleOfficeChange = (newOffice) => {
     setSelectedOffice(newOffice);
+    fetchProviderIfApplicable(newOffice, values.appointmentDate);
   };
 
   const handleAppointmentDateChange = (date) => {
@@ -84,8 +85,99 @@ const Rush = () => {
       ...values,
       appointmentDate: date,
     });
+    fetchProviderIfApplicable(selectedOffice , date);
   };
-
+  const fetchProviderIfApplicable = async (office, appointmentDate) => {
+    if (office && appointmentDate) {
+      try {
+        const formattedDate = moment(appointmentDate).format("MM/DD/YYYY");
+        // Update Google Sheet (similar to updategsheet API call)
+        const sheetId = "1MO8i6_2paAEHku-YdKlwOikXItTPo88P00Hg3iyXR5Y";  // replace with actual ID
+        const updateRange = "Dashboard!A2:B2";  // range to update office and date
+        const updateUrl = `${BASE_URL}/api/spreadsheet/gsheet/updategsheet`;
+        
+        const updateOptions = {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sheetId: sheetId,
+            range: updateRange,
+            values: [[office, formattedDate]],
+          }),
+        };
+  
+        const updateResponse = await fetch(updateUrl, updateOptions);
+        const updateData = await updateResponse.json();
+  
+        if (updateData.status === 200) {
+          // If the update is successful, read the updated data (similar to readgsheet API call)
+          const readRange = "Dashboard!C5:D";
+          const readUrl = `${BASE_URL}/api/spreadsheet/gsheet/readgsheet/${sheetId}/${readRange}`;
+          
+          const readOptions = {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+            // body: JSON.stringify({
+            //   sheetId: sheetId,
+            //   range: readRange,
+            // }),
+          };
+  
+          const readResponse = await fetch(readUrl, readOptions);
+         // console.log("readresponse",readResponse);
+          const readData = await readResponse.json();
+  
+          if (readData.length === 1) {
+            // Single provider
+            readData.forEach(([, name]) => {
+              setValues((prevValues) => ({
+                ...prevValues,
+                treatingProvider: name,
+                secProviderName: "",  // Clear secondary provider
+              }));
+              
+            });
+          } else if (readData.length === 2) {
+            // Multiple providers
+            readData.forEach(([id, name]) => {
+              if (id === "Doc - 1") {
+                setValues((prevValues) => ({
+                  ...prevValues,
+                  treatingProvider: name,
+                }));
+              }
+              if (id === "Doc - 2") {
+                
+                setValues((prevValues) => ({
+                  ...prevValues,
+                  secProviderName: name,
+                }));
+              } else {
+                setValues((prevValues) => ({
+                  ...prevValues,
+                  secProviderName: "",
+                }));
+                
+              }
+            });
+          }
+        }
+      
+       
+      } catch (error) {
+       
+        console.error("Error fetching provider:", error);
+      
+      }
+    }
+  };
+  
   // Handler for patient DOB change
   const handlePatientDOBChange = (date) => {
     setValues({
@@ -308,6 +400,7 @@ const Rush = () => {
                   required
                   id="outlined-read-only-treating-provider"
                   label="Treating Provider"
+                  
                   value={values.treatingProvider}
                   onChange={(e) =>
                     handleChange(e.target.value, "treatingProvider")
@@ -323,7 +416,7 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "patientId")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
-                />
+                />                  
 
                 <DatePicker
                   required
@@ -478,3 +571,14 @@ const Rush = () => {
 };
 
 export default Rush;
+                                                                                                                              
+
+
+
+
+
+ 
+
+
+
+                                               
