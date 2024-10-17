@@ -133,47 +133,59 @@ const Rush = () => {
          // console.log("readresponse",readResponse);
           const readData = await readResponse.json();
   
-          if (readData.length === 1) {
-            // Single provider
-            readData.forEach(([, name]) => {
-              setValues((prevValues) => ({
-                ...prevValues,
-                treatingProvider: name,
-                secProviderName: "",  // Clear secondary provider
-              }));
+          // if (readData.length === 1) {
+          //   setValues((prevValues) => ({
+          //     ...prevValues,
+          //     treatingProvider: readData[0][1],
+            
+          //   }));
+          // } else if (readData.length === 2) {
+          //   // Show primary provider as treating provider
+          //   setValues((prevValues) => ({
+          //     ...prevValues,
+          //     treatingProvider: readData.find(([id]) => id === "Doc - 1")[1] || "",
               
-            });
-          } else if (readData.length === 2) {
-            // Multiple providers
-            readData.forEach(([id, name]) => {
-              if (id === "Doc - 1") {
-                setValues((prevValues) => ({
-                  ...prevValues,
-                  treatingProvider: name,
-                }));
-              }
-              if (id === "Doc - 2") {
-                
-                setValues((prevValues) => ({
-                  ...prevValues,
-                  secProviderName: name,
-                }));
-              } else {
-                setValues((prevValues) => ({
-                  ...prevValues,
-                  secProviderName: "",
-                }));
-                
-              }
-            });
+          //   }));
+          // }
+          if (readData.length > 0) {
+            setValues((prevValues) => ({
+              ...prevValues,
+              treatingProvider: readData[0][1],
+            }));
           }
+           else {
+            setValues((prevValues) => ({
+              ...prevValues,
+              treatingProvider: "",
+            
+            }));
+            setSnackbarOpen(true);
+            setSnackbarSeverity("error");
+            setSnackbarMessage("No doctor found for selected office and appointment date.");
+          }
+        } else {
+          setValues((prevValues) => ({
+            ...prevValues,
+            treatingProvider: "",
+      
+          }));
+          setSnackbarOpen(true);
+          setSnackbarSeverity("error");
+          setSnackbarMessage("Failed to update Google Sheet. Please try again.");
         }
       
        
       } catch (error) {
-       
         console.error("Error fetching provider:", error);
+        setValues((prevValues) => ({
+          ...prevValues,
+          treatingProvider: "",
       
+        }));
+        setSnackbarOpen(true);
+        setSnackbarSeverity("error");
+        // setSnackbarMessage("An error occurred while fetching provider. Please try again.");
+        setSnackbarMessage("No provider found for selected office and appointment date.");
       }
     }
   };
