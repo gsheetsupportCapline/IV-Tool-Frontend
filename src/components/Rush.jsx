@@ -130,6 +130,7 @@ const Rush = () => {
           };
   
           const readResponse = await fetch(readUrl, readOptions);
+         // console.log("readresponse",readResponse);
           const readData = await readResponse.json();
   
           if (readData.length === 1) {
@@ -399,6 +400,7 @@ const Rush = () => {
                   required
                   id="outlined-read-only-treating-provider"
                   label="Treating Provider"
+                  
                   value={values.treatingProvider}
                   onChange={(e) =>
                     handleChange(e.target.value, "treatingProvider")
@@ -414,7 +416,7 @@ const Rush = () => {
                   onChange={(e) => handleChange(e.target.value, "patientId")}
                   sx={{ marginBottom: 2 }}
                   fullWidth
-                />
+                />                  
 
                 <DatePicker
                   required
@@ -569,3 +571,14 @@ const Rush = () => {
 };
 
 export default Rush;
+                                                                                                                              
+
+
+
+
+
+ 
+
+
+
+                                               

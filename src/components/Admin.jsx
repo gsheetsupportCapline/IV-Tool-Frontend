@@ -17,7 +17,7 @@ import ImageViewer from 'react-simple-image-viewer';
 
 const Admin = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOffice, setSelectedOffice] = useState("");
+  const [selectedOffice, setSelectedOffice] = useState("AllOffices");
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
