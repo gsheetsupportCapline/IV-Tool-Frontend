@@ -550,7 +550,7 @@ const Admin = () => {
           {isLoading ? (
             <ShimmerTableComponent />
           ) : (
-            <div style={{ height: 500, width: "100%" }}>
+            <div style={{ height: 650, width: "100%" }}>
               <DataGrid
                 rows={rows}
                 columns={columns}
