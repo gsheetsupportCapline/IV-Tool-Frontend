@@ -550,16 +550,18 @@ const Admin = () => {
           {isLoading ? (
             <ShimmerTableComponent />
           ) : (
-            <div style={{ height: 650, width: "100%" }}>
+            <div style={{ height: 850, width: "100%" }}>
               <DataGrid
                 rows={rows}
                 columns={columns}
-                pageSizeOptions={[5, 10, 20, 25, 50, 100]}
+                pageSizeOptions={[ 25, 50, 100]}
                 checkboxSelection
                 onRowSelectionModelChange={handleSelectionChange}
                 getRowId={(row) => row._id.toString()}
+ 
               />
             </div>
+ 
           )}
         </div>
       </div>
