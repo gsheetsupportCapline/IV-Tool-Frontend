@@ -123,7 +123,7 @@ const ProductionIV = () => {
           ))}
         </tbody>
       </table>
-    );
+    );               
   };
 
   return (
@@ -133,7 +133,7 @@ const ProductionIV = () => {
         <div className="w-1/4">
           <Datepicker value={value} onChange={handleValueChange} />
         </div>
-      </div>
+      </div>     
       {renderTable()}
     </>
   );
