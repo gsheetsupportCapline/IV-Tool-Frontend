@@ -52,6 +52,8 @@ const OfficeAndDateSelector = ({ onOfficeChange, onDateChange }) => {
         ? assignedOfficesString.split(",")
         : [];
       setAllowedOffices(assignedOffices);
+      setSelectedOffice(assignedOfficesString);
+      onOfficeChange(assignedOfficesString); 
     } else {
       // Default case, set an empty array if the role is unknown or not supported
       setAllowedOffices([]);
