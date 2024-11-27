@@ -56,8 +56,19 @@ const Rush = () => {
  
   useEffect(() => {
     const loadOptions = async () => {
-      const officeOptions = await fetchDropdownOptions("Office");
-      const insuranceOptions = await fetchDropdownOptions("Insurance Name");
+      let officeOptions = [];
+      let insuranceOptions=[];
+      if (localStorage.getItem('role') === 'officeuser') {
+        // For office users, get only assigned offices
+        const assignedOffice = localStorage.getItem('assignedOffice');
+        officeOptions = [ {name :assignedOffice}];
+        setSelectedOffice(assignedOffice); 
+        insuranceOptions = await fetchDropdownOptions("Insurance Name");
+      } else {
+        // For other roles, fetch all available options
+        officeOptions = await fetchDropdownOptions("Office");
+         insuranceOptions = await fetchDropdownOptions("Insurance Name");
+      }
       
       setOfficeOptions(officeOptions);
       setInsuranceOptions(insuranceOptions);

@@ -40,9 +40,20 @@ const OfficeDropdown = ({
     ? officeNames
     : officeNames.filter((name) => allowedOffices.includes(name));
 
+    const handleSelect = (e) => {
+      const selectedOffice = e.target.value;
+      
+      if (filteredOfficeNames.includes(selectedOffice)) {
+        onSelect(selectedOffice);
+      } else {
+        console.warn(`Invalid office selection: ${selectedOffice}`);
+         // You might want to set a default value or show an error here
+      }
+    };
+
   return (
     <>
-    <select className="form-select mt-2 rounded" onChange={(e) => onSelect(e.target.value)}>
+    <select className="form-select mt-2 rounded" onChange={handleSelect}>
         {filteredOfficeNames.length > 0 && (
           <>
             {filteredOfficeNames.length > 1 && (
