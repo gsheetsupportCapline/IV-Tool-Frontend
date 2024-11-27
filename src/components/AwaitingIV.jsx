@@ -13,6 +13,24 @@ const AwaitingIV = () => {
   });
   const [selectedOffice, setSelectedOffice] = useState(null); // New state for selected office
   const [appointments, setAppointments] = useState([]);
+  const [filteredOffices, setFilteredOffices] = useState(officeNames);
+
+  // Function to filter offices based on user role
+  const filterOffices = () => {
+    const userRole = localStorage.getItem('role');
+    if (userRole === 'officeuser') {
+      const assignedOffice = localStorage.getItem('assignedOffice');
+      setFilteredOffices([officeNames.find((office) => office.officeName === assignedOffice)]);
+      setSelectedOffice(assignedOffice)
+    } else {
+      setFilteredOffices(officeNames);
+    }
+  };
+
+  useEffect(() => {
+    filterOffices();
+  }, []);
+
   const handleValueChange = (newValue) => {
     setValue({
       startDate: new Date(newValue.startDate),
@@ -53,14 +71,20 @@ const AwaitingIV = () => {
       <Header />
       <div className="flex items-center my-1 bg-slate-400 p-2 rounded">
         <div className="flex space-x-4 rounded ">
-          <select className="form-select mt-2 rounded" onChange={handleOfficeChange}>
-            <option value="">Select Office</option>
-            {officeNames.map((office) => (
-              <option key={office.id} value={office.officeName}>
-                {office.officeName}
-              </option>
-            ))}
-          </select>
+        <select className="form-select mt-2 rounded" onChange={handleOfficeChange}>
+  {filteredOffices.length === 1 ? (
+    <option value={filteredOffices[0].officeName}>{filteredOffices[0].officeName}</option>
+  ) : (
+    <>
+      <option value="">Select Office</option>
+      {filteredOffices.map((office) => (
+        <option key={office.id} value={office.officeName}>
+          {office.officeName}
+        </option>
+      ))}
+    </>
+  )}
+</select>
           <div className="flex items-center my-1 bg-blue-500 rounded">
             <p className="mr-6 ml-10 text-white whitespace-nowrap font-tahoma">
               Appointment Date
