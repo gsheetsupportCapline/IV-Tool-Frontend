@@ -509,7 +509,7 @@ const Admin = () => {
   <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
       Appointment
     </p>
-    <div className="w-full">
+    <div className="w-full font-tahoma">
       <Datepicker value={valueDate} onChange={handleValueChange} />
     </div> 
     </div>

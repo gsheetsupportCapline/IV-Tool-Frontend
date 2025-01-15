@@ -60,7 +60,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content Area */}
-        <div className="w-4/5 p-4   rounded-lg shadow-lg sticky top-0" style={{ backgroundColor: '#eeeeee'}}>
+        <div className="w-4/5 p-4   rounded-lg shadow-lg sticky top-0 font-tahoma" style={{ backgroundColor: '#eeeeee'}}>
           {selectedItem === "PendingIV" && <PendingIV />}
           {selectedItem === "AssignedIV" && <AssignedIV />}
           {selectedItem === "ProductionIV" && <ProductionIV />}

@@ -14,7 +14,7 @@ const Home = () => {
     startDate: null,
     endDate: null,
   });
-
+  const [patientIdInput, setPatientIdInput] = useState("");
   const fetchData = async () => {
     try {
       const response = await fetch(
@@ -40,6 +40,10 @@ const Home = () => {
     if (selectedOffice.length > 0) fetchData();
   }, [selectedOffice]);
 
+  const handlePatientIdChange = (e) => {
+    setPatientIdInput(e.target.value);
+  };
+
   return (
     <>
       <Header />
@@ -47,11 +51,20 @@ const Home = () => {
         <PageNotFound />
       ) : (
         <>
+        <div className="flex flex-row justify-between items-center my-1 bg-slate-400 p-2 font-tahoma">
           <OfficeAndDateSelector
             onOfficeChange={setSelectedOffice}
             onDateChange={(dates) => setDateRange(dates)}
           />
-          <Status data={data} dateRange={dateRange} />
+         <input
+              type="text"
+              value={patientIdInput}
+              onChange={handlePatientIdChange}
+              placeholder="Enter Patient ID"
+              className="mt-4 md:mt-0 mr-4 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+        </div>
+          <Status data={data} dateRange={dateRange}  patientId={patientIdInput}/>
         </>
       )}
     </>
