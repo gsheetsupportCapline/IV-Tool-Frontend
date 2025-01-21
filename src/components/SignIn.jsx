@@ -1,50 +1,38 @@
 import { useState } from "react";
 import { useHistory } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
 import axios from "axios";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
-import BackgroundImg from "../utils/login.jpg";
-const defaultTheme = createTheme();
+
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // State for snackbar visibility
-  const [snackbarMessage, setSnackbarMessage] = useState(""); // State for snackbar message
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Default severity
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   let history = useHistory();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
 
-    // Check if email is empty
     if (!email.trim()) {
       setSnackbarMessage("Email is required.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       isValid = false;
-      return; // Exit the function early if email is not valid
+      return;
     }
 
-    // Check if password is empty
     if (!password.trim()) {
       setSnackbarMessage("Password is required.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       isValid = false;
-      return; // Exit the function early if password is not valid
+      return;
     }
+
     if (isValid) {
       try {
         const response = await axios.post(`${BASE_URL}/api/auth/login`, {
@@ -52,130 +40,73 @@ const SignIn = () => {
           password: password,
         });
 
-        await localStorage.setItem("token", response.data.token);
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("loggedinUserId", response.data.data.userDetails._id);
+        localStorage.setItem("loggedinUserName", response.data.data.userDetails.name);
+        localStorage.setItem("role", response.data.data.userDetails.role);
+        localStorage.setItem("assignedOffice", response.data.data.userDetails.assignedOffice);
 
-        // const userRole = response.data.data.userDetails.role;
-        await localStorage.setItem(
-          "loggedinUserId",
-          response.data.data.userDetails._id
-        );
-        await localStorage.setItem(
-          "loggedinUserName",
-          response.data.data.userDetails.name
-        );
-        await localStorage.setItem("role", response.data.data.userDetails.role);
-        await localStorage.setItem(
-          "assignedOffice",
-          response.data.data.userDetails.assignedOffice
-        );
         setSnackbarMessage("Login successful!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        // window.location.href = "/schedule-patient";
+
         history.push("/schedule-patient");
       } catch (error) {
-        console.error("Login failed:", error);
-        setSnackbarMessage("Invalid credentials.");
-        setSnackbarSeverity("error");
         setSnackbarOpen(true);
+        setSnackbarSeverity("error");
+        console.error("Login failed:", error.response);
+        if (!error.response) {
+          setSnackbarMessage("Server connection lost. Please try again later.");
+        }  else if (error.response.data.err?.message == "Incorrect password") {
+          setSnackbarMessage("Invalid credentials. Please check your email and password.");
+        }
+           else {
+          setSnackbarMessage("An error occurred. Please try again.");
+        }
       }
     }
   };
 
   return (
-    <>
-      <ThemeProvider theme={defaultTheme}>
-        <Grid container component="main" sx={{ height: "100vh" }}>
-          <CssBaseline />
-          <Grid
-            item
-            xs={false}
-            sm={4}
-            md={7}
-            sx={{
-              backgroundImage: `url(${BackgroundImg})`,
-              backgroundColor: (t) =>
-                t.palette.mode === "light"
-                  ? t.palette.grey[50]
-                  : t.palette.grey[900],
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <Grid
-            item
-            xs={12}
-            sm={8}
-            md={5}
-            component={Paper}
-            elevation={6}
-            square
-            sx={{
-              backgroundColor: "#FAF9F6",
-            }}
-          >
-            <Box
-              sx={{
-                my: 8,
-                mx: 4,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                Sign In
-              </Typography>
-              <Box
-                component="form"
-                noValidate
-                onSubmit={handleSubmit}
-                sx={{ mt: 1 }}
-              >
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email"
-                  name="email"
-                  autoComplete="email"
-                  autoFocus
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
-                  Sign In
-                </Button>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </ThemeProvider>
+    <div style={styles.body}>
+      <div style={styles.container}>
+        <img
+          src="https://drive.google.com/thumbnail?sz=w1920&id=15U1Qa5Kq34wWucYJQDLzUrEwVcBtSa2I"
+          alt="Logo"
+          style={styles.logo}
+        />
+        <h2 style={styles.heading}>Login</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.textbox}>
+            <input
+              type="email"
+              id="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.textbox}>
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+          <button type="submit" style={styles.btn}>
+            Login
+          </button>
+        </form>
+      </div>
       <Snackbar
         open={snackbarOpen}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position at top right
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
       >
@@ -183,13 +114,71 @@ const SignIn = () => {
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: "100%" }}
+          style={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </>
+    </div>
   );
 };
 
+const styles = {
+  body: {
+    margin: 0,
+    padding: 0,
+    fontFamily: "Cambria, sans-serif",
+    background: "url('https://drive.google.com/thumbnail?sz=w1920&id=10iAtTzD1Khs1LRCzMvSo510isbNVIqaH') no-repeat center center fixed",
+    backgroundSize: "cover",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+  },
+  container: {
+    width: "300px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+  },
+  logo: {
+    display: "block",
+    margin: "0 auto",
+    width: "100px",
+  },
+  heading: {
+    textAlign: "center",
+    marginBottom: "20px",
+    color: "#333",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  textbox: {
+    marginBottom: "15px",
+  },
+  input: {
+    width: "100%",
+    padding: "10px",
+    background: "#f1f1f1",
+    border: "none",
+    borderRadius: "5px",
+    boxSizing: "border-box",
+  },
+  btn: {
+    width: "100%",
+    padding: "10px",
+    background: "#3498db",
+    border: "none",
+    borderRadius: "5px",
+    color: "#fff",
+    cursor: "pointer",
+    marginBottom: "10px",
+  },
+};
+
 export default SignIn;
+
+
