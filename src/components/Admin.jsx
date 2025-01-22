@@ -30,6 +30,7 @@ const Admin = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [images, setImages] = useState([]);
+  const [patientIdFilter, setPatientIdFilter] = useState('');
   const officeName = [
     "AllOffices",
     "Aransas",
@@ -343,7 +344,7 @@ const Admin = () => {
         console.log("Response api", response);
         const updatedAppointment = response.data;
         console.log("Updated Appointment", updatedAppointment);
-
+        
         // Find the index of the updated appointment in the rows array
         const index = rows.findIndex(
           (row) => row._id === updatedAppointment._id
@@ -387,6 +388,13 @@ const Admin = () => {
             appointment.appointmentDate <= endDate
         );
       }
+      // Apply patient ID filter
+      if (patientIdFilter) {
+        filteredAppointments = filteredAppointments.filter(
+          (appointment ) => 
+            appointment.patientId == patientIdFilter
+        );
+      }
         switch (tabValue) {
           case 0: // Unassigned appointments
           filteredAppointments = filteredAppointments.filter(
@@ -409,8 +417,7 @@ const Admin = () => {
         // Sort the appointments by appointmentDate in descending order
         filteredAppointments.sort((a, b) => {
           //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
-          const dateCompare =
-            new Date(a.appointmentDate) - new Date(b.appointmentDate);
+          const dateCompare = new Date(a.appointmentDate) - new Date(b.appointmentDate);
 
           // If dates are the same, compare times
           if (dateCompare === 0) {
@@ -439,7 +446,7 @@ const Admin = () => {
 
   useEffect(() => {
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
-  }, [value,valueDate, selectedOffice]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
+  }, [value,valueDate, selectedOffice,patientIdFilter]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
 
   const handleValueChange = (newValue) => {
     console.log("newValue:", newValue);
@@ -509,13 +516,20 @@ const Admin = () => {
   <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
       Appointment
     </p>
-    <div className="w-full">
+    <div className="w-full font-tahoma">
       <Datepicker value={valueDate} onChange={handleValueChange} />
     </div> 
     </div>
-  </>
+ </>
  
 )} 
+    <input
+              type="text"
+              value={patientIdFilter}
+              onChange={(e) => setPatientIdFilter(e.target.value)}
+              placeholder="Enter Patient ID"
+              className="mt-4 md:mt-0 mr-4 ml-2 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
  </div>  
       
         <Box sx={{ display: "flex", gap: 1, p: 2 }}>

@@ -69,7 +69,7 @@ const AwaitingIV = () => {
   return (
     <>
       <Header />
-      <div className="flex items-center my-1 bg-slate-400 p-2 rounded">
+      <div className="flex items-center my-1 bg-slate-400 p-2 rounded font-tahoma">
         <div className="flex space-x-4 rounded ">
         <select className="form-select mt-2 rounded" onChange={handleOfficeChange}>
   {filteredOffices.length === 1 ? (
