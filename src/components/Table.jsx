@@ -32,4 +32,4 @@ const Table = ({ data, headers }) => {
   );
 };
 
-export default Table;
+export default Table; 

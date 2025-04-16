@@ -71,7 +71,7 @@ const SignIn = () => {
     <div style={styles.body}>
       <div style={styles.container}>
         <img
-          src="https://drive.google.com/thumbnail?sz=w1920&id=15U1Qa5Kq34wWucYJQDLzUrEwVcBtSa2I"
+          src="https://drive.google.com/thumbnail?sz=w1920&id=1A0xR_WQAM9rpX34fqrqb3WF8YHnkOX1c"
           alt="Logo"
           style={styles.logo}
         />
