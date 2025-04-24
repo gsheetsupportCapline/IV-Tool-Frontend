@@ -72,7 +72,7 @@ const SignIn = () => {
       <div style={styles.container}>
         <img
           src="https://drive.google.com/thumbnail?sz=w1920&id=1A0xR_WQAM9rpX34fqrqb3WF8YHnkOX1c"
-          alt="Logo"
+          alt="Logo" 
           style={styles.logo}
         />
         <h2 style={styles.heading}>Login</h2>
