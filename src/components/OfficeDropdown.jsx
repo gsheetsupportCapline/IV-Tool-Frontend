@@ -6,7 +6,6 @@ const OfficeDropdown = ({
   showAllOffices = false,
 }) => {
   const officeNames = [
-    "AllOffices",
     "Aransas",
     "Azle",
     "Beaumont",
