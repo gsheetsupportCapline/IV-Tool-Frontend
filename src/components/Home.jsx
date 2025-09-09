@@ -15,10 +15,11 @@ const Home = () => {
     endDate: null,
   });
   const [patientIdInput, setPatientIdInput] = useState("");
+  
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}`
+        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`
       );
       const responseData = await response.json();
       console.log("Fetched data:", responseData);
@@ -37,8 +38,10 @@ const Home = () => {
     }
   };
   useEffect(() => {
-    if (selectedOffice.length > 0) fetchData();
-  }, [selectedOffice]);
+    if (selectedOffice.length > 0 &&
+    dateRange.startDate &&
+    dateRange.endDate) fetchData();
+  }, [selectedOffice, dateRange]);
 
   const handlePatientIdChange = (e) => {
     setPatientIdInput(e.target.value);

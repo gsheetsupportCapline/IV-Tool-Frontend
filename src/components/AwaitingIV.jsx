@@ -6,7 +6,9 @@ import { officeNames } from "./DropdownValues";
 import BASE_URL from "../config/apiConfig";
 import { DataGrid } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
+import FullScreenSpinner from './FullScreenSpinner';
 const AwaitingIV = () => {
+  const [loading, setLoading] = useState(false);
   const [value, setValue] = useState({
     startDate: null,
     endDate: null,
@@ -44,6 +46,8 @@ const AwaitingIV = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      try {
       let params = "";
       if (selectedOffice) {
         params += `&officeName=${selectedOffice}`;
@@ -53,14 +57,16 @@ const AwaitingIV = () => {
 
       const url = `${BASE_URL}/api/appointments/appointments-by-office-and-remarks?${params}&startDate=${startDateParam}&endDate=${endDateParam}`;
       console.log(url);
-      try {
         const response = await fetch(url);
         const responseData = await response.json();
         setAppointments(responseData);
         //console.log(responseData);
       } catch (error) {
         console.error("Error fetching data:", error);
+      setLoading(false);
+
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -68,6 +74,7 @@ const AwaitingIV = () => {
 
   return (
     <>
+    {loading && <FullScreenSpinner />}
       <Header />
       <div className="flex items-center my-1 bg-slate-400 p-2 rounded font-tahoma">
         <div className="flex space-x-4 rounded ">

@@ -12,12 +12,14 @@ import Select from "@mui/material/Select";
 import Datepicker from "react-tailwindcss-datepicker";
 import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
+import FullScreenSpinner from './FullScreenSpinner';
  
 import ImageViewer from 'react-simple-image-viewer';
 
 const Admin = () => {
+  const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOffice, setSelectedOffice] = useState("AllOffices");
+  const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
@@ -244,6 +246,8 @@ const Admin = () => {
   };
 
   const handleMenuItemClick = async (user) => {
+    setLoading(true);
+    console.log("checkRow Data:", selectedRows);
     // Assuming selectedRows contains the appointments to be updated
     const selectedAppointmentIds = selectedRows.map((row) => row._id); // Adjust 'id' as per your data structure
     console.log("Selected Appointment Ids", selectedAppointmentIds);
@@ -255,7 +259,7 @@ const Admin = () => {
         const officeNameForCurrentId = selectedRows.find(
           (row) => row._id === id
         )?.office;
-
+console.log("API CALL:", officeNameForCurrentId, id);
         if (!officeNameForCurrentId) {
           console.error("Office name not found for appointment ID:", id);
           continue;
@@ -292,6 +296,7 @@ const Admin = () => {
     }
 
     handleClose();
+    setLoading(false);
     console.log(`Assigned ${selectedRows.length} IVs to ${user.name}`);
   };
 
@@ -366,28 +371,22 @@ const Admin = () => {
   };
 
   const fetchAndFilterAppointments = async (tabValue) => {
+    if (!selectedOffice) {
+    setRows([]);
+    setIsLoading(false);
+    return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}/api/appointments/fetch-appointments/${
-          selectedOffice || ""
-        }`
+        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${valueDate.startDate}&endDate=${valueDate.endDate}`
       );
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
         console.log("Appointment data", responseData.appointments);
       let filteredAppointments = responseData.appointments;
       // Apply date filtering only for Assigned tab
-      if (tabValue === 1 && valueDate.startDate && valueDate.endDate) {
-        const startDate = valueDate.startDate;
-        const endDate = valueDate.endDate;
-
-        filteredAppointments = filteredAppointments.filter(
-          (appointment) =>
-            startDate <= appointment.appointmentDate &&
-            appointment.appointmentDate <= endDate
-        );
-      }
+      
       // Apply patient ID filter
       if (patientIdFilter) {
         filteredAppointments = filteredAppointments.filter(
@@ -445,7 +444,9 @@ const Admin = () => {
   };
 
   useEffect(() => {
+      setLoading(true);
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
+    setLoading(false);
   }, [value,valueDate, selectedOffice,patientIdFilter]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
 
   const handleValueChange = (newValue) => {
@@ -458,6 +459,7 @@ const Admin = () => {
 
   return (
     <>
+    {loading && <FullScreenSpinner />}
       <Header />
 
       <Box
@@ -510,7 +512,7 @@ const Admin = () => {
           
         </Tabs>
   
-  {value === 1 && ( 
+  { ( 
   < >
   <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
   <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
