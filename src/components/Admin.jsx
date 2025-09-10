@@ -384,7 +384,10 @@ console.log("API CALL:", officeNameForCurrentId, id);
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
         console.log("Appointment data", responseData.appointments);
-      let filteredAppointments = responseData.appointments;
+      let filteredAppointments = responseData.appointments.map(appointment =>({
+        ...appointment,
+        appointmentDate: new Date(appointment.appointmentDate).toISOString().split('T')[0]
+      }));
       // Apply date filtering only for Assigned tab
       
       // Apply patient ID filter
