@@ -114,27 +114,37 @@ const ProductionIV = () => {
 
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-        <div className="flex">
-          {/* Main Table Section */}
-          <div
-            className="flex-1 overflow-auto"
-            style={{ maxHeight: 'calc(100vh - 12rem)' }}
-          >
-            <table className="w-full">
-              <thead className="bg-slate-50 sticky top-0">
-                <tr>
-                  {headers.slice(0, -1).map((header, index) => (
-                    <th
-                      key={index}
-                      className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-100">
-                {DropdownValues.officeNames.map((officeNameObj, index) => (
+        <div
+          className="overflow-auto"
+          style={{ maxHeight: 'calc(100vh - 12rem)' }}
+        >
+          <table className="w-full">
+            <thead className="bg-slate-50 sticky top-0">
+              <tr>
+                {headers.map((header, index) => (
+                  <th
+                    key={index}
+                    className={`px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200 ${
+                      header === 'Total'
+                        ? 'sticky right-0 bg-slate-100 border-l-2 border-slate-300'
+                        : ''
+                    }`}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-100">
+              {DropdownValues.officeNames.map((officeNameObj, index) => {
+                const rowTotal = userName.reduce(
+                  (total, username) =>
+                    total +
+                    (processedData[officeNameObj.officeName]?.[username] || 0),
+                  0
+                );
+
+                return (
                   <tr
                     key={index}
                     className={`hover:bg-blue-50 transition-colors duration-200 ${
@@ -162,98 +172,55 @@ const ProductionIV = () => {
                         </td>
                       );
                     })}
-                  </tr>
-                ))}
-
-                {/* Bottom Total Row */}
-                <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0">
-                  <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200">
-                    Total
-                  </td>
-                  {columnTotals.map((colTotal, index) => (
-                    <td key={index} className="px-4 py-3 text-center">
+                    {/* Row Total Column */}
+                    <td className="px-4 py-2 text-center sticky right-0 bg-slate-50 border-l-2 border-slate-300">
                       <div
                         className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                          colTotal > 0
+                          rowTotal > 0
                             ? 'bg-blue-100 text-blue-800 border border-blue-200'
                             : 'bg-gray-50 text-gray-400 border border-gray-200'
                         }`}
                       >
-                        {colTotal}
+                        {rowTotal}
                       </div>
                     </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Fixed Right Total Column */}
-          <div
-            className="bg-slate-50 border-l border-slate-200"
-            style={{ minWidth: '100px' }}
-          >
-            <div className="sticky top-0 bg-slate-100 px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200">
-              Total
-            </div>
-            <div
-              style={{ maxHeight: 'calc(100vh - 16rem)', overflowY: 'hidden' }}
-            >
-              {DropdownValues.officeNames.map((officeNameObj, index) => {
-                const rowTotal = userName.reduce(
-                  (total, username) =>
-                    total +
-                    (processedData[officeNameObj.officeName]?.[username] || 0),
-                  0
+                  </tr>
                 );
-                return (
-                  <div
-                    key={index}
-                    className={`px-4 py-2 text-center border-b border-slate-100 ${
-                      index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
-                    }`}
-                    style={{
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
+              })}
+
+              {/* Bottom Total Row */}
+              <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0">
+                <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200">
+                  Total
+                </td>
+                {columnTotals.map((colTotal, index) => (
+                  <td key={index} className="px-4 py-3 text-center">
                     <div
                       className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                        rowTotal > 0
+                        colTotal > 0
                           ? 'bg-blue-100 text-blue-800 border border-blue-200'
                           : 'bg-gray-50 text-gray-400 border border-gray-200'
                       }`}
                     >
-                      {rowTotal}
+                      {colTotal}
                     </div>
+                  </td>
+                ))}
+                {/* Grand Total Cell */}
+                <td className="px-4 py-3 text-center sticky right-0 bg-slate-200 border-l-2 border-slate-300">
+                  <div
+                    className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
+                      grandTotal > 0
+                        ? 'bg-green-200 text-green-900 border border-green-300'
+                        : 'bg-gray-100 text-gray-400 border border-gray-200'
+                    }`}
+                  >
+                    {grandTotal}
                   </div>
-                );
-              })}
-
-              {/* Grand Total Cell */}
-              <div
-                className="px-4 py-3 text-center bg-slate-200 border-t-2 border-slate-300"
-                style={{
-                  height: '52px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <div
-                  className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                    grandTotal > 0
-                      ? 'bg-green-200 text-green-900 border border-green-300'
-                      : 'bg-gray-100 text-gray-400 border border-gray-200'
-                  }`}
-                >
-                  {grandTotal}
-                </div>
-              </div>
-            </div>
-          </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Table Footer */}
