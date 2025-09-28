@@ -266,7 +266,7 @@ const MasterData = () => {
       <div className="h-full overflow-hidden">
         <div className="p-4 h-full flex flex-col">
           {/* Filters Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4">
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4 flex-shrink-0">
             <div className="grid grid-cols-3 gap-6 items-end">
               {/* Date Range */}
               <div className="space-y-2">
@@ -326,8 +326,13 @@ const MasterData = () => {
           </div>
 
           {/* Results Section */}
-          <div className="flex-1 bg-white rounded-lg shadow-sm border border-slate-200 min-h-0">
-            <Box sx={{ height: '100%', width: '100%' }}>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 min-h-0 mb-2">
+            <Box
+              sx={{
+                height: 'calc(100vh - 200px)',
+                width: '100%',
+              }}
+            >
               <DataGrid
                 rows={data.length > 0 ? transformData(data) : []}
                 columns={generateColumns()}
