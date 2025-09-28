@@ -34,8 +34,21 @@ const Table = ({ data, headers }) => {
             fontWeight: 600,
           },
           '.MuiDataGrid-columnSeparator': {
-            color: '#475569', // slate-600
+            color: '#ffffff', // Make separator white
           },
+          '.MuiDataGrid-iconSeparator': {
+            color: '#ffffff', // Make separator icon white
+          },
+          '.MuiDataGrid-sortIcon': {
+            color: '#ffffff', // Make sort arrow white
+          },
+          '.MuiDataGrid-menuIcon': {
+            color: '#ffffff', // Make menu icon (3 dots) white
+          },
+          '.MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+            {
+              color: '#ffffff', // Make all header icons white
+            },
           '.MuiDataGrid-root': {
             border: '1px solid #e2e8f0', // slate-200
             borderRadius: '8px',

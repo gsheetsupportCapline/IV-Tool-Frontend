@@ -100,7 +100,17 @@ const Status = ({ data, dateRange, patientId }) => {
     return dataArray.map((item) => {
       const transformed = {};
       Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
-        transformed[displayName] = item[dataKey] || '';
+        if (dataKey === 'appointmentDate' && item[dataKey]) {
+          // Format appointment date to show only date part
+          const date = new Date(item[dataKey]);
+          transformed[displayName] = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          });
+        } else {
+          transformed[displayName] = item[dataKey] || '';
+        }
       });
       return transformed;
     });
