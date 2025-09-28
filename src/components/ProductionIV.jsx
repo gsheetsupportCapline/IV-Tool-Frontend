@@ -116,7 +116,10 @@ const ProductionIV = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
         <div className="flex">
           {/* Main Table Section */}
-          <div className="flex-1 overflow-auto" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
+          <div
+            className="flex-1 overflow-auto"
+            style={{ maxHeight: 'calc(100vh - 12rem)' }}
+          >
             <table className="w-full">
               <thead className="bg-slate-50 sticky top-0">
                 <tr>
@@ -143,7 +146,8 @@ const ProductionIV = () => {
                     </td>
                     {userName.map((username, userIndex) => {
                       const count =
-                        processedData[officeNameObj.officeName]?.[username] || 0;
+                        processedData[officeNameObj.officeName]?.[username] ||
+                        0;
                       return (
                         <td key={userIndex} className="px-4 py-2 text-center">
                           <div
@@ -160,7 +164,7 @@ const ProductionIV = () => {
                     })}
                   </tr>
                 ))}
-                
+
                 {/* Bottom Total Row */}
                 <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0">
                   <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200">
@@ -168,11 +172,13 @@ const ProductionIV = () => {
                   </td>
                   {columnTotals.map((colTotal, index) => (
                     <td key={index} className="px-4 py-3 text-center">
-                      <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                        colTotal > 0 
-                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                          : 'bg-gray-50 text-gray-400 border border-gray-200'
-                      }`}>
+                      <div
+                        className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
+                          colTotal > 0
+                            ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                            : 'bg-gray-50 text-gray-400 border border-gray-200'
+                        }`}
+                      >
                         {colTotal}
                       </div>
                     </td>
@@ -183,11 +189,16 @@ const ProductionIV = () => {
           </div>
 
           {/* Fixed Right Total Column */}
-          <div className="bg-slate-50 border-l border-slate-200" style={{ minWidth: '100px' }}>
+          <div
+            className="bg-slate-50 border-l border-slate-200"
+            style={{ minWidth: '100px' }}
+          >
             <div className="sticky top-0 bg-slate-100 px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200">
               Total
             </div>
-            <div style={{ maxHeight: 'calc(100vh - 16rem)', overflowY: 'hidden' }}>
+            <div
+              style={{ maxHeight: 'calc(100vh - 16rem)', overflowY: 'hidden' }}
+            >
               {DropdownValues.officeNames.map((officeNameObj, index) => {
                 const rowTotal = userName.reduce(
                   (total, username) =>
@@ -201,27 +212,43 @@ const ProductionIV = () => {
                     className={`px-4 py-2 text-center border-b border-slate-100 ${
                       index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
                     }`}
-                    style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
                   >
-                    <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                      rowTotal > 0
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-gray-50 text-gray-400 border border-gray-200'
-                    }`}>
+                    <div
+                      className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
+                        rowTotal > 0
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                          : 'bg-gray-50 text-gray-400 border border-gray-200'
+                      }`}
+                    >
                       {rowTotal}
                     </div>
                   </div>
                 );
               })}
-              
+
               {/* Grand Total Cell */}
-              <div className="px-4 py-3 text-center bg-slate-200 border-t-2 border-slate-300" 
-                   style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
-                  grandTotal > 0
-                    ? 'bg-green-200 text-green-900 border border-green-300'
-                    : 'bg-gray-100 text-gray-400 border border-gray-200'
-                }`}>
+              <div
+                className="px-4 py-3 text-center bg-slate-200 border-t-2 border-slate-300"
+                style={{
+                  height: '52px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
+                    grandTotal > 0
+                      ? 'bg-green-200 text-green-900 border border-green-300'
+                      : 'bg-gray-100 text-gray-400 border border-gray-200'
+                  }`}
+                >
                   {grandTotal}
                 </div>
               </div>
