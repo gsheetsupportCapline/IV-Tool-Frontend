@@ -162,8 +162,8 @@ const ProductionIV = () => {
         </div>
 
         {/* Table Footer */}
-        <div className="bg-slate-50 px-6 py-3 border-t border-slate-200">
-          <div className="flex justify-between items-center text-sm text-slate-600">
+        <div className="bg-slate-50 px-4 py-2 border-t border-slate-200">
+          <div className="flex justify-between items-center text-xs text-slate-600">
             <span>Total Offices: {DropdownValues.officeNames.length}</span>
             <span>Active Team Members: {userName.length}</span>
           </div>
@@ -173,32 +173,29 @@ const ProductionIV = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-slate-800 mb-1">
           IV Team Production
         </h1>
-        <p className="text-slate-600">
+        <p className="text-slate-600 text-sm">
           Monitor team performance and completion statistics
         </p>
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">
-          Filter Options
-        </h3>
-        <div className="flex flex-wrap items-center gap-6">
+      <div className="bg-white rounded-lg shadow border border-slate-200 p-4 mb-4">
+        <div className="flex flex-wrap items-center gap-4">
           {/* Date Type Filter */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-slate-700">
-              Date Type
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              Date Type:
             </label>
             <select
               value={dateType}
               onChange={handleDateTypeChange}
-              className="px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700 min-w-[200px]"
+              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700 text-sm"
             >
               <option value="appointmentDate">Appointment Date</option>
               <option value="ivCompletedDate">Completion Date</option>
@@ -206,12 +203,17 @@ const ProductionIV = () => {
           </div>
 
           {/* Date Range Filter */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-slate-700">
-              Date Range
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              Date Range:
             </label>
-            <div className="border border-slate-300 rounded-lg bg-white overflow-hidden">
-              <Datepicker value={value} onChange={handleValueChange} />
+            <div className="border border-slate-300 rounded-lg bg-white">
+              <Datepicker 
+                value={value} 
+                onChange={handleValueChange}
+                inputClassName="text-sm px-3 py-2 border-0 focus:ring-0"
+                toggleClassName="text-slate-500"
+              />
             </div>
           </div>
         </div>
