@@ -208,8 +208,8 @@ const ProductionIV = () => {
               Date Range:
             </label>
             <div className="border border-slate-300 rounded-lg bg-white">
-              <Datepicker 
-                value={value} 
+              <Datepicker
+                value={value}
                 onChange={handleValueChange}
                 inputClassName="text-sm px-3 py-2 border-0 focus:ring-0"
                 toggleClassName="text-slate-500"
