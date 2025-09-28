@@ -98,87 +98,106 @@ const ProductionIV = () => {
     const headers = ['Office', ...userName];
 
     return (
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 flex-1">
-        <div
-          className="overflow-auto"
-          style={{ maxHeight: 'calc(100vh - 12rem)' }}
-        >
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+        {/* Table Header */}
+        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
+          <h3 className="text-lg font-semibold text-white">Production Summary</h3>
+          <p className="text-slate-300 text-sm mt-1">Completed appointments by office and team member</p>
+        </div>
+
+        {/* Table Content */}
+        <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0">
+            <thead className="bg-slate-50 sticky top-0">
               <tr>
                 {headers.map((header, index) => (
                   <th
                     key={index}
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200"
+                    className="px-6 py-4 text-left text-sm font-semibold text-slate-700 border-b border-slate-200"
                   >
-                    {index === 0 ? '🏢' : '👤'} {header}
+                    {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-slate-100">
               {DropdownValues.officeNames.map((officeNameObj, index) => (
                 <tr
                   key={index}
                   className={`hover:bg-blue-50 transition-colors duration-200 ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                    index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
                   }`}
                 >
-                  <td className="px-6 py-3 text-left font-medium text-gray-900 border-r border-gray-200">
+                  <td className="px-6 py-4 font-medium text-slate-900 border-r border-slate-100">
                     {officeNameObj.officeName}
                   </td>
-                  {userName.map((username, userIndex) => (
-                    <td
-                      key={userIndex}
-                      className="px-6 py-3 text-center text-gray-700"
-                    >
-                      <span
-                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium ${
-                          (processedData[officeNameObj.officeName]?.[
-                            username
-                          ] || 0) > 0
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {processedData[officeNameObj.officeName]?.[username] ||
-                          0}
-                      </span>
-                    </td>
-                  ))}
+                  {userName.map((username, userIndex) => {
+                    const count = processedData[officeNameObj.officeName]?.[username] || 0;
+                    return (
+                      <td key={userIndex} className="px-6 py-4 text-center">
+                        <div className={`inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-semibold min-w-[50px] ${
+                          count > 0
+                            ? 'bg-green-100 text-green-800 border border-green-200'
+                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        }`}>
+                          {count}
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Table Footer */}
+        <div className="bg-slate-50 px-6 py-3 border-t border-slate-200">
+          <div className="flex justify-between items-center text-sm text-slate-600">
+            <span>Total Offices: {DropdownValues.officeNames.length}</span>
+            <span>Active Team Members: {userName.length}</span>
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
-      <div className="bg-gray-100 p-3 rounded border mb-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <label className="text-gray-700 text-sm font-medium">Date Type:</label>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">IV Team Production</h1>
+        <p className="text-slate-600">Monitor team performance and completion statistics</p>
+      </div>
+
+      {/* Filters Section */}
+      <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Filter Options</h3>
+        <div className="flex flex-wrap items-center gap-6">
+          {/* Date Type Filter */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-slate-700">Date Type</label>
             <select
               value={dateType}
               onChange={handleDateTypeChange}
-              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white"
+              className="px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700 min-w-[200px]"
             >
               <option value="appointmentDate">Appointment Date</option>
               <option value="ivCompletedDate">Completion Date</option>
             </select>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <label className="text-gray-700 text-sm font-medium">Date Range:</label>
-            <div className="border border-gray-300 rounded bg-white">
+          {/* Date Range Filter */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-slate-700">Date Range</label>
+            <div className="border border-slate-300 rounded-lg bg-white overflow-hidden">
               <Datepicker value={value} onChange={handleValueChange} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Production Table */}
       {renderTable()}
     </div>
   );
