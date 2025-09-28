@@ -101,12 +101,19 @@ const ProductionIV = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
         {/* Table Header */}
         <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
-          <h3 className="text-lg font-semibold text-white">Production Summary</h3>
-          <p className="text-slate-300 text-sm mt-1">Completed appointments by office and team member</p>
+          <h3 className="text-lg font-semibold text-white">
+            Production Summary
+          </h3>
+          <p className="text-slate-300 text-sm mt-1">
+            Completed appointments by office and team member
+          </p>
         </div>
 
         {/* Table Content */}
-        <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
+        <div
+          className="overflow-auto"
+          style={{ maxHeight: 'calc(100vh - 20rem)' }}
+        >
           <table className="w-full">
             <thead className="bg-slate-50 sticky top-0">
               <tr>
@@ -132,14 +139,17 @@ const ProductionIV = () => {
                     {officeNameObj.officeName}
                   </td>
                   {userName.map((username, userIndex) => {
-                    const count = processedData[officeNameObj.officeName]?.[username] || 0;
+                    const count =
+                      processedData[officeNameObj.officeName]?.[username] || 0;
                     return (
                       <td key={userIndex} className="px-6 py-4 text-center">
-                        <div className={`inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-semibold min-w-[50px] ${
-                          count > 0
-                            ? 'bg-green-100 text-green-800 border border-green-200'
-                            : 'bg-slate-100 text-slate-500 border border-slate-200'
-                        }`}>
+                        <div
+                          className={`inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-semibold min-w-[50px] ${
+                            count > 0
+                              ? 'bg-green-100 text-green-800 border border-green-200'
+                              : 'bg-slate-100 text-slate-500 border border-slate-200'
+                          }`}
+                        >
                           {count}
                         </div>
                       </td>
@@ -166,17 +176,25 @@ const ProductionIV = () => {
     <div className="p-6">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">IV Team Production</h1>
-        <p className="text-slate-600">Monitor team performance and completion statistics</p>
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+          IV Team Production
+        </h1>
+        <p className="text-slate-600">
+          Monitor team performance and completion statistics
+        </p>
       </div>
 
       {/* Filters Section */}
       <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Filter Options</h3>
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">
+          Filter Options
+        </h3>
         <div className="flex flex-wrap items-center gap-6">
           {/* Date Type Filter */}
           <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-slate-700">Date Type</label>
+            <label className="text-sm font-medium text-slate-700">
+              Date Type
+            </label>
             <select
               value={dateType}
               onChange={handleDateTypeChange}
@@ -189,7 +207,9 @@ const ProductionIV = () => {
 
           {/* Date Range Filter */}
           <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-slate-700">Date Range</label>
+            <label className="text-sm font-medium text-slate-700">
+              Date Range
+            </label>
             <div className="border border-slate-300 rounded-lg bg-white overflow-hidden">
               <Datepicker value={value} onChange={handleValueChange} />
             </div>
