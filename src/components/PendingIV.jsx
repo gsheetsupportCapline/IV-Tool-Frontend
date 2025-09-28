@@ -79,7 +79,7 @@ const PendingIV = () => {
   const renderTable = () => {
     const processedData = processDataForTable();
     const uniqueDates = [...new Set(data.map((item) => item._id))].sort();
-    const headers = ['Office', ...uniqueDates];
+    const headers = ['Office', ...uniqueDates, 'Total'];
 
     // Calculate totals
     const officeTotals = DropdownValues.officeNames.map((office) => {
@@ -103,19 +103,20 @@ const PendingIV = () => {
           style={{ maxHeight: 'calc(100vh - 16rem)' }}
         >
           <table className="w-full">
-            <thead className="bg-slate-50 sticky top-0">
+            <thead className="bg-gradient-to-r from-slate-800 to-slate-900 sticky top-0 z-30">
               <tr>
                 {headers.map((header, index) => (
                   <th
                     key={index}
-                    className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200 min-w-[120px]"
+                    className={`px-4 py-3 text-left text-sm font-semibold text-white border-b border-slate-600 min-w-[120px] ${
+                      header === 'Total'
+                        ? 'sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40'
+                        : ''
+                    }`}
                   >
                     {header}
                   </th>
                 ))}
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200 sticky right-0 bg-slate-100 border-l-2 border-slate-300 min-w-[100px]">
-                  Total
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
@@ -147,7 +148,7 @@ const PendingIV = () => {
                     );
                   })}
                   {/* Office Total */}
-                  <td className="px-4 py-3 text-center sticky right-0 bg-slate-50 border-l-2 border-slate-300">
+                  <td className="px-4 py-3 text-center sticky right-0 bg-slate-50 border-l-2 border-slate-300 z-20">
                     <span
                       className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
                         officeTotals[index] > 0
@@ -162,7 +163,7 @@ const PendingIV = () => {
               ))}
 
               {/* Bottom Total Row */}
-              <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0">
+              <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0 z-30">
                 <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200">
                   Total
                 </td>
@@ -180,7 +181,7 @@ const PendingIV = () => {
                   </td>
                 ))}
                 {/* Grand Total */}
-                <td className="px-4 py-3 text-center sticky right-0 bg-slate-200 border-l-2 border-slate-300">
+                <td className="px-4 py-3 text-center sticky right-0 bg-slate-200 border-l-2 border-slate-300 z-50">
                   <span
                     className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
                       grandTotal > 0
