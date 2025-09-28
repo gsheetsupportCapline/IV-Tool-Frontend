@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import DatePicker from './DatePicker';
 import BASE_URL from '../config/apiConfig';
+import { DataGrid } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
 
 const MasterData = () => {
   const [dateRange, setDateRange] = useState({
@@ -152,6 +154,18 @@ const MasterData = () => {
     });
   };
 
+  // Generate DataGrid columns
+  const generateColumns = () => {
+    return Object.values(columnMapping).map((header) => ({
+      field: header,
+      headerName: header,
+      flex: 1,
+      minWidth: 120,
+      sortable: true,
+      filterable: true,
+    }));
+  };
+
   // Fetch data from API
   const fetchData = async () => {
     if (!dateRange.startDate || !dateRange.endDate || !selectedDateType) {
@@ -249,18 +263,8 @@ const MasterData = () => {
         </div>
       )}
 
-      <div className="h-full overflow-auto">
-        <div className="p-4">
-          {/* Page Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">
-              Master Data
-            </h1>
-            <p className="text-slate-600">
-              View and analyze office data by date range and type
-            </p>
-          </div>
-
+      <div className="h-full overflow-hidden">
+        <div className="p-4 h-full flex flex-col">
           {/* Filters Section */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4">
             <div className="grid grid-cols-3 gap-6 items-end">
@@ -322,80 +326,100 @@ const MasterData = () => {
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                {/* Table Header - Always visible */}
-                <thead className="bg-gradient-to-r from-slate-800 to-slate-900">
-                  <tr>
-                    {Object.values(columnMapping).map((header) => (
-                      <th
-                        key={header}
-                        className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide whitespace-nowrap"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                {/* Table Body */}
-                <tbody className="divide-y divide-slate-200">
-                  {data.length > 0 ? (
-                    transformData(data).map((row, index) => (
-                      <tr
-                        key={row.id}
-                        className="hover:bg-slate-50 transition-colors duration-150"
-                      >
-                        {Object.values(columnMapping).map((header) => (
-                          <td
-                            key={header}
-                            className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap"
-                          >
-                            {row[header]}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={Object.keys(columnMapping).length}
-                        className="px-4 py-12 text-center"
-                      >
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                            <svg
-                              className="w-8 h-8 text-slate-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                          </div>
-                          <div className="text-slate-500 text-lg font-medium">
-                            No Data Found
-                          </div>
-                          <div className="text-slate-400 text-sm mt-1">
-                            {!dateRange.startDate ||
-                            !dateRange.endDate ||
-                            !selectedDateType
-                              ? 'Please select date range and date type to view data'
-                              : 'No records found for the selected criteria'}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+          <div className="flex-1 bg-white rounded-lg shadow-sm border border-slate-200 min-h-0">
+            <Box sx={{ height: '100%', width: '100%' }}>
+              <DataGrid
+                rows={data.length > 0 ? transformData(data) : []}
+                columns={generateColumns()}
+                pageSize={100}
+                rowsPerPageOptions={[50, 100, 200]}
+                pagination
+                sortingOrder={['asc', 'desc']}
+                disableSelectionOnClick
+                loading={loading}
+                sx={{
+                  border: 'none',
+                  '.MuiDataGrid-columnHeader': {
+                    backgroundColor: '#1e293b', // slate-800
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                  },
+                  '.MuiDataGrid-columnHeaderTitle': {
+                    color: '#ffffff',
+                    fontWeight: 600,
+                  },
+                  '.MuiDataGrid-columnSeparator': {
+                    color: '#ffffff',
+                  },
+                  '.MuiDataGrid-iconSeparator': {
+                    color: '#ffffff',
+                  },
+                  '.MuiDataGrid-sortIcon': {
+                    color: '#ffffff',
+                  },
+                  '.MuiDataGrid-menuIcon': {
+                    color: '#ffffff',
+                  },
+                  '.MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+                    {
+                      color: '#ffffff',
+                    },
+                  '.MuiDataGrid-filterIcon': {
+                    color: '#ffffff',
+                  },
+                  '.MuiDataGrid-row:hover': {
+                    backgroundColor: '#f8fafc', // slate-50
+                  },
+                  '.MuiDataGrid-cell': {
+                    borderColor: '#e2e8f0', // slate-200
+                    fontSize: '0.875rem',
+                  },
+                  '.MuiDataGrid-footerContainer': {
+                    backgroundColor: '#f8fafc', // slate-50
+                    borderTop: '1px solid #e2e8f0', // slate-200
+                  },
+                  '.MuiTablePagination-root': {
+                    color: '#475569', // slate-600
+                  },
+                  '.MuiDataGrid-overlay': {
+                    backgroundColor: 'rgba(248, 250, 252, 0.8)',
+                  },
+                }}
+                components={{
+                  NoRowsOverlay: () => (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                        <svg
+                          className="w-8 h-8 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="text-slate-500 text-lg font-medium">
+                        No Data Found
+                      </div>
+                      <div className="text-slate-400 text-sm mt-1">
+                        {!dateRange.startDate ||
+                        !dateRange.endDate ||
+                        !selectedDateType
+                          ? 'Please select date range and date type to view data'
+                          : 'No records found for the selected criteria'}
+                      </div>
+                    </div>
+                  ),
+                }}
+              />
+            </Box>
           </div>
         </div>
       </div>
