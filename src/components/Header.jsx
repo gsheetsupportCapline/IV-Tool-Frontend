@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { Disclosure } from '@headlessui/react';
 import Logo from '../utils/Smilepoint_Dental.png';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 // const navigation = [
 //   { name: "Scheduled Patients", href: "/schedule-patient", current: true },
@@ -18,6 +18,7 @@ function classNames(...classes) {
 }
 const Header = () => {
   const history = useHistory();
+  const location = useLocation();
   const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
@@ -77,16 +78,19 @@ const Header = () => {
                   {navigation.map((item) => {
                     if (item.show) {
                       const isLogout = item.text === 'Log Out';
+                      const isActive = location.pathname === item.link;
                       return (
                         <button
                           key={item.text}
                           onClick={() => history.push(item.link)}
-                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
                             isLogout
-                              ? 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transform hover:scale-105'
-                              : 'bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                              ? 'bg-red-600 hover:bg-red-700 text-white'
+                              : isActive
+                              ? 'bg-blue-600 text-white shadow-lg scale-105 border-2 border-blue-400'
+                              : 'bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white'
                           }`}
-                          aria-current={item.show ? 'page' : undefined}
+                          aria-current={isActive ? 'page' : undefined}
                         >
                           {item.text}
                         </button>
