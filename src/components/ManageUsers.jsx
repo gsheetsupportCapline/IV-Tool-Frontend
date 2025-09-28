@@ -200,7 +200,10 @@ const ManageUsers = () => {
   return (
     <div
       className="flex flex-col h-full"
-      style={{ maxHeight: 'calc(100vh - 8rem)' }}
+      style={{
+        minHeight: 'calc(100vh - 7.5rem)',
+        maxHeight: 'calc(100vh - 7.5rem)',
+      }}
     >
       <div className="bg-gray-100 p-3 rounded border mb-4">
         <div className="flex items-center justify-between gap-4">
