@@ -16,15 +16,29 @@ const Table = ({ data, headers }) => {
   }));
 
   return (
-    <Box sx={{ height: 500, width: '100%' }}>
+    <Box sx={{ height: 'calc(100vh - 18rem)', width: '100%' }}>
       <DataGrid
         rows={rowsWithIds}
         columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[ 50,100]}
+        pageSize={50}
+        rowsPerPageOptions={[25, 50, 100]}
         sx={{
           '.MuiDataGrid-columnHeader': {
             fontFamily: 'Tahoma',
+            backgroundColor: '#1e293b', // slate-800
+            color: '#ffffff',
+            fontWeight: 600,
+          },
+          '.MuiDataGrid-columnHeaderTitle': {
+            color: '#ffffff',
+            fontWeight: 600,
+          },
+          '.MuiDataGrid-columnSeparator': {
+            color: '#475569', // slate-600
+          },
+          '.MuiDataGrid-root': {
+            border: '1px solid #e2e8f0', // slate-200
+            borderRadius: '8px',
           },
         }}
       />
@@ -32,4 +46,4 @@ const Table = ({ data, headers }) => {
   );
 };
 
-export default Table; 
+export default Table;

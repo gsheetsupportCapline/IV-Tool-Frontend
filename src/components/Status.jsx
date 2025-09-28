@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import Table from "./Table";
+import { useState, useEffect } from 'react';
+import Table from './Table';
 
 const Status = ({ data, dateRange, patientId }) => {
-  const [selectedOption, setSelectedOption] = useState("no");
+  const [selectedOption, setSelectedOption] = useState('yes');
   const [filteredData, setFilteredData] = useState([]);
 
   const dataHeaderMapping = {
-    "Patient ID": "patientId",
-    "Appointment Date": "appointmentDate",
-    "Completion Status": "completionStatus",
-    "Plan Type": "planType",
-    "IV Type": "ivType",
-    Remarks: "ivRemarks",
-    "Insurance Name": "insuranceName",
+    'Patient ID': 'patientId',
+    'Appointment Date': 'appointmentDate',
+    'Completion Status': 'completionStatus',
+    'Plan Type': 'planType',
+    'IV Type': 'ivType',
+    Remarks: 'ivRemarks',
+    'Insurance Name': 'insuranceName',
   };
 
   const hasValidFilters = () => {
@@ -20,6 +20,7 @@ const Status = ({ data, dateRange, patientId }) => {
     const hasPatientId = patientId && patientId.trim() !== '';
     return hasDateRange || hasPatientId;
   };
+
   const matchesPatientId = (item) => {
     if (!item || !item.patientId) {
       return false;
@@ -27,13 +28,11 @@ const Status = ({ data, dateRange, patientId }) => {
 
     try {
       const searchValue = String(patientId).toLowerCase().trim();
-      const itemValue = String(item.patientId).toLowerCase().trim();
-      
       if (searchValue === '') {
         return true; // Return true when no patient ID filter
       }
 
-      return itemValue === searchValue;
+      return String(item.patientId).toLowerCase().includes(searchValue);
     } catch (error) {
       console.error('Error matching patient ID:', error);
       return false;
@@ -41,167 +40,253 @@ const Status = ({ data, dateRange, patientId }) => {
   };
 
   const isInDateRange = (itemDate, startDate, endDate) => {
-    try {
-      if (!startDate || !endDate) return true; // Return true when no date range
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const date = new Date(itemDate);
-      return start <= date && end >= date;
-    } catch (error) {
-      console.error('Error checking date range:', error);
-      return false;
-    }
+    if (!startDate || !endDate || !itemDate) return false;
+
+    const item = new Date(itemDate);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return item >= start && item <= end;
   };
 
-  const getFilteredData = () => {
-    if (!hasValidFilters()) {
-      return [];
-    }
-    // Apply base filters (patient ID and date range)
-    let filtered = data.filter(item => 
-      matchesPatientId(item) && 
-      isInDateRange(item.appointmentDate, dateRange?.startDate, dateRange?.endDate)
-    );
+  const filterData = () => {
+    if (!data || data.length === 0) return [];
 
-    // Apply status filter based on selected tab
-    if (selectedOption !== "yes") {
-      filtered = filtered.filter(item => {
-        return selectedOption === "no" 
-          ? item.completionStatus === "In Process"
-          : item.completionStatus === "Completed";
-      });
-    }
+    let filtered = data.filter((item) => {
+      // Patient ID filter
+      if (patientId && patientId.trim() !== '') {
+        if (!matchesPatientId(item)) return false;
+      }
 
-    // Sort by appointment date and time
-    filtered.sort((a, b) => {
-      const dateTimeA = new Date(`${a.appointmentDate} ${a.appointmentTime}`);
-      const dateTimeB = new Date(`${b.appointmentDate} ${b.appointmentTime}`);
-      return dateTimeB - dateTimeA;
+      // Date range filter
+      if (dateRange?.startDate && dateRange?.endDate) {
+        if (
+          !isInDateRange(
+            item.appointmentDate,
+            dateRange.startDate,
+            dateRange.endDate
+          )
+        ) {
+          return false;
+        }
+      }
+
+      return true;
     });
+
+    // Status filter
+    if (selectedOption === 'no') {
+      filtered = filtered.filter(
+        (item) =>
+          !item.completionStatus ||
+          item.completionStatus.toLowerCase() !== 'completed'
+      );
+    } else if (selectedOption === 'yesno') {
+      filtered = filtered.filter(
+        (item) =>
+          item.completionStatus &&
+          item.completionStatus.toLowerCase() === 'completed'
+      );
+    }
 
     return filtered;
   };
 
-  // Get counts based on base filters only (independent of selected tab)
-  const getBaseCounts = () => {
-    if (!hasValidFilters()) {
-      return {
-        all: 0,
-        inProcess: 0,
-        completed: 0
-      };
-    }
-    const baseFiltered = data.filter(item => 
-      matchesPatientId(item) && 
-      isInDateRange(item.appointmentDate, dateRange?.startDate, dateRange?.endDate)
-    );
+  useEffect(() => {
+    setFilteredData(filterData());
+  }, [data, selectedOption, patientId, dateRange]);
 
-    return {
-      all: baseFiltered.length,
-      inProcess: baseFiltered.filter(item => item.completionStatus === "In Process").length,
-      completed: baseFiltered.filter(item => item.completionStatus === "Completed").length
-    };
-  };
-
-  const transformData = (data) => {
-    return data.map((item) => {
-      const newItem = {};
-      Object.keys(dataHeaderMapping).forEach((header) => {
-        if (header === "Appointment Date") {
-          newItem[header] = new Date(
-            item[dataHeaderMapping[header]]
-          ).toLocaleDateString();
-        } else {
-          newItem[header] = item[dataHeaderMapping[header]];
-        }
+  const transformData = (dataArray) => {
+    return dataArray.map((item) => {
+      const transformed = {};
+      Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
+        transformed[displayName] = item[dataKey] || '';
       });
-      return newItem;
+      return transformed;
     });
   };
 
-  const handleOptionChange = (event) => {
-    setSelectedOption(event.target.value);
-  };
+  const getBaseCounts = () => {
+    const validData = data.filter((item) => {
+      // Patient ID filter
+      if (patientId && patientId.trim() !== '') {
+        if (!matchesPatientId(item)) return false;
+      }
 
-  useEffect(() => {
-    setFilteredData(getFilteredData());
-  }, [data, dateRange, patientId, selectedOption]);
+      // Date range filter
+      if (dateRange?.startDate && dateRange?.endDate) {
+        if (
+          !isInDateRange(
+            item.appointmentDate,
+            dateRange.startDate,
+            dateRange.endDate
+          )
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    const all = validData.length;
+    const completed = validData.filter(
+      (item) =>
+        item.completionStatus &&
+        item.completionStatus.toLowerCase() === 'completed'
+    ).length;
+    const inProcess = validData.filter(
+      (item) =>
+        !item.completionStatus ||
+        item.completionStatus.toLowerCase() !== 'completed'
+    ).length;
+
+    return { all, completed, inProcess };
+  };
 
   const counts = getBaseCounts();
 
   return (
-    <>
-      <div className="flex items-center justify-center">
-        <ul className="mx-auto grid max-w-full w-full grid-cols-3 gap-x-5 px-8">
-          <li className="">
-            <input
-              className="peer sr-only"
-              type="radio"
-              value="yes"
-              name="answer"
-              id="yes"
-              checked={selectedOption === "yes"}
-              onChange={handleOptionChange}
-            />
-            <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-gray-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
-              htmlFor="yes"
-            >
-              <p className="mr-4 ml-10 font-tahoma">All Appointments [{counts.all}]</p>
-            </label>
-            {selectedOption === "yes" && (
-              <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformData(filteredData)} headers={Object.keys(dataHeaderMapping)} />
-              </div>
-            )}
-          </li>
-          <li className="">
-            <input
-              className="peer sr-only"
-              type="radio"
-              value="no"
-              name="answer"
-              id="no"
-              checked={selectedOption === "no"}
-              onChange={handleOptionChange}
-            />
-            <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
-              htmlFor="no"
-            >
-              <p className="mr-4 ml-10 font-tahoma">In-Process IVs [{counts.inProcess}]</p>
-            </label>
-            {selectedOption === "no" && (
-              <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformData(filteredData)} headers={Object.keys(dataHeaderMapping)} />
-              </div>
-            )}
-          </li>
-          <li className="">
-            <input
-              className="peer sr-only"
-              type="radio"
-              value="yesno"
-              name="answer"
-              id="yesno"
-              checked={selectedOption === "yesno"}
-              onChange={handleOptionChange}
-            />
-            <label
-              className="flex justify-center cursor-pointer rounded-full border border-gray-300 bg-grey-50 py-2 px-4 hover:bg-slate-300 focus:outline-none peer-checked:border-transparent peer-checked:ring-2 peer-checked:ring-indigo-500 transition-all duration-500 ease-in-out"
-              htmlFor="yesno"
-            >
-              <p className="mr-4 ml-10 font-tahoma">Completed IVs [{counts.completed}]</p>
-            </label>
-            {selectedOption === "yesno" && (
-              <div className="absolute bg-slate-50 shadow-lg left-0 p-6 border mt-2 border-indigo-300 rounded-lg w-[100vw] h-[70vh] mx-auto transition-all duration-500 ease-in-out translate-x-40 opacity-0 invisible peer-checked:opacity-100 peer-checked:visible peer-checked:translate-x-1">
-                <Table data={transformData(filteredData)} headers={Object.keys(dataHeaderMapping)} />
-              </div>
-            )}
-          </li>
-        </ul>
+    <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+      {/* Tab Navigation */}
+      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+        <div className="grid grid-cols-3 gap-3">
+          {/* All Appointments Tab */}
+          <button
+            onClick={() => setSelectedOption('yes')}
+            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+              selectedOption === 'yes'
+                ? 'bg-yellow-100 border-yellow-300 text-yellow-800 shadow-md transform scale-105'
+                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span>All Appointments</span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  selectedOption === 'yes'
+                    ? 'bg-yellow-200 text-yellow-900'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {counts.all}
+              </span>
+            </div>
+          </button>
+
+          {/* In-Process Tab */}
+          <button
+            onClick={() => setSelectedOption('no')}
+            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+              selectedOption === 'no'
+                ? 'bg-orange-100 border-orange-300 text-orange-800 shadow-md transform scale-105'
+                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span>In-Process IVs</span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  selectedOption === 'no'
+                    ? 'bg-orange-200 text-orange-900'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {counts.inProcess}
+              </span>
+            </div>
+          </button>
+
+          {/* Completed Tab */}
+          <button
+            onClick={() => setSelectedOption('yesno')}
+            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+              selectedOption === 'yesno'
+                ? 'bg-green-100 border-green-300 text-green-800 shadow-md transform scale-105'
+                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span>Completed IVs</span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  selectedOption === 'yesno'
+                    ? 'bg-green-200 text-green-900'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {counts.completed}
+              </span>
+            </div>
+          </button>
+        </div>
       </div>
-    </>
+
+      {/* Table Content */}
+      <div className="p-4">
+        {hasValidFilters() ? (
+          filteredData.length > 0 ? (
+            <div>
+              <Table
+                data={transformData(filteredData)}
+                headers={Object.keys(dataHeaderMapping)}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <div className="text-slate-500 text-lg font-medium">
+                No appointments found
+              </div>
+              <div className="text-slate-400 text-sm mt-1">
+                No appointments match your current filter criteria
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
+              </svg>
+            </div>
+            <div className="text-slate-500 text-lg font-medium">
+              Select filters to view appointments
+            </div>
+            <div className="text-slate-400 text-sm mt-1">
+              Please select an office and date range, or enter a patient ID to
+              search
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

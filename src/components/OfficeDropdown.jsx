@@ -6,34 +6,34 @@ const OfficeDropdown = ({
   showAllOffices = false,
 }) => {
   const officeNames = [
-    "Aransas",
-    "Azle",
-    "Beaumont",
-    "Benbrook",
-    "Calallen",
-    "Crosby",
-    "Devine",
-    "Elgin",
-    "Grangerland",
-    "Huffman",
-    "Jasper",
-    "Lavaca",
-    "Liberty",
-    "Lytle",
-    "Mathis",
-    "Potranco",
-    "Rio Bravo",
-    "Riverwalk",
-    "Rockdale",
-    "Sinton",
-    "Splendora",
-    "Springtown",
-    "Tidwell",
-    "Victoria",
-    "Westgreen",
-    "Winnie",
-     
+    'Aransas',
+    'Azle',
+    'Beaumont',
+    'Benbrook',
+    'Calallen',
+    'Crosby',
+    'Devine',
+    'Elgin',
+    'Grangerland',
+    'Huffman',
+    'Jasper',
+    'Lavaca',
+    'Liberty',
+    'Lytle',
+    'Mathis',
+    'Potranco',
+    'Rio Bravo',
+    'Riverwalk',
+    'Rockdale',
+    'Sinton',
+    'Splendora',
+    'Springtown',
+    'Tidwell',
+    'Victoria',
+    'Westgreen',
+    'Winnie',
   ];
+
   // Check if officeOptions is null (indicating admin role)
   // If not null, filter officeNames based on officeOptions
   const filteredOfficeNames = showAllOffices
@@ -41,25 +41,23 @@ const OfficeDropdown = ({
     : officeNames.filter((name) => allowedOffices.includes(name));
 
   return (
-    <>
-    <select className="form-select mt-2 rounded font-tahoma" onChange={(e) => onSelect(e.target.value)}>
-        {filteredOfficeNames.length > 0 && (
-          <>
-            {filteredOfficeNames.length > 1 && (
-              <option value="" >Select Office</option>
-            )}
-            {filteredOfficeNames.map((office) => (
-              <option key={office} value={office}>
-                {office}
-              </option>
-            ))}
-          </>
-        )}
-      </select>
-    
- 
-    </>
-   
+    <select
+      className="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
+      onChange={(e) => onSelect(e.target.value)}
+    >
+      {filteredOfficeNames.length > 0 && (
+        <>
+          {filteredOfficeNames.length > 1 && (
+            <option value="">Select Office</option>
+          )}
+          {filteredOfficeNames.map((office) => (
+            <option key={office} value={office}>
+              {office}
+            </option>
+          ))}
+        </>
+      )}
+    </select>
   );
 };
 
