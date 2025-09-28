@@ -6,6 +6,7 @@ import AssignedIV from './AssignedIV';
 import ProductionIV from './ProductionIV';
 import DropdownDashboard from './DropdownDashboard';
 import ManageUsers from './ManageUsers';
+import MasterData from './MasterData';
 import Header from './Header';
 
 const AdminDashboard = () => {
@@ -67,6 +68,19 @@ const AdminDashboard = () => {
                 <span>IV Team Production</span>
               </button>
 
+              {/* Master Data */}
+              <button
+                onClick={() => setSelectedItem('MasterData')}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center space-x-3 ${
+                  selectedItem === 'MasterData'
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-[1.02]'
+                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
+                <span>Master Data</span>
+              </button>
+
               {/* Divider */}
               <div className="border-t border-slate-700 my-4"></div>
 
@@ -105,6 +119,7 @@ const AdminDashboard = () => {
             {selectedItem === 'PendingIV' && <PendingIV />}
             {selectedItem === 'AssignedIV' && <AssignedIV />}
             {selectedItem === 'ProductionIV' && <ProductionIV />}
+            {selectedItem === 'MasterData' && <MasterData />}
             {selectedItem === 'DropdownValues' && <DropdownDashboard />}
             {selectedItem === 'ManageUsers' && <ManageUsers />}
           </div>
