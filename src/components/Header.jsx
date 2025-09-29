@@ -50,7 +50,7 @@ const Header = () => {
     { link: '/', text: 'Log Out', show: true },
   ];
   return (
-    <Disclosure as="nav">
+    <Disclosure as="nav" className="sticky top-0 z-50">
       {({ open }) => (
         <>
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 shadow-lg border-b border-slate-700">
@@ -65,10 +65,10 @@ const Header = () => {
                   />
                   <div className="hidden md:block">
                     <h1 className="text-white text-lg font-bold tracking-wide">
-                      IV Management System
+                      SmileIV
                     </h1>
                     <p className="text-slate-300 text-xs">
-                      Professional Dental Solutions
+                      Smilepoint's Patient IV System
                     </p>
                   </div>
                 </div>
