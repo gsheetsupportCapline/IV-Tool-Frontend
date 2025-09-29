@@ -64,7 +64,8 @@ const MasterData = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/admin/users`, {
+        console.log('Fetching users using /api/auth/users endpoint...');
+        const response = await fetch(`${BASE_URL}/api/auth/users`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -74,7 +75,26 @@ const MasterData = () => {
 
         if (response.ok) {
           const result = await response.json();
-          setUsers(result.users || []);
+          console.log('Users API Response:', result);
+
+          // Check if result is an array or has users property
+          const userData = Array.isArray(result)
+            ? result
+            : result.users || result.data || [];
+
+          if (Array.isArray(userData) && userData.length > 0) {
+            console.log('Successfully loaded users:', userData.length);
+            console.log('Sample user:', userData[0]);
+            setUsers(userData);
+          } else {
+            console.error('No users found in response:', result);
+          }
+        } else {
+          console.error(
+            'Failed to fetch users:',
+            response.status,
+            response.statusText
+          );
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -86,9 +106,46 @@ const MasterData = () => {
 
   // Get user name by ID
   const getUserName = (userId) => {
-    if (!userId) return '-';
-    const user = users.find((u) => u._id === userId || u.id === userId);
-    return user ? user.name : '-';
+    if (!userId || userId === '-NO-DATA-') return '-';
+
+    // Debug: Log what we're trying to find
+    console.log('Looking for user ID:', userId);
+    console.log('Available users count:', users.length);
+
+    if (users.length === 0) {
+      console.log('No users loaded yet, returning ID');
+      return userId; // Return ID if users not loaded yet
+    }
+
+    // Handle different possible user ID formats
+    const user = users.find((u) => {
+      const match =
+        u._id === userId ||
+        u.id === userId ||
+        u._id?.toString() === userId?.toString() ||
+        u.id?.toString() === userId?.toString();
+
+      if (match) {
+        console.log('Found user:', u);
+      }
+      return match;
+    });
+
+    if (user) {
+      const userName =
+        user.name ||
+        user.username ||
+        user.firstName ||
+        user.fullName ||
+        'Unknown User';
+      console.log('Returning user name:', userName);
+      return userName;
+    }
+
+    // If user not found, log for debugging
+    console.log('User not found for ID:', userId);
+    console.log('First few users for reference:', users.slice(0, 3));
+    return '-'; // Return dash instead of ID if user not found
   };
 
   // Format date for display
