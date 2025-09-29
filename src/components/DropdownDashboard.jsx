@@ -169,14 +169,6 @@ const DropdownDashboard = () => {
   return (
     <div className="p-6">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">
-          Validation Settings
-        </h1>
-        <p className="text-slate-600">
-          Manage dropdown options for various categories
-        </p>
-      </div>
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
