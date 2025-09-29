@@ -108,16 +108,37 @@ const MasterData = () => {
 
   // Format time for display
   const formatTime = (timeString) => {
-    if (!timeString) return '-';
+    if (!timeString || timeString === '-NO-DATA-') return '-';
+
     try {
+      // If it's already in HH:MM:SS format, just convert to 12-hour format
+      if (typeof timeString === 'string' && timeString.includes(':')) {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours, 10);
+        const minute = parseInt(minutes, 10);
+
+        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+          const ampm = hour >= 12 ? 'PM' : 'AM';
+          const displayHour = hour % 12 || 12;
+          return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        }
+      }
+
+      // If it's a date object or date string, try to extract time
       const date = new Date(timeString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      }
+
+      // If nothing works, return the original string
+      return timeString;
     } catch (error) {
-      return '-';
+      // If all parsing fails, return the original string or '-'
+      return timeString || '-';
     }
   };
 
