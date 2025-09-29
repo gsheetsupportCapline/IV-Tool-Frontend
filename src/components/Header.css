@@ -1,0 +1,106 @@
+/* Header Component Smooth Transitions */
+
+/* Prevent layout shifts during navigation */
+.header-nav-container {
+  min-height: 4rem;
+  will-change: auto;
+}
+
+/* Fixed button container to prevent layout shifts */
+.navigation-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  contain: layout;
+  min-height: 2.5rem;
+}
+
+/* Smooth button transitions without layout shift */
+.nav-button {
+  position: relative;
+  will-change: background-color, box-shadow, opacity;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0); /* Force hardware acceleration */
+  white-space: nowrap;
+  flex-shrink: 0;
+  /* Remove transform from transitions to prevent layout shift */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Prevent text shifting during transitions */
+.nav-button-text {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: auto;
+}
+
+/* Active state without scale transform */
+.nav-button-active {
+  background-color: rgb(37 99 235) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 2px solid rgb(96 165 250);
+}
+
+/* Hover state without scale transform */
+.nav-button:hover:not(:disabled) {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Focus state without layout shift */
+.nav-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Prevent flicker during navigation */
+.nav-button:disabled {
+  pointer-events: none;
+}
+
+/* Logo hover effect without scale */
+.logo-container:hover {
+  filter: brightness(1.1);
+  transition: filter 0.2s ease;
+}
+
+/* Smooth gradient background */
+.header-background {
+  background-attachment: fixed;
+  will-change: auto;
+}
+
+/* Ensure consistent button sizing */
+.nav-button {
+  min-width: fit-content;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile responsive without transforms */
+@media (max-width: 768px) {
+  .navigation-container {
+    gap: 0.25rem;
+  }
+
+  .nav-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .nav-button,
+  .logo-container,
+  .nav-button-text {
+    transition: none !important;
+    transform: none !important;
+  }
+}
