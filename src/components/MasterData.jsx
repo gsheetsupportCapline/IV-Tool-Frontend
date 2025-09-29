@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import DatePicker from './DatePicker';
 import BASE_URL from '../config/apiConfig';
 import { DataGrid } from '@mui/x-data-grid';
@@ -11,7 +11,6 @@ const MasterData = () => {
   });
   const [selectedDateType, setSelectedDateType] = useState('');
   const [data, setData] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,94 +57,6 @@ const MasterData = () => {
     ivCompletedDate: 'IV Completed Date',
     ivAssignedByUserName: 'IV Assigned By',
     provider: 'Provider',
-  };
-
-  // Fetch users for name resolution
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        console.log('Fetching users using /api/auth/users endpoint...');
-        const response = await fetch(`${BASE_URL}/api/auth/users`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Users API Response:', result);
-
-          // Check if result is an array or has users property
-          const userData = Array.isArray(result)
-            ? result
-            : result.users || result.data || [];
-
-          if (Array.isArray(userData) && userData.length > 0) {
-            console.log('Successfully loaded users:', userData.length);
-            console.log('Sample user:', userData[0]);
-            setUsers(userData);
-          } else {
-            console.error('No users found in response:', result);
-          }
-        } else {
-          console.error(
-            'Failed to fetch users:',
-            response.status,
-            response.statusText
-          );
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  // Get user name by ID
-  const getUserName = (userId) => {
-    if (!userId || userId === '-NO-DATA-') return '-';
-
-    // Debug: Log what we're trying to find
-    console.log('Looking for user ID:', userId);
-    console.log('Available users count:', users.length);
-
-    if (users.length === 0) {
-      console.log('No users loaded yet, returning ID');
-      return userId; // Return ID if users not loaded yet
-    }
-
-    // Handle different possible user ID formats
-    const user = users.find((u) => {
-      const match =
-        u._id === userId ||
-        u.id === userId ||
-        u._id?.toString() === userId?.toString() ||
-        u.id?.toString() === userId?.toString();
-
-      if (match) {
-        console.log('Found user:', u);
-      }
-      return match;
-    });
-
-    if (user) {
-      const userName =
-        user.name ||
-        user.username ||
-        user.firstName ||
-        user.fullName ||
-        'Unknown User';
-      console.log('Returning user name:', userName);
-      return userName;
-    }
-
-    // If user not found, log for debugging
-    console.log('User not found for ID:', userId);
-    console.log('First few users for reference:', users.slice(0, 3));
-    return '-'; // Return dash instead of ID if user not found
   };
 
   // Format date for display
@@ -199,18 +110,18 @@ const MasterData = () => {
     }
   };
 
-  // Transform data for table display
-  const transformData = (dataArray) => {
-    return dataArray.map((item, index) => {
+  // Memoized transform data function for better performance
+  const transformedData = useMemo(() => {
+    if (!data.length) return [];
+
+    return data.map((item, index) => {
       const transformed = { id: index.toString() };
 
       Object.entries(columnMapping).forEach(([dataKey, displayName]) => {
         let value = item[dataKey];
 
         // Handle special cases
-        if (dataKey === 'assignedUser') {
-          value = getUserName(value);
-        } else if (dataKey.includes('Date') && dataKey !== 'appointmentTime') {
+        if (dataKey.includes('Date') && dataKey !== 'appointmentTime') {
           value = formatDate(value);
         } else if (dataKey === 'appointmentTime') {
           value = formatTime(value);
@@ -230,10 +141,10 @@ const MasterData = () => {
 
       return transformed;
     });
-  };
+  }, [data]);
 
-  // Generate DataGrid columns
-  const generateColumns = () => {
+  // Memoized columns generation
+  const columns = useMemo(() => {
     return Object.values(columnMapping).map((header) => ({
       field: header,
       headerName: header,
@@ -242,7 +153,7 @@ const MasterData = () => {
       sortable: true,
       filterable: true,
     }));
-  };
+  }, []);
 
   // Fetch data from API
   const fetchData = async () => {
@@ -412,14 +323,22 @@ const MasterData = () => {
               }}
             >
               <DataGrid
-                rows={data.length > 0 ? transformData(data) : []}
-                columns={generateColumns()}
-                pageSize={100}
-                rowsPerPageOptions={[50, 100, 200]}
+                rows={transformedData}
+                columns={columns}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 100 },
+                  },
+                }}
+                pageSizeOptions={[50, 100, 200, 500]}
                 pagination
                 sortingOrder={['asc', 'desc']}
                 disableSelectionOnClick
                 loading={loading}
+                density="compact"
+                filterMode="client"
+                sortingMode="client"
+                getRowId={(row) => row.id}
                 sx={{
                   border: 'none',
                   '.MuiDataGrid-columnHeader': {
@@ -468,9 +387,22 @@ const MasterData = () => {
                   '.MuiDataGrid-overlay': {
                     backgroundColor: 'rgba(248, 250, 252, 0.8)',
                   },
+                  // Performance optimizations
+                  '.MuiDataGrid-virtualScroller': {
+                    willChange: 'transform',
+                  },
+                  '.MuiDataGrid-virtualScrollerContent': {
+                    willChange: 'transform',
+                  },
                 }}
-                components={{
-                  NoRowsOverlay: () => (
+                slotProps={{
+                  loadingOverlay: {
+                    variant: 'skeleton',
+                    noRowsVariant: 'skeleton',
+                  },
+                }}
+                slots={{
+                  noRowsOverlay: () => (
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                         <svg
@@ -510,4 +442,4 @@ const MasterData = () => {
   );
 };
 
-export default MasterData;
+export default React.memo(MasterData);
