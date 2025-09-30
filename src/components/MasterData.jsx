@@ -74,6 +74,27 @@ const MasterData = () => {
     }
   };
 
+  // Format date and time for IV related columns
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      const dateFormatted = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      const timeFormatted = date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      return `${dateFormatted} ${timeFormatted}`;
+    } catch (error) {
+      return '-';
+    }
+  };
+
   // Format time for display
   const formatTime = (timeString) => {
     if (!timeString || timeString === '-NO-DATA-') return '-';
@@ -121,7 +142,15 @@ const MasterData = () => {
         let value = item[dataKey];
 
         // Handle special cases
-        if (dataKey.includes('Date') && dataKey !== 'appointmentTime') {
+        if (
+          dataKey === 'ivRequestedDate' ||
+          dataKey === 'ivAssignedDate' ||
+          dataKey === 'ivCompletedDate'
+        ) {
+          // Show date and time for IV related dates
+          value = formatDateTime(value);
+        } else if (dataKey.includes('Date') && dataKey !== 'appointmentTime') {
+          // Show only date for other date fields
           value = formatDate(value);
         } else if (dataKey === 'appointmentTime') {
           value = formatTime(value);
