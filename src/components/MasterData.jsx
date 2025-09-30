@@ -46,7 +46,7 @@ const MasterData = () => {
     ivType: 'IV Type',
     status: 'Status',
     completionStatus: 'Completion Status',
-    assignedUser: 'Assigned User',
+    assignedUserName: 'Assigned User',
     ivRemarks: 'IV Remarks',
     source: 'Source',
     planType: 'Plan Type',

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { officeNames } from './DropdownValues.js';
 import BASE_URL from '../config/apiConfig.js';
+import DatePicker from './DatePicker';
 
 const AssignedIV = () => {
   const [users, setUsers] = useState([]);
@@ -10,63 +11,114 @@ const AssignedIV = () => {
   const [selectedOffice, setSelectedOffice] = useState('');
   const [assignedCounts, setAssignedCounts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
 
+  // Fetch users on component mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchUsers = async () => {
       try {
         const userResponse = await axios.get(`${BASE_URL}/api/auth/users`);
         const usersData = userResponse.data.data;
 
-        let allAppointments = [];
+        console.log('Total users fetched:', usersData.length);
+        console.log('All users:', usersData);
 
-        for (let userData of usersData) {
-          const appointmentsResponse = await axios.get(
-            `${BASE_URL}/api/appointments/user-appointments/${userData._id}`
-          );
-          allAppointments.push(...appointmentsResponse.data);
-        }
-
-        const groupedAppointments = allAppointments.reduce(
-          (acc, appointment) => {
-            const { assignedUser, office } = appointment;
-            if (!acc[assignedUser]) {
-              acc[assignedUser] = {};
-            }
-            if (!acc[assignedUser][office]) {
-              acc[assignedUser][office] = 0;
-            }
-            acc[assignedUser][office]++;
-            return acc;
-          },
-          {}
+        // Filter users with role 'user' and isActive true
+        const filteredUsers = usersData.filter(
+          (user) => user.role === 'user' && user.isActive === true
         );
+        console.log(
+          'Filtered users (role=user & isActive=true):',
+          filteredUsers.length
+        );
+        console.log('Filtered users data:', filteredUsers);
 
-        const usersWithName = usersData.map((userData) => ({
+        const usersWithName = filteredUsers.map((userData) => ({
           ...userData,
           firstName: userData.name,
         }));
 
         setUsers(usersWithName);
-        setAppointments(groupedAppointments);
       } catch (error) {
-        console.error('Error fetching data', error);
+        console.error('Error fetching users', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Fetch appointments data for selected user
+  useEffect(() => {
+    const fetchUserAppointments = async () => {
+      // Only fetch data if user is selected and date range is provided
+      if (!selectedUserId || !dateRange.startDate || !dateRange.endDate) {
+        setAppointments({});
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const queryParams = new URLSearchParams({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          dateType: 'ivAssignedDate',
+        });
+
+        const appointmentsResponse = await axios.get(
+          `${BASE_URL}/api/appointments/user-appointments/${selectedUserId}?${queryParams}`
+        );
+
+        // Data is now in response.data.data format
+        const userAppointments = appointmentsResponse.data.data || [];
+
+        // Group appointments by office for the selected user
+        const groupedByOffice = userAppointments.reduce((acc, appointment) => {
+          const { office } = appointment;
+          if (!acc[office]) {
+            acc[office] = 0;
+          }
+          acc[office]++;
+          return acc;
+        }, {});
+
+        // Set appointments in the format expected by the component
+        setAppointments({
+          [selectedUserId]: groupedByOffice,
+        });
+      } catch (error) {
+        console.error('Error fetching user appointments', error);
+        setAppointments({});
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchUserAppointments();
+  }, [selectedUserId, dateRange]);
 
   useEffect(() => {
-    if (selectedOffice) {
+    if (selectedOffice && dateRange.startDate && dateRange.endDate) {
       setLoading(true);
+
+      const queryParams = new URLSearchParams({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        dateType: 'ivAssignedDate',
+      });
+
       axios
-        .get(`${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}`)
+        .get(
+          `${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}?${queryParams}`
+        )
         .then((response) => {
-          const data = response.data;
-          const formattedData = Object.entries(data.assignedCounts).map(
+          // Updated response structure: response.data.data.assignedCounts
+          const responseData = response.data.data;
+          const assignedCounts = responseData.assignedCounts || {};
+
+          const formattedData = Object.entries(assignedCounts).map(
             ([userId, count], index) => ({
               id: index,
               userName:
@@ -78,12 +130,16 @@ const AssignedIV = () => {
         })
         .catch((error) => {
           console.error('Error fetching assigned counts', error);
+          setAssignedCounts([]); // Clear data on error
         })
         .finally(() => {
           setLoading(false);
         });
+    } else {
+      // Clear assigned counts if no office or date range selected
+      setAssignedCounts([]);
     }
-  }, [selectedOffice, users]);
+  }, [selectedOffice, users, dateRange]);
 
   const handleUserChange = (event) => {
     setSelectedUserId(event.target.value);
@@ -125,6 +181,20 @@ const AssignedIV = () => {
       )}
 
       <div className="p-6">
+        {/* Filters Section */}
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 mb-6">
+          <div className="p-6 border-b border-slate-200">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-slate-700">
+                Date Range:
+              </label>
+              <div className="w-80">
+                <DatePicker onDateChange={setDateRange} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* User-based Assignments Section */}
@@ -142,7 +212,7 @@ const AssignedIV = () => {
                 >
                   <option value="">Choose a user...</option>
                   {users
-                    .filter((user) => user.role === 'user')
+                    .sort((a, b) => a.name.localeCompare(b.name))
                     .map((user) => (
                       <option key={user._id} value={user._id}>
                         {user.name}
