@@ -3,58 +3,56 @@ import {
   Switch,
   Route,
   Redirect,
-} from "react-router-dom";
-import { siteRoutes, dashboardRoutes } from "./allroutes";
+} from 'react-router-dom';
+import { siteRoutes, dashboardRoutes } from './allroutes';
 
 function ParamsExample() {
-  let userId = localStorage.getItem("loggedinUserId");
-  console.log("check paramexample");
+  let userId = localStorage.getItem('loggedinUserId');
+  let userRole = localStorage.getItem('role');
 
-  function PrivateRoute({ children, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={({ location }) =>
-          userId !== 0 ? (
-            children
-          ) : (
-            <Redirect to={{ pathname: "/", state: { from: location } }} />
-          )
-        }
-      />
-    );
-  }
+  console.log('Router check - userId:', userId, 'userRole:', userRole);
+
+  // Check if user is authenticated
+  const isAuthenticated =
+    userId && userId !== 'null' && userId !== '' && userId.trim() !== '';
 
   return (
     <Router>
       <Switch>
-        {siteRoutes.map((routes, i) => {
-          return (
-            <Route
-              key={i}
-              path={routes.path}
-              exact={routes.exact}
-              strict={routes.strict}
-              children={<routes.component />}
-            />
-          );
-        })}
-        <PrivateRoute path="/">
-          <Switch>
-            {dashboardRoutes.map((routes, i) => {
-              return (
-                <Route
-                  key={i}
-                  path={routes.path}
-                  exact={routes.exact}
-                  strict={routes.strict}
-                  // eslint-disable-next-line react/no-children-prop
-                  children={<routes.component />}
-                />
+        {/* Public Routes */}
+        <Route exact path="/" component={siteRoutes[0].component} />
+
+        {/* Protected Routes */}
+        {dashboardRoutes.map((route, index) => (
+          <Route
+            key={index}
+            exact={route.exact}
+            strict={route.strict}
+            path={route.path}
+            render={(props) => {
+              console.log(
+                `Rendering route: ${route.path}, isAuthenticated: ${isAuthenticated}`
               );
-            })}
-          </Switch>
-        </PrivateRoute>
+
+              if (!isAuthenticated) {
+                console.log('Not authenticated, redirecting to /');
+                return <Redirect to="/" />;
+              }
+
+              const Component = route.component;
+              return <Component {...props} />;
+            }}
+          />
+        ))}
+
+        {/* Fallback redirect */}
+        <Route path="*">
+          {isAuthenticated ? (
+            <Redirect to="/schedule-patient" />
+          ) : (
+            <Redirect to="/" />
+          )}
+        </Route>
       </Switch>
     </Router>
   );

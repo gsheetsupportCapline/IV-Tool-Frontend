@@ -346,18 +346,10 @@ const Rush = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 pt-20 pb-8">
+      <div className="min-h-screen bg-gray-50 pt-5 pb-8">
         {/* Added pt-20 for sticky header */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Request Rush IV
-            </h1>
-            <p className="text-gray-600">
-              Submit your urgent IV request with all required details
-            </p>
-          </div>
 
           {/* Main Form Card */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
