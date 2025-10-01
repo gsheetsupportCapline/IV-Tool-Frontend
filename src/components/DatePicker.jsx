@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Datepicker from 'react-tailwindcss-datepicker';
 
-const DatePicker = ({ onDateChange }) => {
+const DatePicker = ({ onDateChange, value: externalValue }) => {
   const [value, setValue] = useState({
     startDate: null,
     endDate: null,
   });
 
+  // Update internal state when external value changes
+  useEffect(() => {
+    if (externalValue) {
+      setValue(externalValue);
+    }
+  }, [externalValue]);
+
   const handleValueChange = (newValue) => {
-    console.log('newValue:', newValue);
+    console.log('DatePicker newValue:', newValue);
     setValue(newValue);
     onDateChange(newValue);
   };
