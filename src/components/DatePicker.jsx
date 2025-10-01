@@ -21,17 +21,27 @@ const DatePicker = ({ onDateChange, value: externalValue }) => {
   };
 
   return (
-    <div className="w-full h-10">
+    <div className="w-full h-10 relative z-20">
       <Datepicker
         value={value}
         onChange={handleValueChange}
         showShortcuts={true}
         primaryColor={'slate'}
         inputClassName="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
-        containerClassName="relative"
-        toggleClassName="absolute right-3 top-1/2 transform -translate-y-1/2"
+        containerClassName="relative z-30"
+        popoverDirection="down"
+        toggleClassName="absolute right-3 top-1/2 transform -translate-y-1/2 z-10"
         displayFormat="MM/DD/YYYY"
         placeholder="Select Date Range"
+        configs={{
+          shortcuts: {
+            today: 'Today',
+            yesterday: 'Yesterday',
+            past: (period) => `Last ${period} Days`,
+            currentMonth: 'This Month',
+            pastMonth: 'Last Month',
+          },
+        }}
       />
     </div>
   );

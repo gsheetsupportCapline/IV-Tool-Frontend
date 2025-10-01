@@ -6,7 +6,9 @@ import AssignedIV from './AssignedIV';
 import ProductionIV from './ProductionIV';
 import DropdownDashboard from './DropdownDashboard';
 import ManageUsers from './ManageUsers';
+import UserAttendance from './UserAttendance';
 import MasterData from './MasterData';
+import SmilepointIVInfo from './SmilepointIVInfo';
 import Header from './Header';
 
 const AdminDashboard = () => {
@@ -68,6 +70,19 @@ const AdminDashboard = () => {
                 <span>IV Team Production</span>
               </button>
 
+              {/* Smilepoint IV Info - Moved above Master Data */}
+              <button
+                onClick={() => setSelectedItem('SmilepointIVInfo')}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center space-x-3 ${
+                  selectedItem === 'SmilepointIVInfo'
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-[1.02]'
+                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                <span>Smilepoint IV Info</span>
+              </button>
+
               {/* Master Data */}
               <button
                 onClick={() => setSelectedItem('MasterData')}
@@ -109,6 +124,19 @@ const AdminDashboard = () => {
                 <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
                 <span>Manage Users</span>
               </button>
+
+              {/* User Attendance */}
+              <button
+                onClick={() => setSelectedItem('UserAttendance')}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center space-x-3 ${
+                  selectedItem === 'UserAttendance'
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-[1.02]'
+                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <span>User Attendance</span>
+              </button>
             </div>
           </nav>
         </div>
@@ -122,6 +150,8 @@ const AdminDashboard = () => {
             {selectedItem === 'MasterData' && <MasterData />}
             {selectedItem === 'DropdownValues' && <DropdownDashboard />}
             {selectedItem === 'ManageUsers' && <ManageUsers />}
+            {selectedItem === 'UserAttendance' && <UserAttendance />}
+            {selectedItem === 'SmilepointIVInfo' && <SmilepointIVInfo />}
           </div>
         </div>
       </div>
