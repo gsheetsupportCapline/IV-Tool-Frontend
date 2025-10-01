@@ -288,11 +288,11 @@ const IVUsers = () => {
       )}
 
       {/* Main Layout - Sidebar + Content */}
-      <div className="flex h-screen pt-0">
-        {/* Left Sidebar */}
-        <div className="w-1/3 bg-white shadow-lg border-r border-slate-200 flex flex-col">
-          {/* Date Range Selector */}
-          <div className="p-6 border-b border-slate-200">
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Left Sidebar - Completely Sticky */}
+        <div className="w-1/3 bg-white shadow-lg border-r border-slate-200 flex flex-col h-full overflow-hidden">
+          {/* Date Range Selector - Fixed */}
+          <div className="p-6 border-b border-slate-200 flex-shrink-0">
             <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
               📅 Select Date Range
             </h2>
@@ -332,8 +332,8 @@ const IVUsers = () => {
                   </p>
                 </div>
               ) : (
-                <div className="max-h-96 overflow-y-auto border border-slate-200 rounded-lg">
-                  <TableContainer component={Paper} sx={{ maxHeight: '100%' }}>
+                <div className="h-[calc(100vh-400px)] border border-slate-200 rounded-lg">
+                  <TableContainer component={Paper} sx={{ height: '100%' }}>
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
