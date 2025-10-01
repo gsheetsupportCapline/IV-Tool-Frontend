@@ -595,52 +595,6 @@ const IVUsers = () => {
                             className="bg-slate-50"
                           />
                         </Grid>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="Appointment Type"
-                            value={selectedAppointment.appointmentType || ''}
-                            InputProps={{ readOnly: true }}
-                            className="bg-slate-50"
-                          />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="Patient Contact"
-                            value={selectedAppointment.patientContact || ''}
-                            InputProps={{ readOnly: true }}
-                            className="bg-slate-50"
-                          />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="Insurance Phone"
-                            value={selectedAppointment.insurancePhone || ''}
-                            InputProps={{ readOnly: true }}
-                            className="bg-slate-50"
-                          />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="Policy Holder DOB"
-                            value={
-                              selectedAppointment.policyHolderDOB
-                                ? new Date(
-                                    selectedAppointment.policyHolderDOB
-                                  ).toLocaleDateString()
-                                : ''
-                            }
-                            InputProps={{ readOnly: true }}
-                            className="bg-slate-50"
-                          />
-                        </Grid>
                       </Grid>
                     </div>
 
@@ -686,6 +640,26 @@ const IVUsers = () => {
                             size="small"
                             label="MID/SSN"
                             value={selectedAppointment.MIDSSN || ''}
+                            InputProps={{ readOnly: true }}
+                            className="bg-slate-50"
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Appointment Type"
+                            value={selectedAppointment.appointmentType || ''}
+                            InputProps={{ readOnly: true }}
+                            className="bg-slate-50"
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Insurance Phone"
+                            value={selectedAppointment.insurancePhone || ''}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
