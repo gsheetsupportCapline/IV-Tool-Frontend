@@ -296,39 +296,138 @@ const UserAttendance = () => {
 
     setAutoAssigning(true);
 
-    // Process each user sequentially
-    for (const user of selectedUsersList) {
-      try {
-        // Set processing status
-        setUserActionStatus((prev) => ({
-          ...prev,
-          [user.userId]: 'processing',
-        }));
+    try {
+      // Get logged in user info from localStorage/sessionStorage
+      const loggedInUser = JSON.parse(localStorage.getItem('user')) ||
+        JSON.parse(sessionStorage.getItem('user')) || { name: 'Admin' }; // fallback
 
-        // Simulate API call delay (replace with actual auto assignment logic)
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Fetch unassigned appointments
+      const appointmentsResponse = await axios.get(
+        `${BASE_URL}/api/appointments/dynamic-unassigned-appointments`
+      );
 
-        // Simulate success/failure (replace with actual logic)
-        const success = Math.random() > 0.3; // 70% success rate for demo
-
-        if (success) {
-          setUserActionStatus((prev) => ({
-            ...prev,
-            [user.userId]: 'completed',
-          }));
-        } else {
-          setUserActionStatus((prev) => ({
-            ...prev,
-            [user.userId]: 'warning',
-          }));
-        }
-      } catch (error) {
-        console.error(`Error processing user ${user.userName}:`, error);
-        setUserActionStatus((prev) => ({
-          ...prev,
-          [user.userId]: 'warning',
-        }));
+      if (
+        !appointmentsResponse.data.success ||
+        !appointmentsResponse.data.data
+      ) {
+        alert('No unassigned appointments found');
+        setAutoAssigning(false);
+        return;
       }
+
+      // Sort appointments by date and time (oldest first)
+      const unassignedAppointments = appointmentsResponse.data.data.sort(
+        (a, b) => {
+          const dateComparison =
+            new Date(a.appointmentDate) - new Date(b.appointmentDate);
+          if (dateComparison !== 0) return dateComparison;
+          return a.appointmentTime.localeCompare(b.appointmentTime);
+        }
+      );
+
+      const totalUsers = selectedUsersList.length;
+      const appointmentsPerUser = 3;
+      let appointmentIndex = 0;
+
+      // Process 3 rounds of assignment (3 appointments per user)
+      for (let round = 0; round < appointmentsPerUser; round++) {
+        for (let userIndex = 0; userIndex < totalUsers; userIndex++) {
+          const user = selectedUsersList[userIndex];
+
+          // Set processing status for this user
+          setUserActionStatus((prev) => ({
+            ...prev,
+            [user.userId]: 'processing',
+          }));
+
+          if (appointmentIndex < unassignedAppointments.length) {
+            const appointment = unassignedAppointments[appointmentIndex];
+
+            try {
+              // Log API call details for debugging
+              console.log('Making API call:', {
+                url: `${BASE_URL}/api/appointments/update-appointments/${appointment.office}/${appointment.appointmentId}`,
+                data: {
+                  userId: user.userId,
+                  status: 'Assigned',
+                  completionStatus: 'In Process',
+                  ivAssignedDate: new Date().toISOString(),
+                  ivAssignedByUserName:
+                    loggedInUser.name || loggedInUser.userName || 'Admin',
+                },
+              });
+
+              // Assign appointment to user
+              const assignResponse = await axios.put(
+                `${BASE_URL}/api/appointments/update-appointments/${appointment.office}/${appointment.appointmentId}`,
+                {
+                  userId: user.userId,
+                  status: 'Assigned',
+                  completionStatus: 'In Process',
+                  ivAssignedDate: new Date().toISOString(),
+                  ivAssignedByUserName:
+                    loggedInUser.name || loggedInUser.userName || 'Admin',
+                }
+              );
+
+              console.log('API Response:', assignResponse.data);
+
+              // Check if assignment was successful by verifying status and assignedUser fields
+              if (
+                assignResponse.data.status === 'Assigned' &&
+                assignResponse.data.assignedUser
+              ) {
+                console.log(
+                  `Successfully assigned appointment ${appointment.appointmentId} to user ${user.userName}`
+                );
+              } else {
+                console.error(
+                  `Failed to assign appointment ${appointment.appointmentId} to user ${user.userName}`,
+                  assignResponse.data
+                );
+              }
+
+              // Always increment appointment index whether success or failure to avoid assigning same appointment to multiple users
+              appointmentIndex++;
+            } catch (error) {
+              console.error(
+                `Error assigning appointment to user ${user.userName}:`,
+                {
+                  error: error.message,
+                  response: error.response?.data,
+                  status: error.response?.status,
+                  appointmentId: appointment.appointmentId,
+                  userId: user.userId,
+                  office: appointment.office,
+                }
+              );
+
+              // Increment appointment index even on error to avoid assigning same appointment to multiple users
+              appointmentIndex++;
+            }
+          }
+
+          // Small delay between assignments to avoid overwhelming the server
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      // Mark all users as completed
+      const completedStatus = {};
+      selectedUsersList.forEach((user) => {
+        completedStatus[user.userId] = 'completed';
+      });
+      setUserActionStatus(completedStatus);
+    } catch (error) {
+      console.error('Error in auto assignment:', error);
+      alert('Error occurred during auto assignment. Please try again.');
+
+      // Mark all users as warning
+      const warningStatus = {};
+      selectedUsersList.forEach((user) => {
+        warningStatus[user.userId] = 'warning';
+      });
+      setUserActionStatus(warningStatus);
     }
 
     setAutoAssigning(false);
