@@ -11,6 +11,7 @@ const UserAttendance = () => {
   const [combinedData, setCombinedData] = useState([]);
   const [originalAttendanceData, setOriginalAttendanceData] = useState([]);
   const [hasAttendanceChanges, setHasAttendanceChanges] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState(new Set());
@@ -164,30 +165,66 @@ const UserAttendance = () => {
       return;
     }
 
-    // For now, just show success message - API integration will be added later
-    console.log(
-      'Attendance changes to update:',
-      changedUsers.map((user) => ({
-        userId: user.userId,
-        userName: user.userName,
-        oldAttendance: originalAttendanceData.find(
-          (orig) => orig.userId === user.userId
-        )?.attendance,
-        newAttendance: user.attendance,
-      }))
-    );
+    setUpdating(true);
 
-    // Reset the original data to current state
-    setOriginalAttendanceData(
-      combinedData.map((user) => ({
+    try {
+      // Prepare data for bulk save API
+      const attendanceData = changedUsers.map((user) => ({
         userId: user.userId,
+        date: selectedDate,
         attendance: user.attendance,
-      }))
-    );
-    setHasAttendanceChanges(false);
+      }));
 
-    // You can add actual API call here later
-    alert(`Attendance updated for ${changedUsers.length} user(s)`);
+      const requestBody = {
+        attendanceData: attendanceData,
+      };
+
+      console.log('Sending attendance update:', requestBody);
+
+      // Call bulk save API
+      const response = await axios.post(
+        `${BASE_URL}/api/attendance/bulk-save`,
+        requestBody
+      );
+
+      console.log('Attendance update response:', response.data);
+
+      // Check if response is successful
+      if (response.data.success || response.status === 200) {
+        // Reset the original data to current state
+        setOriginalAttendanceData(
+          combinedData.map((user) => ({
+            userId: user.userId,
+            attendance: user.attendance,
+          }))
+        );
+        setHasAttendanceChanges(false);
+
+        // Show success message
+        alert(
+          `✅ Attendance updated successfully for ${changedUsers.length} user(s)`
+        );
+
+        // Optionally reload data to ensure consistency
+        // await loadData();
+      } else {
+        throw new Error(response.data.message || 'Failed to update attendance');
+      }
+    } catch (err) {
+      console.error('Error updating attendance:', err);
+
+      // Show error message
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to update attendance';
+      alert(`❌ Error: ${errorMessage}`);
+
+      // You might want to show a more user-friendly error display
+      setError(`Failed to update attendance: ${errorMessage}`);
+    } finally {
+      setUpdating(false);
+    }
   };
 
   // Calculate attendance summary
@@ -522,22 +559,36 @@ const UserAttendance = () => {
             {hasAttendanceChanges && (
               <button
                 onClick={handleUpdateAttendance}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                disabled={updating}
+                className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
+                  updating
+                    ? 'bg-gray-400 cursor-not-allowed text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Update</span>
+                {updating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span>Update</span>
+                  </>
+                )}
               </button>
             )}
           </div>
