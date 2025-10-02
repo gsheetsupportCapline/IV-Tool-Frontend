@@ -12,6 +12,8 @@ const UserAttendance = () => {
   const [originalAttendanceData, setOriginalAttendanceData] = useState([]);
   const [hasAttendanceChanges, setHasAttendanceChanges] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [userActionStatus, setUserActionStatus] = useState({}); // {userId: 'processing'|'completed'|'warning'}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState(new Set());
@@ -85,6 +87,8 @@ const UserAttendance = () => {
           ? userAttendance.assigned.appointmentIds
           : [],
         pendingIVs: 0, // Default to 0 for now
+        isSelectable:
+          attendanceValue === 'Present' || attendanceValue === 'Half', // Only Present/Half can be selected
       };
     });
 
@@ -96,6 +100,8 @@ const UserAttendance = () => {
       }))
     );
     setHasAttendanceChanges(false);
+    setUserActionStatus({}); // Reset action status
+    setSelectedUsers(new Set()); // Clear all selections when data changes
   };
 
   // Load data when component mounts or date changes
@@ -119,8 +125,11 @@ const UserAttendance = () => {
     loadData();
   }, [selectedDate]);
 
-  // Handle checkbox selection
+  // Handle checkbox selection - only allow Present/Half users
   const handleUserSelection = (userId) => {
+    const user = combinedData.find((u) => u.userId === userId);
+    if (!user || !user.isSelectable) return; // Prevent selection of No Record/Absent users
+
     const newSelected = new Set(selectedUsers);
     if (newSelected.has(userId)) {
       newSelected.delete(userId);
@@ -259,13 +268,72 @@ const UserAttendance = () => {
     return summary;
   };
 
-  // Handle select all checkbox
+  // Handle select all checkbox - only select Present/Half users
   const handleSelectAll = () => {
-    if (selectedUsers.size === combinedData.length) {
+    const selectableUsers = combinedData.filter((user) => user.isSelectable);
+    const selectableUserIds = selectableUsers.map((user) => user.userId);
+    const allSelectableSelected = selectableUserIds.every((id) =>
+      selectedUsers.has(id)
+    );
+
+    if (allSelectableSelected) {
       setSelectedUsers(new Set());
     } else {
-      setSelectedUsers(new Set(combinedData.map((user) => user.userId)));
+      setSelectedUsers(new Set(selectableUserIds));
     }
+  };
+
+  // Auto assignment function
+  const handleAutoAssignment = async () => {
+    const selectedUsersList = combinedData.filter((user) =>
+      selectedUsers.has(user.userId)
+    );
+
+    if (selectedUsersList.length === 0) {
+      alert('Please select users for auto assignment');
+      return;
+    }
+
+    setAutoAssigning(true);
+
+    // Process each user sequentially
+    for (const user of selectedUsersList) {
+      try {
+        // Set processing status
+        setUserActionStatus((prev) => ({
+          ...prev,
+          [user.userId]: 'processing',
+        }));
+
+        // Simulate API call delay (replace with actual auto assignment logic)
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Simulate success/failure (replace with actual logic)
+        const success = Math.random() > 0.3; // 70% success rate for demo
+
+        if (success) {
+          setUserActionStatus((prev) => ({
+            ...prev,
+            [user.userId]: 'completed',
+          }));
+        } else {
+          setUserActionStatus((prev) => ({
+            ...prev,
+            [user.userId]: 'warning',
+          }));
+        }
+      } catch (error) {
+        console.error(`Error processing user ${user.userName}:`, error);
+        setUserActionStatus((prev) => ({
+          ...prev,
+          [user.userId]: 'warning',
+        }));
+      }
+    }
+
+    setAutoAssigning(false);
+    // Clear selection after processing
+    setSelectedUsers(new Set());
   };
 
   return (
@@ -373,10 +441,20 @@ const UserAttendance = () => {
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
                       <input
                         type="checkbox"
-                        checked={
-                          selectedUsers.size === combinedData.length &&
-                          combinedData.length > 0
-                        }
+                        checked={(() => {
+                          const selectableUsers = combinedData.filter(
+                            (user) => user.isSelectable
+                          );
+                          const selectableUserIds = selectableUsers.map(
+                            (user) => user.userId
+                          );
+                          return (
+                            selectableUserIds.length > 0 &&
+                            selectableUserIds.every((id) =>
+                              selectedUsers.has(id)
+                            )
+                          );
+                        })()}
                         onChange={handleSelectAll}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
@@ -393,8 +471,11 @@ const UserAttendance = () => {
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
                       Assigned IVs
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
                       Pending IVs
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -411,7 +492,12 @@ const UserAttendance = () => {
                           type="checkbox"
                           checked={selectedUsers.has(user.userId)}
                           onChange={() => handleUserSelection(user.userId)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          disabled={!user.isSelectable}
+                          className={`rounded border-gray-300 focus:ring-blue-500 ${
+                            user.isSelectable
+                              ? 'text-blue-600 cursor-pointer'
+                              : 'text-gray-300 cursor-not-allowed'
+                          }`}
                         />
                       </td>
                       <td className="px-3 py-2 text-sm font-medium text-gray-900 border-r border-gray-200">
@@ -477,10 +563,33 @@ const UserAttendance = () => {
                           {user.appointmentIds.join(',')}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-sm text-center text-gray-700">
+                      <td className="px-3 py-2 text-sm text-center text-gray-700 border-r border-gray-200">
                         <span className="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                           {user.pendingIVs}
                         </span>
+                      </td>
+                      <td className="px-3 py-2 text-sm text-center text-gray-700">
+                        {/* Action Column */}
+                        {userActionStatus[user.userId] === 'processing' && (
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          </div>
+                        )}
+                        {userActionStatus[user.userId] === 'completed' && (
+                          <div className="flex justify-center">
+                            <span className="text-green-600 text-lg">✅</span>
+                          </div>
+                        )}
+                        {userActionStatus[user.userId] === 'warning' && (
+                          <div className="flex justify-center">
+                            <span className="text-yellow-600 text-lg">⚠️</span>
+                          </div>
+                        )}
+                        {!userActionStatus[user.userId] && (
+                          <div className="flex justify-center">
+                            <span className="text-gray-400 text-xs">-</span>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -555,60 +664,90 @@ const UserAttendance = () => {
               })()}
             </div>
 
-            {/* Update Button */}
-            {hasAttendanceChanges && (
-              <button
-                onClick={handleUpdateAttendance}
-                disabled={updating}
-                className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
-                  updating
-                    ? 'bg-gray-400 cursor-not-allowed text-white'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
-                }`}
-              >
-                {updating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                    <span>Updating...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span>Update</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2">
+              {/* Auto Assignment Button - Show only when no attendance changes and users selected */}
+              {!hasAttendanceChanges && selectedUsers.size > 0 && (
+                <button
+                  onClick={handleAutoAssignment}
+                  disabled={autoAssigning}
+                  className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
+                    autoAssigning
+                      ? 'bg-gray-400 cursor-not-allowed text-white'
+                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                  }`}
+                >
+                  {autoAssigning ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      <span>Assigning...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                      <span>Auto Assign ({selectedUsers.size})</span>
+                    </>
+                  )}
+                </button>
+              )}
 
-      {/* Selected Users Info */}
-      {selectedUsers.size > 0 && (
-        <div className="mt-2 bg-blue-50 border border-blue-200 rounded p-2 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="text-blue-700 font-medium text-sm">
-              {selectedUsers.size} user{selectedUsers.size > 1 ? 's' : ''}{' '}
-              selected
+              {/* Update Button - Show only when there are attendance changes */}
+              {hasAttendanceChanges && (
+                <button
+                  onClick={handleUpdateAttendance}
+                  disabled={updating}
+                  className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
+                    updating
+                      ? 'bg-gray-400 cursor-not-allowed text-white'
+                      : 'bg-green-600 hover:bg-green-700 text-white'
+                  }`}
+                >
+                  {updating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span>Update</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              {/* Info text when no actions available */}
+              {!hasAttendanceChanges && selectedUsers.size === 0 && (
+                <span className="text-gray-500 text-xs italic">
+                  Select users for auto assignment or modify attendance to
+                  update
+                </span>
+              )}
             </div>
-            <button
-              onClick={() => setSelectedUsers(new Set())}
-              className="text-blue-600 hover:text-blue-800 text-xs"
-            >
-              Clear
-            </button>
           </div>
         </div>
       )}
