@@ -296,6 +296,13 @@ const UserAttendance = () => {
 
     setAutoAssigning(true);
 
+    // Immediately set all selected users to processing state
+    const processingStatus = {};
+    selectedUsersList.forEach((user) => {
+      processingStatus[user.userId] = 'processing';
+    });
+    setUserActionStatus(processingStatus);
+
     try {
       // Get logged in user info from localStorage/sessionStorage
       const loggedInUser = JSON.parse(localStorage.getItem('user')) ||
@@ -329,16 +336,23 @@ const UserAttendance = () => {
       const appointmentsPerUser = 3;
       let appointmentIndex = 0;
 
+      // Initialize tracking for each user's assignments during this session
+      const userAssignmentTracking = {};
+      selectedUsersList.forEach((user) => {
+        const currentUserData = combinedData.find(
+          (u) => u.userId === user.userId
+        );
+        userAssignmentTracking[user.userId] = {
+          assignedIvs: [...(currentUserData?.assignedIvs || [])],
+          assignedCount: currentUserData?.assignedCount || 0,
+          newAssignments: [], // Track new assignments in this session
+        };
+      });
+
       // Process 3 rounds of assignment (3 appointments per user)
       for (let round = 0; round < appointmentsPerUser; round++) {
         for (let userIndex = 0; userIndex < totalUsers; userIndex++) {
           const user = selectedUsersList[userIndex];
-
-          // Set processing status for this user
-          setUserActionStatus((prev) => ({
-            ...prev,
-            [user.userId]: 'processing',
-          }));
 
           if (appointmentIndex < unassignedAppointments.length) {
             const appointment = unassignedAppointments[appointmentIndex];
@@ -380,6 +394,20 @@ const UserAttendance = () => {
                 console.log(
                   `Successfully assigned appointment ${appointment.appointmentId} to user ${user.userName}`
                 );
+
+                // Track this assignment for batch update later
+                const userTracking = userAssignmentTracking[user.userId];
+                userTracking.newAssignments.push(appointment.appointmentId);
+                userTracking.assignedIvs.push(appointment.appointmentId);
+                userTracking.assignedCount += 1;
+
+                console.log(`User ${user.userName} tracking updated:`, {
+                  totalCount: userTracking.assignedCount,
+                  totalIvs: userTracking.assignedIvs.length,
+                  newAssignmentsInSession: userTracking.newAssignments.length,
+                  latestAppointment: appointment.appointmentId,
+                  allAppointmentIds: userTracking.assignedIvs,
+                });
               } else {
                 console.error(
                   `Failed to assign appointment ${appointment.appointmentId} to user ${user.userName}`,
@@ -409,6 +437,78 @@ const UserAttendance = () => {
 
           // Small delay between assignments to avoid overwhelming the server
           await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      // After all assignments are done, update attendance for users who got new assignments
+      console.log('All assignments completed. Updating attendance data...');
+
+      for (const user of selectedUsersList) {
+        const userTracking = userAssignmentTracking[user.userId];
+
+        if (userTracking.newAssignments.length > 0) {
+          try {
+            const currentUserData = combinedData.find(
+              (u) => u.userId === user.userId
+            );
+
+            if (
+              currentUserData &&
+              currentUserData.attendance !== 'No Record' &&
+              currentUserData.attendance !== 'Absent'
+            ) {
+              console.log(`Updating attendance for ${user.userName}:`, {
+                finalCount: userTracking.assignedCount,
+                finalAppointmentIds: userTracking.assignedIvs,
+                newAssignmentsInThisSession: userTracking.newAssignments,
+              });
+
+              // Update assigned count and appointment IDs using the API
+              const assignedUpdateResponse = await axios.put(
+                `${BASE_URL}/api/attendance/update-assigned`,
+                {
+                  userId: user.userId,
+                  date: selectedDate,
+                  assigned: {
+                    count: userTracking.assignedCount,
+                    appointmentIds: userTracking.assignedIvs,
+                  },
+                }
+              );
+
+              if (
+                assignedUpdateResponse.data.success ||
+                assignedUpdateResponse.status === 200
+              ) {
+                console.log(
+                  `Successfully updated attendance for user ${user.userName}: ${userTracking.assignedCount} total IVs`
+                );
+
+                // Update local state to reflect the change
+                setCombinedData((prevData) =>
+                  prevData.map((u) =>
+                    u.userId === user.userId
+                      ? {
+                          ...u,
+                          assignedIvs: [...userTracking.assignedIvs],
+                          assignedCount: userTracking.assignedCount,
+                        }
+                      : u
+                  )
+                );
+              } else {
+                console.error(
+                  `Failed to update attendance for user ${user.userName}:`,
+                  assignedUpdateResponse.data
+                );
+              }
+            }
+          } catch (attendanceError) {
+            console.error(
+              `Error updating attendance for user ${user.userName}:`,
+              attendanceError
+            );
+          }
         }
       }
 
