@@ -304,9 +304,8 @@ const UserAttendance = () => {
     setUserActionStatus(processingStatus);
 
     try {
-      // Get logged in user info from localStorage/sessionStorage
-      const loggedInUser = JSON.parse(localStorage.getItem('user')) ||
-        JSON.parse(sessionStorage.getItem('user')) || { name: 'Admin' }; // fallback
+      // Get logged in user info from localStorage (same as Admin.jsx)
+      const loggedInUserName = localStorage.getItem('loggedinUserName');
 
       // Fetch unassigned appointments
       const appointmentsResponse = await axios.get(
@@ -366,8 +365,7 @@ const UserAttendance = () => {
                   status: 'Assigned',
                   completionStatus: 'In Process',
                   ivAssignedDate: new Date().toISOString(),
-                  ivAssignedByUserName:
-                    loggedInUser.name || loggedInUser.userName || 'Admin',
+                  ivAssignedByUserName: loggedInUserName,
                 },
               });
 
@@ -379,8 +377,7 @@ const UserAttendance = () => {
                   status: 'Assigned',
                   completionStatus: 'In Process',
                   ivAssignedDate: new Date().toISOString(),
-                  ivAssignedByUserName:
-                    loggedInUser.name || loggedInUser.userName || 'Admin',
+                  ivAssignedByUserName: loggedInUserName,
                 }
               );
 

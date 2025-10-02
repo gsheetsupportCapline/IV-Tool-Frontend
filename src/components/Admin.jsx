@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
-import axios from "axios";
-import Header from "./Header";
-import Select from "@mui/material/Select";
-import Datepicker from "react-tailwindcss-datepicker";
-import ShimmerTableComponent from "./ShimmerTableComponent";
-import BASE_URL from "../config/apiConfig";
+import { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import axios from 'axios';
+import Header from './Header';
+import Select from '@mui/material/Select';
+import Datepicker from 'react-tailwindcss-datepicker';
+import ShimmerTableComponent from './ShimmerTableComponent';
+import BASE_URL from '../config/apiConfig';
 import FullScreenSpinner from './FullScreenSpinner';
- 
+
 import ImageViewer from 'react-simple-image-viewer';
 
 const Admin = () => {
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOffice, setSelectedOffice] = useState("");
+  const [selectedOffice, setSelectedOffice] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
   const [rows, setRows] = useState([]);
@@ -34,34 +34,33 @@ const Admin = () => {
   const [images, setImages] = useState([]);
   const [patientIdFilter, setPatientIdFilter] = useState('');
   const officeName = [
-    "AllOffices",
-    "Aransas",
-    "Azle",
-    "Beaumont",
-    "Benbrook",
-    "Calallen",
-    "Crosby",
-    "Devine",
-    "Elgin",
-    "Grangerland",
-    "Huffman",
-    "Jasper",
-    "Lavaca",
-    "Liberty",
-    "Lytle",
-    "Mathis",
-    "Potranco",
-    "Rio Bravo",
-    "Riverwalk",
-    "Rockdale",
-    "Sinton",
-    "Splendora",
-    "Springtown",
-    "Tidwell",
-    "Victoria",
-    "Westgreen",
-    "Winnie",
-     
+    'AllOffices',
+    'Aransas',
+    'Azle',
+    'Beaumont',
+    'Benbrook',
+    'Calallen',
+    'Crosby',
+    'Devine',
+    'Elgin',
+    'Grangerland',
+    'Huffman',
+    'Jasper',
+    'Lavaca',
+    'Liberty',
+    'Lytle',
+    'Mathis',
+    'Potranco',
+    'Rio Bravo',
+    'Riverwalk',
+    'Rockdale',
+    'Sinton',
+    'Splendora',
+    'Springtown',
+    'Tidwell',
+    'Victoria',
+    'Westgreen',
+    'Winnie',
   ];
 
   useEffect(() => {
@@ -70,7 +69,7 @@ const Admin = () => {
         const response = await axios.get(`${BASE_URL}/api/auth/users`);
         setUsers(response.data.data);
       } catch (error) {
-        console.error("Error fetching users", error);
+        console.error('Error fetching users', error);
       }
     };
     fetchUsers();
@@ -88,7 +87,6 @@ const Admin = () => {
     setCurrentImage(0);
     setIsViewerOpen(true);
     setImages(imagesArray);
-     
   };
 
   const closeImageViewer = () => {
@@ -98,141 +96,141 @@ const Admin = () => {
 
   const columns = [
     {
-      field: "status",
-      headerName: "Status",
-      headerClassName: "header-row",
+      field: 'status',
+      headerName: 'Status',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "completionStatus",
-      headerName: "Completion Status",
-      headerClassName: "header-row",
+      field: 'completionStatus',
+      headerName: 'Completion Status',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "office",
-      headerName: "Office",
-      headerClassName: "header-row",
+      field: 'office',
+      headerName: 'Office',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "ivType",
-      headerName: "IV Type",
-      headerClassName: "header-row",
+      field: 'ivType',
+      headerName: 'IV Type',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "assignedUser",
-      headerName: "Assigned To",
+      field: 'assignedUser',
+      headerName: 'Assigned To',
       width: 150,
       renderCell: renderUserName,
-      headerClassName: "header-row",
+      headerClassName: 'header-row',
     },
     {
-      field: "ivAssignedDate",
-      headerName: "Assigned Date",
+      field: 'ivAssignedDate',
+      headerName: 'Assigned Date',
       width: 150,
-      
-      headerClassName: "header-row",
+
+      headerClassName: 'header-row',
     },
     {
-      field: "appointmentType",
-      headerName: "Appointment Type",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "appointmentDate",
-      headerName: "Appointment Date",
-      headerClassName: "header-row",
+      field: 'appointmentType',
+      headerName: 'Appointment Type',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "appointmentTime",
-      headerName: "Appointment Time",
-      headerClassName: "header-row",
+      field: 'appointmentDate',
+      headerName: 'Appointment Date',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "patientId",
-      headerName: "Patient Id",
-      headerClassName: "header-row",
+      field: 'appointmentTime',
+      headerName: 'Appointment Time',
+      headerClassName: 'header-row',
+      width: 150,
+    },
+    {
+      field: 'patientId',
+      headerName: 'Patient Id',
+      headerClassName: 'header-row',
       width: 100,
     },
     {
-      field: "ivRequestedDate",
-      headerName: "IV Requested Date",
-      headerClassName: "header-row",
+      field: 'ivRequestedDate',
+      headerName: 'IV Requested Date',
+      headerClassName: 'header-row',
       width: 100,
     },
     {
-      field: "insuranceName",
-      headerName: "Insurance Name",
-      headerClassName: "header-row",
+      field: 'insuranceName',
+      headerName: 'Insurance Name',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "insurancePhone",
-      headerName: "Insurance Phone No",
-      headerClassName: "header-row",
+      field: 'insurancePhone',
+      headerName: 'Insurance Phone No',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "policyHolderName",
-      headerName: "Policy Holder Name",
-      headerClassName: "header-row",
+      field: 'policyHolderName',
+      headerName: 'Policy Holder Name',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "policyHolderDOB",
-      headerName: "Policy Holder DOB",
-      headerClassName: "header-row",
+      field: 'policyHolderDOB',
+      headerName: 'Policy Holder DOB',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "memberId",
-      headerName: "Member Id",
-      headerClassName: "header-row",
+      field: 'memberId',
+      headerName: 'Member Id',
+      headerClassName: 'header-row',
       width: 100,
     },
     {
-      field: "MIDSSN",
-      headerName: "MID/SSN",
-      headerClassName: "header-row",
+      field: 'MIDSSN',
+      headerName: 'MID/SSN',
+      headerClassName: 'header-row',
       width: 100,
-      
     },
     {
-      field: "imageUrl",
-      headerName: "Image",
-      headerClassName: "header-row",
+      field: 'imageUrl',
+      headerName: 'Image',
+      headerClassName: 'header-row',
       width: 100,
       renderCell: (params) => {
         console.log('Current row', params.row);
         return (
-        <>
-         
-        {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
-          <button onClick={() => handleViewImage(params.row.imageUrl)} className="size-10  w-20 rounded-md bg-black text-white px-2 py-1 text-xs">
-            View Image
-          </button>
-        ) : null}
-         
-      </>
-      )
-     }
+          <>
+            {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
+              <button
+                onClick={() => handleViewImage(params.row.imageUrl)}
+                className="size-10  w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
+              >
+                View Image
+              </button>
+            ) : null}
+          </>
+        );
+      },
     },
-    
+
     {
-      field: "employerName",
-      headerName: "Employer Name",
-      headerClassName: "header-row",
+      field: 'employerName',
+      headerName: 'Employer Name',
+      headerClassName: 'header-row',
       width: 150,
     },
     {
-      field: "patientName",
-      headerName: "Patient Name",
-      headerClassName: "header-row",
+      field: 'patientName',
+      headerName: 'Patient Name',
+      headerClassName: 'header-row',
       width: 150,
     },
   ];
@@ -247,10 +245,10 @@ const Admin = () => {
 
   const handleMenuItemClick = async (user) => {
     setLoading(true);
-    console.log("checkRow Data:", selectedRows);
+    console.log('checkRow Data:', selectedRows);
     // Assuming selectedRows contains the appointments to be updated
     const selectedAppointmentIds = selectedRows.map((row) => row._id); // Adjust 'id' as per your data structure
-    console.log("Selected Appointment Ids", selectedAppointmentIds);
+    console.log('Selected Appointment Ids', selectedAppointmentIds);
 
     // Loop through each selected appointment and update it
     for (let id of selectedAppointmentIds) {
@@ -259,30 +257,30 @@ const Admin = () => {
         const officeNameForCurrentId = selectedRows.find(
           (row) => row._id === id
         )?.office;
-console.log("API CALL:", officeNameForCurrentId, id);
+        console.log('API CALL:', officeNameForCurrentId, id);
         if (!officeNameForCurrentId) {
-          console.error("Office name not found for appointment ID:", id);
+          console.error('Office name not found for appointment ID:', id);
           continue;
         }
-        const loggedInUserName = localStorage.getItem("loggedinUserName");
+        const loggedInUserName = localStorage.getItem('loggedinUserName');
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: user._id,
-            status: "Assigned",
-            completionStatus: "In Process",
+            status: 'Assigned',
+            completionStatus: 'In Process',
             ivAssignedDate: new Date().toISOString(),
             ivAssignedByUserName: loggedInUserName,
           }
         );
-        console.log("Response api", response);
+        console.log('Response api', response);
         const updatedAppointment = response.data;
-        console.log("updatedAppointment", updatedAppointment);
+        console.log('updatedAppointment', updatedAppointment);
         // Find the index of the updated appointment in the rows array
         const index = rows.findIndex(
           (row) => row._id.toString() === updatedAppointment._id.toString()
         );
-        console.log("Index", index);
+        console.log('Index', index);
 
         // Update the appointment in the local state
         if (index !== -1) {
@@ -291,7 +289,101 @@ console.log("API CALL:", officeNameForCurrentId, id);
           setRows(newRows);
         }
       } catch (error) {
-        console.error("Failed to update appointment", error);
+        console.error('Failed to update appointment', error);
+      }
+    }
+
+    // After all assignments are successful, update user's attendance data
+    if (selectedAppointmentIds.length > 0) {
+      try {
+        console.log(
+          `Updating attendance for user ${user.name} with ${selectedAppointmentIds.length} new assignments`
+        );
+
+        // Get current date for attendance update
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        // Fetch current user attendance data to get existing count and IDs
+        let currentAssignedCount = 0;
+        let currentAppointmentIds = [];
+
+        try {
+          // Try to get current attendance data
+          const attendanceResponse = await axios.get(
+            `${BASE_URL}/api/attendance/by-date`,
+            {
+              params: {
+                date: currentDate,
+                office: 'all',
+              },
+            }
+          );
+
+          if (attendanceResponse.data.success) {
+            const userAttendanceData = attendanceResponse.data.data.find(
+              (u) => u.userId === user._id
+            );
+            if (userAttendanceData && userAttendanceData.assigned) {
+              currentAssignedCount = userAttendanceData.assigned.count || 0;
+              currentAppointmentIds = [
+                ...(userAttendanceData.assigned.appointmentIds || []),
+              ];
+            }
+          }
+        } catch (fetchError) {
+          console.log(
+            'No existing attendance data found, starting fresh for user:',
+            user.name
+          );
+        }
+
+        // Add new assignment IDs and update count
+        const updatedCount =
+          currentAssignedCount + selectedAppointmentIds.length;
+        const updatedAppointmentIds = [
+          ...currentAppointmentIds,
+          ...selectedAppointmentIds,
+        ];
+
+        console.log(`Attendance update for ${user.name}:`, {
+          previousCount: currentAssignedCount,
+          newCount: updatedCount,
+          previousIds: currentAppointmentIds,
+          newAssignments: selectedAppointmentIds,
+          finalIds: updatedAppointmentIds,
+        });
+
+        // Update attendance using the update-assigned API
+        const attendanceUpdateResponse = await axios.put(
+          `${BASE_URL}/api/attendance/update-assigned`,
+          {
+            userId: user._id,
+            date: currentDate,
+            assigned: {
+              count: updatedCount,
+              appointmentIds: updatedAppointmentIds,
+            },
+          }
+        );
+
+        if (
+          attendanceUpdateResponse.data.success ||
+          attendanceUpdateResponse.status === 200
+        ) {
+          console.log(
+            `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`
+          );
+        } else {
+          console.error(
+            `Failed to update attendance for user ${user.name}:`,
+            attendanceUpdateResponse.data
+          );
+        }
+      } catch (attendanceError) {
+        console.error(
+          `Error updating attendance for user ${user.name}:`,
+          attendanceError
+        );
       }
     }
 
@@ -301,22 +393,22 @@ console.log("API CALL:", officeNameForCurrentId, id);
   };
 
   const handleSelectionChange = (newSelection) => {
-     // Filter out rows with completionStatus "Completed"
-  const filteredSelection = newSelection.filter(id => {
-    const row = rows.find(row => row._id === id);
-    return row && row.completionStatus !== "Completed";
-  });
-  console.log(filteredSelection)
+    // Filter out rows with completionStatus "Completed"
+    const filteredSelection = newSelection.filter((id) => {
+      const row = rows.find((row) => row._id === id);
+      return row && row.completionStatus !== 'Completed';
+    });
+    console.log(filteredSelection);
     const selectedRows = filteredSelection.map((id) =>
       rows.find((row) => row._id === id)
     );
-    console.log("Selected Rows ", selectedRows);
+    console.log('Selected Rows ', selectedRows);
     setSelectedRows(selectedRows);
   };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  
+
     fetchAndFilterAppointments(newValue);
   };
 
@@ -327,7 +419,7 @@ console.log("API CALL:", officeNameForCurrentId, id);
 
   const handleUnassignClick = async () => {
     const selectedAppointmentIds = selectedRows.map((row) => row._id);
-    console.log("Selected Appointment Ids", selectedAppointmentIds);
+    console.log('Selected Appointment Ids', selectedAppointmentIds);
 
     for (let id of selectedAppointmentIds) {
       try {
@@ -339,17 +431,17 @@ console.log("API CALL:", officeNameForCurrentId, id);
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: null, // Set userId to null or appropriate value to indicate unassignment
-            status: "Unassigned",
-            completionStatus: "IV Not Done", // Reset completionStatus or set as needed
+            status: 'Unassigned',
+            completionStatus: 'IV Not Done', // Reset completionStatus or set as needed
             ivAssignedDate: null,
             ivAssignedByUserName: null,
           }
         );
 
-        console.log("Response api", response);
+        console.log('Response api', response);
         const updatedAppointment = response.data;
-        console.log("Updated Appointment", updatedAppointment);
-        
+        console.log('Updated Appointment', updatedAppointment);
+
         // Find the index of the updated appointment in the rows array
         const index = rows.findIndex(
           (row) => row._id === updatedAppointment._id
@@ -362,7 +454,7 @@ console.log("API CALL:", officeNameForCurrentId, id);
           setRows(newRows);
         }
       } catch (error) {
-        console.error("Failed to update appointment", error);
+        console.error('Failed to update appointment', error);
       }
     }
 
@@ -372,9 +464,9 @@ console.log("API CALL:", officeNameForCurrentId, id);
 
   const fetchAndFilterAppointments = async (tabValue) => {
     if (!selectedOffice) {
-    setRows([]);
-    setIsLoading(false);
-    return;
+      setRows([]);
+      setIsLoading(false);
+      return;
     }
     setIsLoading(true);
     try {
@@ -383,49 +475,50 @@ console.log("API CALL:", officeNameForCurrentId, id);
       );
       const responseData = await response.json();
       if (responseData && responseData.appointments) {
-        console.log("Appointment data", responseData.appointments);
-      let filteredAppointments = responseData.appointments.map(appointment =>({
-        ...appointment,
-        appointmentDate: new Date(appointment.appointmentDate).toISOString().split('T')[0]
-      }));
-      // Apply date filtering only for Assigned tab
-      
-      // Apply patient ID filter
-      if (patientIdFilter) {
-        filteredAppointments = filteredAppointments.filter(
-          (appointment ) => 
-            appointment.patientId == patientIdFilter
+        console.log('Appointment data', responseData.appointments);
+        let filteredAppointments = responseData.appointments.map(
+          (appointment) => ({
+            ...appointment,
+            appointmentDate: new Date(appointment.appointmentDate)
+              .toISOString()
+              .split('T')[0],
+          })
         );
-      }
+        // Apply date filtering only for Assigned tab
+
+        // Apply patient ID filter
+        if (patientIdFilter) {
+          filteredAppointments = filteredAppointments.filter(
+            (appointment) => appointment.patientId == patientIdFilter
+          );
+        }
         switch (tabValue) {
           case 0: // Unassigned appointments
-          filteredAppointments = filteredAppointments.filter(
-            (appointment) => appointment.status === "Unassigned" 
-           
-          );
+            filteredAppointments = filteredAppointments.filter(
+              (appointment) => appointment.status === 'Unassigned'
+            );
             break;
           case 1: // Assigned appointments
-          filteredAppointments = filteredAppointments.filter(
-            (appointment) => appointment.status === "Assigned" 
-           
-          );
-           
+            filteredAppointments = filteredAppointments.filter(
+              (appointment) => appointment.status === 'Assigned'
+            );
+
             break;
-           
-          
+
           default:
             filteredAppointments = [];
         }
         // Sort the appointments by appointmentDate in descending order
         filteredAppointments.sort((a, b) => {
           //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
-          const dateCompare = new Date(a.appointmentDate) - new Date(b.appointmentDate);
+          const dateCompare =
+            new Date(a.appointmentDate) - new Date(b.appointmentDate);
 
           // If dates are the same, compare times
           if (dateCompare === 0) {
             // Extract hours and minutes from the time strings
-            const [hourA, minuteA] = a.appointmentTime.split(":").map(Number);
-            const [hourB, minuteB] = b.appointmentTime.split(":").map(Number);
+            const [hourA, minuteA] = a.appointmentTime.split(':').map(Number);
+            const [hourB, minuteB] = b.appointmentTime.split(':').map(Number);
 
             // Compare hours first, then minutes if hours are equal
             return hourA - hourB || minuteA - minuteB;
@@ -440,48 +533,45 @@ console.log("API CALL:", officeNameForCurrentId, id);
       }
       setIsLoading(false);
     } catch (error) {
-      console.error("Failed to fetch appointments", error);
+      console.error('Failed to fetch appointments', error);
       setRows([]);
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-      setLoading(true);
+    setLoading(true);
     fetchAndFilterAppointments(value); // Initially load data based on the selected tab
     setLoading(false);
-  }, [value,valueDate, selectedOffice,patientIdFilter]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
+  }, [value, valueDate, selectedOffice, patientIdFilter]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
 
   const handleValueChange = (newValue) => {
-    console.log("newValue:", newValue);
+    console.log('newValue:', newValue);
     setValueDate(newValue);
   };
 
-
-  
-
   return (
     <>
-    {loading && <FullScreenSpinner />}
+      {loading && <FullScreenSpinner />}
       <Header />
 
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          backgroundColor:"#94a3b8" ,//"#9fc5e8"   
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          backgroundColor: '#94a3b8', //"#9fc5e8"
           px: 2,
         }}
       >
-  <div className="flex items-center my-1 ">
+        <div className="flex items-center my-1 ">
           <Select
             value={selectedOffice}
             onChange={(e) => setSelectedOffice(e.target.value)}
             displayEmpty
-            inputProps={{ "aria-label": "Select Office" }}
-            sx={{background:"#1976d2" , color : "white"}}
+            inputProps={{ 'aria-label': 'Select Office' }}
+            sx={{ background: '#1976d2', color: 'white' }}
           >
             <MenuItem value="">
               <em>Select Office</em>
@@ -492,53 +582,53 @@ console.log("API CALL:", officeNameForCurrentId, id);
               </MenuItem>
             ))}
           </Select>
- 
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          aria-label="simple tabs example"
-          sx={{
-            "& .Mui-selected": {
-              backgroundColor: "#334155",
-              color: "white",
-            },
-            "& .MuiTab-root": {
-               
-              color: "white", // Change the text color to white for all tabs
-            },
-          }}
-          className="ml-4"
-        >
-          {/* <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} /> */}
-          <Tab label="Unassigned" sx={{ fontFamily: "'Tahoma', sans-serif" ,mr:"2px"}} />
-          <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif"  }} />
-          
-        </Tabs>
-  
-  { ( 
-  < >
-  <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
-  <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
-      Appointment
-    </p>
-    <div className="w-full font-tahoma">
-      <Datepicker value={valueDate} onChange={handleValueChange} />
-    </div> 
-    </div>
- </>
- 
-)} 
-    <input
-              type="text"
-              value={patientIdFilter}
-              onChange={(e) => setPatientIdFilter(e.target.value)}
-              placeholder="Enter Patient ID"
-              className="mt-4 md:mt-0 mr-4 ml-2 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label="simple tabs example"
+            sx={{
+              '& .Mui-selected': {
+                backgroundColor: '#334155',
+                color: 'white',
+              },
+              '& .MuiTab-root': {
+                color: 'white', // Change the text color to white for all tabs
+              },
+            }}
+            className="ml-4"
+          >
+            {/* <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} /> */}
+            <Tab
+              label="Unassigned"
+              sx={{ fontFamily: "'Tahoma', sans-serif", mr: '2px' }}
             />
- </div>  
-      
-        <Box sx={{ display: "flex", gap: 1, p: 2 }}>
-          {" "}
+            <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
+          </Tabs>
+
+          {
+            <>
+              <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
+                <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
+                  Appointment
+                </p>
+                <div className="w-full font-tahoma">
+                  <Datepicker value={valueDate} onChange={handleValueChange} />
+                </div>
+              </div>
+            </>
+          }
+          <input
+            type="text"
+            value={patientIdFilter}
+            onChange={(e) => setPatientIdFilter(e.target.value)}
+            placeholder="Enter Patient ID"
+            className="mt-4 md:mt-0 mr-4 ml-2 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <Box sx={{ display: 'flex', gap: 1, p: 2 }}>
+          {' '}
           {/* Add this Box around the buttons */}
           <Button variant="contained" onClick={handleUnassignClick}>
             Unassign
@@ -553,7 +643,7 @@ console.log("API CALL:", officeNameForCurrentId, id);
           onClose={handleClose}
         >
           {users
-            .filter((user) => user.role == "user") //  only role user is present
+            .filter((user) => user.role == 'user') //  only role user is present
             .map((user) => (
               <MenuItem
                 key={user._id}
@@ -569,18 +659,16 @@ console.log("API CALL:", officeNameForCurrentId, id);
           {isLoading ? (
             <ShimmerTableComponent />
           ) : (
-            <div style={{ height: 850, width: "100%" }}>
+            <div style={{ height: 850, width: '100%' }}>
               <DataGrid
                 rows={rows}
                 columns={columns}
-                pageSizeOptions={[ 25, 50, 100]}
+                pageSizeOptions={[25, 50, 100]}
                 checkboxSelection
                 onRowSelectionModelChange={handleSelectionChange}
                 getRowId={(row) => row._id.toString()}
- 
               />
             </div>
- 
           )}
         </div>
       </div>
