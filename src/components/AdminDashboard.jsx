@@ -125,7 +125,7 @@ const AdminDashboard = () => {
                 <span>Manage Users</span>
               </button>
 
-              {/* User Attendance */}
+              {/* Auto Assignment */}
               <button
                 onClick={() => setSelectedItem('UserAttendance')}
                 className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center space-x-3 ${
@@ -135,7 +135,7 @@ const AdminDashboard = () => {
                 }`}
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                <span>User Attendance</span>
+                <span>Auto Assignment</span>
               </button>
             </div>
           </nav>
