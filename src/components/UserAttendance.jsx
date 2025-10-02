@@ -14,6 +14,7 @@ const UserAttendance = () => {
   const [updating, setUpdating] = useState(false);
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [userActionStatus, setUserActionStatus] = useState({}); // {userId: 'processing'|'completed'|'warning'}
+  const [pendingCounts, setPendingCounts] = useState({}); // {userId: pendingCount}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState(new Set());
@@ -83,9 +84,12 @@ const UserAttendance = () => {
         attendance: attendanceValue,
         originalAttendance: attendanceValue, // Store original for comparison
         assignedCount: userAttendance ? userAttendance.assigned.count : 0,
-        appointmentIds: userAttendance
+        assignedIvs: userAttendance
           ? userAttendance.assigned.appointmentIds
           : [],
+        appointmentIds: userAttendance
+          ? userAttendance.assigned.appointmentIds
+          : [], // Keep this for backward compatibility
         pendingIVs: 0, // Default to 0 for now
         isSelectable:
           attendanceValue === 'Present' || attendanceValue === 'Half', // Only Present/Half can be selected
@@ -125,6 +129,13 @@ const UserAttendance = () => {
     loadData();
   }, [selectedDate]);
 
+  // Fetch pending counts when combinedData changes
+  useEffect(() => {
+    if (combinedData.length > 0) {
+      fetchPendingCounts();
+    }
+  }, [combinedData]);
+
   // Handle checkbox selection - only allow Present/Half users
   const handleUserSelection = (userId) => {
     const user = combinedData.find((u) => u.userId === userId);
@@ -159,6 +170,113 @@ const UserAttendance = () => {
     });
 
     setHasAttendanceChanges(hasChanges);
+  };
+
+  // Fetch pending IVs count for all users
+  const fetchPendingCounts = async () => {
+    try {
+      console.log(
+        'Starting fetchPendingCounts for',
+        combinedData.length,
+        'users'
+      );
+      const updatedPendingCounts = {};
+
+      // Filter users who have assigned IVs
+      const usersWithIVs = combinedData.filter(
+        (user) => user.assignedIvs && user.assignedIvs.length > 0
+      );
+      console.log(`Found ${usersWithIVs.length} users with assigned IVs`);
+
+      if (usersWithIVs.length === 0) {
+        console.log(
+          'No users with assigned IVs found, setting all pending counts to 0'
+        );
+        combinedData.forEach((user) => {
+          updatedPendingCounts[user.userId] = 0;
+        });
+        setPendingCounts(updatedPendingCounts);
+        return;
+      }
+
+      // Create promises for all API calls
+      const apiPromises = usersWithIVs.map(async (user) => {
+        try {
+          console.log(
+            `Making API call for ${user.userName} with IDs:`,
+            user.assignedIvs
+          );
+
+          const response = await axios.post(
+            `${BASE_URL}/api/appointments/check-completion-status`,
+            {
+              appointmentIds: user.assignedIvs,
+            }
+          );
+
+          console.log(`API response for ${user.userName}:`, response.data);
+
+          if (response.data.success && response.data.summary) {
+            return {
+              userId: user.userId,
+              userName: user.userName,
+              pendingCount: response.data.summary.notCompletedCount || 0,
+            };
+          } else {
+            console.log(
+              `No valid response for ${user.userName}:`,
+              response.data
+            );
+            return {
+              userId: user.userId,
+              userName: user.userName,
+              pendingCount: 0,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching pending count for user ${user.userName}:`,
+            error
+          );
+          return {
+            userId: user.userId,
+            userName: user.userName,
+            pendingCount: 0,
+          };
+        }
+      });
+
+      // Execute all API calls in parallel
+      console.log(`Executing ${apiPromises.length} API calls in parallel...`);
+      const results = await Promise.all(apiPromises);
+
+      // Process results
+      results.forEach((result) => {
+        updatedPendingCounts[result.userId] = result.pendingCount;
+        console.log(
+          `Pending count for ${result.userName}: ${result.pendingCount}`
+        );
+      });
+
+      // Set pending count to 0 for users without assigned IVs
+      combinedData.forEach((user) => {
+        if (!updatedPendingCounts.hasOwnProperty(user.userId)) {
+          updatedPendingCounts[user.userId] = 0;
+          console.log(
+            `User ${user.userName} has no assigned IVs - setting pending count to 0`
+          );
+        }
+      });
+
+      console.log(
+        'Final pending counts before setState:',
+        updatedPendingCounts
+      );
+      setPendingCounts(updatedPendingCounts);
+      console.log('All pending counts updated successfully');
+    } catch (error) {
+      console.error('Error in fetchPendingCounts:', error);
+    }
   };
 
   // Handle attendance update
@@ -515,6 +633,9 @@ const UserAttendance = () => {
         completedStatus[user.userId] = 'completed';
       });
       setUserActionStatus(completedStatus);
+
+      // Refresh pending counts after successful assignments
+      await fetchPendingCounts();
     } catch (error) {
       console.error('Error in auto assignment:', error);
       alert('Error occurred during auto assignment. Please try again.');
@@ -760,8 +881,14 @@ const UserAttendance = () => {
                         </div>
                       </td>
                       <td className="px-3 py-2 text-sm text-center text-gray-700 border-r border-gray-200">
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                          {user.pendingIVs}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            (pendingCounts[user.userId] || 0) > 0
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {pendingCounts[user.userId] || 0}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-sm text-center text-gray-700">
