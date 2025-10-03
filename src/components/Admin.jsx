@@ -5,15 +5,12 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
 import axios from 'axios';
 import Header from './Header';
 import Select from '@mui/material/Select';
 import Datepicker from 'react-tailwindcss-datepicker';
 import ShimmerTableComponent from './ShimmerTableComponent';
 import BASE_URL from '../config/apiConfig';
-import FullScreenSpinner from './FullScreenSpinner';
-
 import ImageViewer from 'react-simple-image-viewer';
 
 const Admin = () => {
@@ -33,6 +30,7 @@ const Admin = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [images, setImages] = useState([]);
   const [patientIdFilter, setPatientIdFilter] = useState('');
+
   const officeName = [
     'AllOffices',
     'Aransas',
@@ -74,14 +72,13 @@ const Admin = () => {
     };
     fetchUsers();
   }, []);
+
   // Custom cell renderer function
   const renderUserName = (params) => {
-    // Find the user object from the users array based on the userId
     const user = users.find((user) => user._id === params.row.assignedUser);
-
-    // Return the user's name if found, otherwise return the userId
     return user ? user.name : params.row.assignedUser;
   };
+
   const handleViewImage = (imageUrl) => {
     const imagesArray = [imageUrl];
     setCurrentImage(0);
@@ -130,7 +127,6 @@ const Admin = () => {
       field: 'ivAssignedDate',
       headerName: 'Assigned Date',
       width: 150,
-
       headerClassName: 'header-row',
     },
     {
@@ -205,13 +201,12 @@ const Admin = () => {
       headerClassName: 'header-row',
       width: 100,
       renderCell: (params) => {
-        console.log('Current row', params.row);
         return (
           <>
             {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
               <button
                 onClick={() => handleViewImage(params.row.imageUrl)}
-                className="size-10  w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
+                className="size-10 w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
               >
                 View Image
               </button>
@@ -220,7 +215,6 @@ const Admin = () => {
         );
       },
     },
-
     {
       field: 'employerName',
       headerName: 'Employer Name',
@@ -245,23 +239,21 @@ const Admin = () => {
 
   const handleMenuItemClick = async (user) => {
     setLoading(true);
-    console.log('checkRow Data:', selectedRows);
-    // Assuming selectedRows contains the appointments to be updated
-    const selectedAppointmentIds = selectedRows.map((row) => row._id); // Adjust 'id' as per your data structure
-    console.log('Selected Appointment Ids', selectedAppointmentIds);
+    const selectedAppointmentIds = selectedRows.map((row) => row._id);
 
-    // Loop through each selected appointment and update it
-    for (let id of selectedAppointmentIds) {
+    // Process assignments sequentially to avoid state conflicts
+    for (let i = 0; i < selectedAppointmentIds.length; i++) {
+      const id = selectedAppointmentIds[i];
       try {
-        // Extract the office name for the current appointment ID
         const officeNameForCurrentId = selectedRows.find(
           (row) => row._id === id
         )?.office;
-        console.log('API CALL:', officeNameForCurrentId, id);
+
         if (!officeNameForCurrentId) {
           console.error('Office name not found for appointment ID:', id);
           continue;
         }
+
         const loggedInUserName = localStorage.getItem('loggedinUserName');
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
@@ -273,42 +265,33 @@ const Admin = () => {
             ivAssignedByUserName: loggedInUserName,
           }
         );
-        console.log('Response api', response);
-        const updatedAppointment = response.data;
-        console.log('updatedAppointment', updatedAppointment);
-        // Find the index of the updated appointment in the rows array
-        const index = rows.findIndex(
-          (row) => row._id.toString() === updatedAppointment._id.toString()
-        );
-        console.log('Index', index);
 
-        // Update the appointment in the local state
-        if (index !== -1) {
-          const newRows = [...rows];
-          newRows[index] = updatedAppointment;
-          setRows(newRows);
-        }
+        const updatedAppointment = response.data;
+
+        // Update the specific row immediately
+        setRows((prevRows) => {
+          const newRows = [...prevRows];
+          const index = newRows.findIndex(
+            (row) => row._id.toString() === updatedAppointment._id.toString()
+          );
+          if (index !== -1) {
+            newRows[index] = updatedAppointment;
+          }
+          return newRows;
+        });
       } catch (error) {
         console.error('Failed to update appointment', error);
       }
     }
 
-    // After all assignments are successful, update user's attendance data
+    // Update attendance logic
     if (selectedAppointmentIds.length > 0) {
       try {
-        console.log(
-          `Updating attendance for user ${user.name} with ${selectedAppointmentIds.length} new assignments`
-        );
-
-        // Get current date for attendance update
         const currentDate = new Date().toISOString().split('T')[0];
-
-        // Fetch current user attendance data to get existing count and IDs
         let currentAssignedCount = 0;
         let currentAppointmentIds = [];
 
         try {
-          // Try to get current attendance data
           const attendanceResponse = await axios.get(
             `${BASE_URL}/api/attendance/by-date`,
             {
@@ -337,7 +320,6 @@ const Admin = () => {
           );
         }
 
-        // Add new assignment IDs and update count
         const updatedCount =
           currentAssignedCount + selectedAppointmentIds.length;
         const updatedAppointmentIds = [
@@ -345,15 +327,6 @@ const Admin = () => {
           ...selectedAppointmentIds,
         ];
 
-        console.log(`Attendance update for ${user.name}:`, {
-          previousCount: currentAssignedCount,
-          newCount: updatedCount,
-          previousIds: currentAppointmentIds,
-          newAssignments: selectedAppointmentIds,
-          finalIds: updatedAppointmentIds,
-        });
-
-        // Update attendance using the update-assigned API
         const attendanceUpdateResponse = await axios.put(
           `${BASE_URL}/api/attendance/update-assigned`,
           {
@@ -373,11 +346,6 @@ const Admin = () => {
           console.log(
             `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`
           );
-        } else {
-          console.error(
-            `Failed to update attendance for user ${user.name}:`,
-            attendanceUpdateResponse.data
-          );
         }
       } catch (attendanceError) {
         console.error(
@@ -387,67 +355,59 @@ const Admin = () => {
       }
     }
 
+    // Clear selection and refresh data to ensure consistency
+    setSelectedRows([]);
+
+    // Refresh the appointments data to show latest state
+    setTimeout(() => {
+      fetchAndFilterAppointments(value);
+    }, 500);
+
     handleClose();
     setLoading(false);
-    console.log(`Assigned ${selectedRows.length} IVs to ${user.name}`);
   };
 
   const handleSelectionChange = (newSelection) => {
-    // Filter out rows with completionStatus "Completed"
     const filteredSelection = newSelection.filter((id) => {
       const row = rows.find((row) => row._id === id);
       return row && row.completionStatus !== 'Completed';
     });
-    console.log(filteredSelection);
-    const selectedRows = filteredSelection.map((id) =>
+
+    const selectedRowsData = filteredSelection.map((id) =>
       rows.find((row) => row._id === id)
     );
-    console.log('Selected Rows ', selectedRows);
-    setSelectedRows(selectedRows);
+    setSelectedRows(selectedRowsData);
   };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-
     fetchAndFilterAppointments(newValue);
   };
 
-  // onChange={(e) => {
-  //   setSelectedOffice(e.target.value);
-  //   fetchAndFilterAppointments(value); // Also consider passing the tabValue here if needed
-  // }}
-
   const handleUnassignClick = async () => {
     const selectedAppointmentIds = selectedRows.map((row) => row._id);
-    console.log('Selected Appointment Ids', selectedAppointmentIds);
 
     for (let id of selectedAppointmentIds) {
       try {
-        // Construct the URL with the office name extracted from the selectedRows
         const officeNameForCurrentId = selectedRows.find(
           (row) => row._id === id
         )?.office;
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
-            userId: null, // Set userId to null or appropriate value to indicate unassignment
+            userId: null,
             status: 'Unassigned',
-            completionStatus: 'IV Not Done', // Reset completionStatus or set as needed
+            completionStatus: 'IV Not Done',
             ivAssignedDate: null,
             ivAssignedByUserName: null,
           }
         );
 
-        console.log('Response api', response);
         const updatedAppointment = response.data;
-        console.log('Updated Appointment', updatedAppointment);
-
-        // Find the index of the updated appointment in the rows array
         const index = rows.findIndex(
           (row) => row._id === updatedAppointment._id
         );
 
-        // Update the appointment in the local state
         if (index !== -1) {
           const newRows = [...rows];
           newRows[index] = updatedAppointment;
@@ -458,8 +418,7 @@ const Admin = () => {
       }
     }
 
-    // Optionally, refresh the list of appointments after unassignment
-    fetchAndFilterAppointments(value); // Call your existing function to refetch and filter appointments
+    fetchAndFilterAppointments(value);
   };
 
   const fetchAndFilterAppointments = async (tabValue) => {
@@ -468,14 +427,15 @@ const Admin = () => {
       setIsLoading(false);
       return;
     }
+
     setIsLoading(true);
     try {
       const response = await fetch(
         `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${valueDate.startDate}&endDate=${valueDate.endDate}`
       );
       const responseData = await response.json();
+
       if (responseData && responseData.appointments) {
-        console.log('Appointment data', responseData.appointments);
         let filteredAppointments = responseData.appointments.map(
           (appointment) => ({
             ...appointment,
@@ -484,49 +444,39 @@ const Admin = () => {
               .split('T')[0],
           })
         );
-        // Apply date filtering only for Assigned tab
 
-        // Apply patient ID filter
         if (patientIdFilter) {
           filteredAppointments = filteredAppointments.filter(
             (appointment) => appointment.patientId == patientIdFilter
           );
         }
+
         switch (tabValue) {
-          case 0: // Unassigned appointments
+          case 0:
             filteredAppointments = filteredAppointments.filter(
               (appointment) => appointment.status === 'Unassigned'
             );
             break;
-          case 1: // Assigned appointments
+          case 1:
             filteredAppointments = filteredAppointments.filter(
               (appointment) => appointment.status === 'Assigned'
             );
-
             break;
-
           default:
             filteredAppointments = [];
         }
-        // Sort the appointments by appointmentDate in descending order
+
         filteredAppointments.sort((a, b) => {
-          //  or  new Date(b.appointmentDate) - new Date(a.appointmentDate)
           const dateCompare =
             new Date(a.appointmentDate) - new Date(b.appointmentDate);
-
-          // If dates are the same, compare times
           if (dateCompare === 0) {
-            // Extract hours and minutes from the time strings
             const [hourA, minuteA] = a.appointmentTime.split(':').map(Number);
             const [hourB, minuteB] = b.appointmentTime.split(':').map(Number);
-
-            // Compare hours first, then minutes if hours are equal
             return hourA - hourB || minuteA - minuteB;
           }
-
-          // Dates are not the same, sort by date
           return dateCompare;
         });
+
         setRows(filteredAppointments);
       } else {
         setRows([]);
@@ -541,137 +491,268 @@ const Admin = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchAndFilterAppointments(value); // Initially load data based on the selected tab
+    fetchAndFilterAppointments(value);
     setLoading(false);
-  }, [value, valueDate, selectedOffice, patientIdFilter]); // Reload data if the selected tab or Date or  officeName changes  ....[value,valueDate ,selectedOffice]
+  }, [value, valueDate, selectedOffice, patientIdFilter]);
 
   const handleValueChange = (newValue) => {
-    console.log('newValue:', newValue);
     setValueDate(newValue);
   };
 
   return (
-    <>
-      {loading && <FullScreenSpinner />}
+    <div className="h-screen bg-slate-50 overflow-hidden relative">
       <Header />
 
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '20px',
-          backgroundColor: '#94a3b8', //"#9fc5e8"
-          px: 2,
-        }}
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-gray-500 bg-opacity-30 z-50 flex justify-center items-center">
+          <div className="bg-white rounded-lg p-6 shadow-xl">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="text-slate-700 font-medium">
+                Loading appointments...
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="h-full overflow-hidden"
+        style={{ height: 'calc(100vh - 4rem)' }}
       >
-        <div className="flex items-center my-1 ">
-          <Select
-            value={selectedOffice}
-            onChange={(e) => setSelectedOffice(e.target.value)}
-            displayEmpty
-            inputProps={{ 'aria-label': 'Select Office' }}
-            sx={{ background: '#1976d2', color: 'white' }}
-          >
-            <MenuItem value="">
-              <em>Select Office</em>
-            </MenuItem>
-            {officeName.map((name) => (
-              <MenuItem key={name} value={name}>
-                {name}
-              </MenuItem>
-            ))}
-          </Select>
+        <div className="p-3">
+          {/* Compact Filters Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 mb-3">
+            <div className="grid grid-cols-3 gap-4 items-center">
+              {/* Office Selector */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
+                  Office Name:
+                </label>
+                <div className="flex-1 h-8">
+                  <Select
+                    value={selectedOffice}
+                    onChange={(e) => setSelectedOffice(e.target.value)}
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Select Office' }}
+                    size="small"
+                    sx={{
+                      height: '32px',
+                      fontSize: '14px',
+                      width: '100%',
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Select Office</em>
+                    </MenuItem>
+                    {officeName.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
+              </div>
 
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            aria-label="simple tabs example"
-            sx={{
-              '& .Mui-selected': {
-                backgroundColor: '#334155',
-                color: 'white',
-              },
-              '& .MuiTab-root': {
-                color: 'white', // Change the text color to white for all tabs
-              },
-            }}
-            className="ml-4"
-          >
-            {/* <Tab label="All IVs" sx={{ fontFamily: "'Tahoma', sans-serif" }} /> */}
-            <Tab
-              label="Unassigned"
-              sx={{ fontFamily: "'Tahoma', sans-serif", mr: '2px' }}
-            />
-            <Tab label="Assigned" sx={{ fontFamily: "'Tahoma', sans-serif" }} />
-          </Tabs>
-
-          {
-            <>
-              <div className="ml-5 flex items-center my-1 bg-blue-500 rounded">
-                <p className="mr-6 ml-10 whitespace-nowrap text-white font-tahoma">
-                  Appointment
-                </p>
-                <div className="w-full font-tahoma">
+              {/* Date Range */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
+                  Date Range:
+                </label>
+                <div className="flex-1 h-8 border border-slate-300 rounded-md">
                   <Datepicker value={valueDate} onChange={handleValueChange} />
                 </div>
               </div>
-            </>
-          }
-          <input
-            type="text"
-            value={patientIdFilter}
-            onChange={(e) => setPatientIdFilter(e.target.value)}
-            placeholder="Enter Patient ID"
-            className="mt-4 md:mt-0 mr-4 ml-2 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
 
-        <Box sx={{ display: 'flex', gap: 1, p: 2 }}>
-          {' '}
-          {/* Add this Box around the buttons */}
-          <Button variant="contained" onClick={handleUnassignClick}>
-            Unassign
-          </Button>
-          <Button variant="contained" onClick={handleClick}>
-            Assign to User
-          </Button>
-        </Box>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          {users
-            .filter((user) => user.role == 'user') //  only role user is present
-            .map((user) => (
-              <MenuItem
-                key={user._id}
-                onClick={() => handleMenuItemClick(user)}
-              >
-                {user.name}
-              </MenuItem>
-            ))}
-        </Menu>
-      </Box>
-      <div className="flex justify-center">
-        <div className="bg-slate-50 shadow-lg rounded-lg p-4 w-full">
-          {isLoading ? (
-            <ShimmerTableComponent />
-          ) : (
-            <div style={{ height: 850, width: '100%' }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                pageSizeOptions={[25, 50, 100]}
-                checkboxSelection
-                onRowSelectionModelChange={handleSelectionChange}
-                getRowId={(row) => row._id.toString()}
-              />
+              {/* Patient ID Search */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[70px]">
+                  Patient ID:
+                </label>
+                <input
+                  type="text"
+                  value={patientIdFilter}
+                  onChange={(e) => setPatientIdFilter(e.target.value)}
+                  placeholder="Search Patient ID..."
+                  className="flex-1 h-8 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors"
+                />
+              </div>
             </div>
-          )}
+
+            {/* Second Row - Tabs and Buttons */}
+            <div className="grid grid-cols-2 gap-4 items-center mt-3 pt-3 border-t border-slate-200">
+              {/* Status Tabs */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
+                  Status:
+                </label>
+                <div className="flex-1">
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    aria-label="status tabs"
+                    sx={{
+                      minHeight: '32px',
+                      '& .MuiTab-root': {
+                        minHeight: '32px',
+                        padding: '4px 16px',
+                        fontSize: '14px',
+                        color: '#475569',
+                        border: '1px solid #e2e8f0',
+                        marginRight: '4px',
+                        borderRadius: '6px',
+                        '&.Mui-selected': {
+                          backgroundColor: '#334155',
+                          color: 'white',
+                          borderColor: '#334155',
+                        },
+                      },
+                      '& .MuiTabs-indicator': {
+                        display: 'none',
+                      },
+                    }}
+                  >
+                    <Tab label="Unassigned" />
+                    <Tab label="Assigned" />
+                  </Tabs>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="contained"
+                  onClick={handleUnassignClick}
+                  size="small"
+                  sx={{
+                    fontSize: '12px',
+                    padding: '6px 16px',
+                    backgroundColor: '#ef4444',
+                    '&:hover': {
+                      backgroundColor: '#dc2626',
+                    },
+                  }}
+                >
+                  Unassign
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleClick}
+                  size="small"
+                  sx={{
+                    fontSize: '12px',
+                    padding: '6px 16px',
+                    backgroundColor: '#3b82f6',
+                    '&:hover': {
+                      backgroundColor: '#2563eb',
+                    },
+                  }}
+                >
+                  Assign to User
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Results Section */}
+          <div
+            className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden"
+            style={{ height: 'calc(100vh - 13rem)' }}
+          >
+            {isLoading ? (
+              <div className="p-4">
+                <ShimmerTableComponent />
+              </div>
+            ) : rows.length > 0 ? (
+              <div className="h-full overflow-auto">
+                <DataGrid
+                  rows={rows}
+                  columns={columns}
+                  pageSizeOptions={[25, 50, 100]}
+                  checkboxSelection
+                  onRowSelectionModelChange={handleSelectionChange}
+                  getRowId={(row) => row._id.toString()}
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-columnHeader': {
+                      backgroundColor: '#1e293b', // slate-800 dark header
+                      color: '#ffffff',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                    },
+                    '& .MuiDataGrid-columnHeaderTitle': {
+                      color: '#ffffff',
+                      fontWeight: '600',
+                    },
+                    '& .MuiDataGrid-columnSeparator': {
+                      color: '#ffffff',
+                    },
+                    '& .MuiDataGrid-iconSeparator': {
+                      color: '#ffffff',
+                    },
+                    '& .MuiDataGrid-sortIcon': {
+                      color: '#ffffff',
+                    },
+                    '& .MuiDataGrid-menuIcon': {
+                      color: '#ffffff',
+                    },
+                    '& .MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+                      {
+                        color: '#ffffff',
+                      },
+                    '& .MuiDataGrid-cell': {
+                      borderBottom: '1px solid #f1f5f9',
+                      fontSize: '13px',
+                    },
+                    '& .MuiDataGrid-row:hover': {
+                      backgroundColor: '#f8fafc',
+                    },
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-8 h-8 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <div className="text-slate-500 text-lg font-medium">
+                  No appointments found
+                </div>
+                <div className="text-slate-400 text-sm mt-1">
+                  No appointments match your current filter criteria
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Menu for user assignment */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {users
+          .filter((user) => user.role === 'user')
+          .map((user) => (
+            <MenuItem key={user._id} onClick={() => handleMenuItemClick(user)}>
+              {user.name}
+            </MenuItem>
+          ))}
+      </Menu>
+
+      {/* Image Viewer */}
       {isViewerOpen && (
         <ImageViewer
           src={images}
@@ -681,7 +762,7 @@ const Admin = () => {
           closeOnClickOutside={true}
         />
       )}
-    </>
+    </div>
   );
 };
 
