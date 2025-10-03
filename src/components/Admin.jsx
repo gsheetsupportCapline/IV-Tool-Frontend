@@ -560,8 +560,16 @@ const Admin = () => {
                 <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
                   Date Range:
                 </label>
-                <div className="flex-1 h-8 border border-slate-300 rounded-md">
-                  <Datepicker value={valueDate} onChange={handleValueChange} />
+                <div className="flex-1 h-8 border border-slate-300 rounded-md px-3 flex items-center">
+                  <div className="w-full">
+                    <Datepicker
+                      value={valueDate}
+                      onChange={handleValueChange}
+                      inputClassName="w-full h-full bg-transparent border-none outline-none text-sm"
+                      containerClassName="w-full h-full"
+                      toggleClassName="hidden"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -665,7 +673,7 @@ const Admin = () => {
                 <ShimmerTableComponent />
               </div>
             ) : rows.length > 0 ? (
-              <div className="h-full overflow-auto">
+              <div style={{ height: '100%', width: '100%' }}>
                 <DataGrid
                   rows={rows}
                   columns={columns}

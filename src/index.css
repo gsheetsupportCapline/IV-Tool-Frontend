@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global outline removal and focus styles */
+* {
+  outline: none !important;
+}
+
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove default browser focus styles */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Custom focus styles for better UX */
+input:focus {
+  border-color: #3b82f6 !important;
+}
+
+select:focus {
+  border-color: #3b82f6 !important;
+}
+
+textarea:focus {
+  border-color: #3b82f6 !important;
+}
