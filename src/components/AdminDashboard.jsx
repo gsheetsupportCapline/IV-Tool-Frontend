@@ -1,6 +1,7 @@
 // src/components/AdminDashboard.jsx
 
 import { useState, useEffect } from 'react';
+import { Redirect } from 'react-router-dom';
 import PendingIV from './PendingIV';
 import AssignedIV from './AssignedIV';
 import ProductionIV from './ProductionIV';
@@ -13,6 +14,20 @@ import Header from './Header';
 
 const AdminDashboard = () => {
   const [selectedItem, setSelectedItem] = useState('PendingIV');
+
+  // Check user role for access control
+  const userRole = localStorage.getItem('role');
+
+  // If user is not admin, redirect them
+  if (userRole !== 'admin') {
+    console.log(
+      'Unauthorized access attempt to AdminDashboard by role:',
+      userRole
+    );
+    return (
+      <Redirect to={userRole === 'user' ? '/dashboard' : '/schedule-patient'} />
+    );
+  }
 
   // Prevent body scroll when component mounts
   useEffect(() => {

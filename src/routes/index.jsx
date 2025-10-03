@@ -31,12 +31,27 @@ function ParamsExample() {
             path={route.path}
             render={(props) => {
               console.log(
-                `Rendering route: ${route.path}, isAuthenticated: ${isAuthenticated}`
+                `Rendering route: ${route.path}, isAuthenticated: ${isAuthenticated}, userRole: ${userRole}`
               );
 
               if (!isAuthenticated) {
                 console.log('Not authenticated, redirecting to /');
                 return <Redirect to="/" />;
+              }
+
+              // Check if route requires specific role
+              if (route.requireRole && route.requireRole !== userRole) {
+                console.log(
+                  `Access denied. Required role: ${route.requireRole}, User role: ${userRole}`
+                );
+                // Redirect based on user role
+                if (userRole === 'admin') {
+                  return <Redirect to="/schedule-patient" />;
+                } else if (userRole === 'user') {
+                  return <Redirect to="/dashboard" />;
+                } else {
+                  return <Redirect to="/schedule-patient" />;
+                }
               }
 
               const Component = route.component;

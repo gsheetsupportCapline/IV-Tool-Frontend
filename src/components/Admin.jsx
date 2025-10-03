@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Redirect } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -14,6 +15,17 @@ import BASE_URL from '../config/apiConfig';
 import ImageViewer from 'react-simple-image-viewer';
 
 const Admin = () => {
+  // Check user role for access control
+  const userRole = localStorage.getItem('role');
+
+  // If user is not admin, redirect them
+  if (userRole !== 'admin') {
+    console.log('Unauthorized access attempt to Admin page by role:', userRole);
+    return (
+      <Redirect to={userRole === 'user' ? '/dashboard' : '/schedule-patient'} />
+    );
+  }
+
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState('');
