@@ -16,7 +16,7 @@ const Table = ({ data, headers }) => {
   }));
 
   return (
-    <Box sx={{ height: 'calc(100vh - 18rem)', width: '100%' }}>
+    <Box sx={{ height: '100%', width: '100%' }}>
       <DataGrid
         rows={rowsWithIds}
         columns={columns}

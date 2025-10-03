@@ -158,22 +158,22 @@ const Status = ({ data, dateRange, patientId }) => {
 
   return (
     <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
-      {/* Tab Navigation */}
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-        <div className="grid grid-cols-3 gap-3">
+      {/* Compact Tab Navigation */}
+      <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
+        <div className="grid grid-cols-3 gap-2">
           {/* All Appointments Tab */}
           <button
             onClick={() => setSelectedOption('yes')}
-            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
               selectedOption === 'yes'
-                ? 'bg-yellow-100 border-yellow-300 text-yellow-800 shadow-md transform scale-105'
+                ? 'bg-yellow-100 border-yellow-300 text-yellow-800 shadow-md'
                 : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>All Appointments</span>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
                   selectedOption === 'yes'
                     ? 'bg-yellow-200 text-yellow-900'
                     : 'bg-gray-200 text-gray-700'
@@ -187,16 +187,16 @@ const Status = ({ data, dateRange, patientId }) => {
           {/* In-Process Tab */}
           <button
             onClick={() => setSelectedOption('no')}
-            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
               selectedOption === 'no'
-                ? 'bg-orange-100 border-orange-300 text-orange-800 shadow-md transform scale-105'
+                ? 'bg-orange-100 border-orange-300 text-orange-800 shadow-md'
                 : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>In-Process IVs</span>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
                   selectedOption === 'no'
                     ? 'bg-orange-200 text-orange-900'
                     : 'bg-gray-200 text-gray-700'
@@ -210,16 +210,16 @@ const Status = ({ data, dateRange, patientId }) => {
           {/* Completed Tab */}
           <button
             onClick={() => setSelectedOption('yesno')}
-            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
               selectedOption === 'yesno'
-                ? 'bg-green-100 border-green-300 text-green-800 shadow-md transform scale-105'
+                ? 'bg-green-100 border-green-300 text-green-800 shadow-md'
                 : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>Completed IVs</span>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
                   selectedOption === 'yesno'
                     ? 'bg-green-200 text-green-900'
                     : 'bg-gray-200 text-gray-700'
@@ -232,11 +232,14 @@ const Status = ({ data, dateRange, patientId }) => {
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="p-4">
+      {/* Table Content with calculated height */}
+      <div
+        style={{ height: 'calc(100vh - 14rem)' }}
+        className="overflow-hidden"
+      >
         {hasValidFilters() ? (
           filteredData.length > 0 ? (
-            <div>
+            <div className="h-full">
               <Table
                 data={transformData(filteredData)}
                 headers={Object.keys(dataHeaderMapping)}

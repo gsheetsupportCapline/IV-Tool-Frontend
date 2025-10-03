@@ -120,19 +120,19 @@ const Home = () => {
         <PageNotFound />
       ) : (
         <div
-          className="h-full overflow-auto"
+          className="h-full overflow-hidden"
           style={{ height: 'calc(100vh - 4rem)' }}
         >
-          <div className="p-4">
-            {/* Unified Filters Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4">
-              <div className="grid grid-cols-3 gap-6 items-end">
+          <div className="p-3">
+            {/* Compact Filters Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 mb-3">
+              <div className="grid grid-cols-3 gap-4 items-center">
                 {/* Office Selector */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Office Name
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
+                    Office Name:
                   </label>
-                  <div className="h-10">
+                  <div className="flex-1 h-8">
                     <OfficeDropdown
                       onSelect={setSelectedOffice}
                       allowedOffices={allowedOffices}
@@ -144,26 +144,26 @@ const Home = () => {
                 </div>
 
                 {/* Date Range */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Date Range
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
+                    Date Range:
                   </label>
-                  <div className="h-10">
+                  <div className="flex-1 h-8">
                     <DatePicker onDateChange={setDateRange} />
                   </div>
                 </div>
 
                 {/* Patient ID Search */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Patient ID
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[70px]">
+                    Patient ID:
                   </label>
                   <input
                     type="text"
                     value={patientIdInput}
                     onChange={handlePatientIdChange}
                     placeholder="Search Patient ID..."
-                    className="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors"
+                    className="flex-1 h-8 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors"
                   />
                 </div>
               </div>
