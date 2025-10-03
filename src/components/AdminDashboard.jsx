@@ -1,6 +1,6 @@
 // src/components/AdminDashboard.jsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PendingIV from './PendingIV';
 import AssignedIV from './AssignedIV';
 import ProductionIV from './ProductionIV';
@@ -14,12 +14,20 @@ import Header from './Header';
 const AdminDashboard = () => {
   const [selectedItem, setSelectedItem] = useState('PendingIV');
 
+  // Prevent body scroll when component mounts
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
-    <>
+    <div style={{ height: '100vh', overflow: 'hidden' }}>
       <Header />
       <div className="flex" style={{ height: 'calc(100vh - 4rem)' }}>
         {/* Modern Business Sidebar */}
-        <div className="w-1/5 bg-gradient-to-b from-slate-800 to-slate-900 shadow-xl">
+        <div className="w-1/5 bg-gradient-to-b from-slate-800 to-slate-900 shadow-xl overflow-y-auto">
           {/* Sidebar Header */}
           <div className="px-6 py-6 border-b border-slate-700">
             <h2 className="text-xl font-bold text-white tracking-wide">
@@ -142,20 +150,22 @@ const AdminDashboard = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="w-4/5 bg-gray-50 overflow-auto">
-          <div className="p-6">
-            {selectedItem === 'PendingIV' && <PendingIV />}
-            {selectedItem === 'AssignedIV' && <AssignedIV />}
-            {selectedItem === 'ProductionIV' && <ProductionIV />}
-            {selectedItem === 'MasterData' && <MasterData />}
-            {selectedItem === 'DropdownValues' && <DropdownDashboard />}
-            {selectedItem === 'ManageUsers' && <ManageUsers />}
-            {selectedItem === 'UserAttendance' && <UserAttendance />}
-            {selectedItem === 'SmilepointIVInfo' && <SmilepointIVInfo />}
+        <div className="w-4/5 bg-gray-50 overflow-hidden">
+          <div className="h-full">
+            <div className="h-full">
+              {selectedItem === 'PendingIV' && <PendingIV />}
+              {selectedItem === 'AssignedIV' && <AssignedIV />}
+              {selectedItem === 'ProductionIV' && <ProductionIV />}
+              {selectedItem === 'MasterData' && <MasterData />}
+              {selectedItem === 'DropdownValues' && <DropdownDashboard />}
+              {selectedItem === 'ManageUsers' && <ManageUsers />}
+              {selectedItem === 'UserAttendance' && <UserAttendance />}
+              {selectedItem === 'SmilepointIVInfo' && <SmilepointIVInfo />}
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

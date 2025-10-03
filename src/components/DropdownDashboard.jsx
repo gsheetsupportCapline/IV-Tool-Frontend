@@ -167,7 +167,7 @@ const DropdownDashboard = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="h-full overflow-auto p-6">
       {/* Page Header */}
 
       {/* Cards Grid */}

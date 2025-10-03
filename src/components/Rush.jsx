@@ -37,6 +37,14 @@ const Rush = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  // Prevent body scroll when component mounts
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   const [values, setValues] = useState({
     appointmentDate: null,
     appointmentTime: null,
@@ -344,181 +352,63 @@ const Rush = () => {
     }
   };
   return (
-    <>
+    <div style={{ height: '100vh', overflow: 'hidden' }}>
       <Header />
-      <div className="min-h-screen bg-gray-50 pt-5 pb-8">
-        {/* Added pt-20 for sticky header */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Section */}
+      <div
+        className="bg-gray-50"
+        style={{
+          height: 'calc(100vh - 4rem)',
+          overflow: 'auto',
+        }}
+      >
+        <div className="p-3">
+          <div className="max-w-4xl mx-auto">
+            {/* Main Form Card */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              {/* Form Header */}
+              <div className="bg-slate-800 px-4 py-2">
+                <h2 className="text-lg font-semibold text-white flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Rush IV Request Form
+                </h2>
+              </div>
 
-          {/* Main Form Card */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            {/* Form Header */}
-            <div className="bg-slate-800 px-6 py-4">
-              <h2 className="text-xl font-semibold text-white flex items-center">
-                <svg
-                  className="w-6 h-6 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {/* Form Body */}
+              <div className="p-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                Rush IV Request Form
-              </h2>
-            </div>
-
-            {/* Form Body */}
-            <div className="p-6">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit();
-                }}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column */}
-                  <div className="space-y-4">
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Office <span className="text-red-500">*</span>
-                      </label>
-                      <FormControl fullWidth size="small">
-                        <Select
-                          value={selectedOffice}
-                          onChange={(e) => handleOfficeChange(e.target.value)}
-                          displayEmpty
-                          className="bg-white"
-                          sx={{
-                            borderRadius: '8px',
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
-                              },
-                            },
-                          }}
-                        >
-                          <MenuItem value="" disabled>
-                            Select Office
-                          </MenuItem>
-                          {officeOptions.map((office) => (
-                            <MenuItem key={office.id} value={office.name}>
-                              {office.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Treating Provider{' '}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.treatingProvider}
-                        onChange={(e) =>
-                          handleChange(e.target.value, 'treatingProvider')
-                        }
-                        placeholder="Enter treating provider name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Patient ID <span className="text-red-500">*</span>
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.patientId}
-                        onChange={(e) =>
-                          handleChange(e.target.value, 'patientId')
-                        }
-                        placeholder="Enter patient ID"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Patient Date of Birth{' '}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <DatePicker
-                        value={values.patientDOB}
-                        onChange={handlePatientDOBChange}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            placeholder: 'Select date',
-                            sx: {
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: '8px',
-                                '& fieldset': { borderColor: '#d1d5db' },
-                                '&:hover fieldset': { borderColor: '#6366f1' },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: '#6366f1',
-                                },
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Insurance Name
-                      </label>
-                      <Autocomplete
-                        options={insuranceOptions}
-                        getOptionLabel={(option) => option.name || ''}
-                        value={values.insuranceName || null}
-                        onChange={(event, newValue) =>
-                          handleChange(newValue, 'insuranceName')
-                        }
-                        isOptionEqualToValue={(option, value) =>
-                          option.name === value?.name
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            fullWidth
-                            size="small"
-                            placeholder="Search insurance name"
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Left Column */}
+                    <div className="space-y-3">
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Office <span className="text-red-500">*</span>
+                        </label>
+                        <FormControl fullWidth size="small">
+                          <Select
+                            value={selectedOffice}
+                            onChange={(e) => handleOfficeChange(e.target.value)}
+                            displayEmpty
+                            className="bg-white"
                             sx={{
+                              borderRadius: '8px',
                               '& .MuiOutlinedInput-root': {
-                                borderRadius: '8px',
                                 '& fieldset': { borderColor: '#d1d5db' },
                                 '&:hover fieldset': { borderColor: '#6366f1' },
                                 '&.Mui-focused fieldset': {
@@ -526,231 +416,367 @@ const Rush = () => {
                                 },
                               },
                             }}
-                          />
-                        )}
-                      />
+                          >
+                            <MenuItem value="" disabled>
+                              Select Office
+                            </MenuItem>
+                            {officeOptions.map((office) => (
+                              <MenuItem key={office.id} value={office.name}>
+                                {office.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Treating Provider{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.treatingProvider}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'treatingProvider')
+                          }
+                          placeholder="Enter treating provider name"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Patient ID <span className="text-red-500">*</span>
+                        </label>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.patientId}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'patientId')
+                          }
+                          placeholder="Enter patient ID"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Patient Date of Birth{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <DatePicker
+                          value={values.patientDOB}
+                          onChange={handlePatientDOBChange}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              placeholder: 'Select date',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  '& fieldset': { borderColor: '#d1d5db' },
+                                  '&:hover fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Insurance Name
+                        </label>
+                        <Autocomplete
+                          options={insuranceOptions}
+                          getOptionLabel={(option) => option.name || ''}
+                          value={values.insuranceName || null}
+                          onChange={(event, newValue) =>
+                            handleChange(newValue, 'insuranceName')
+                          }
+                          isOptionEqualToValue={(option, value) =>
+                            option.name === value?.name
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              fullWidth
+                              size="small"
+                              placeholder="Search insurance name"
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  '& fieldset': { borderColor: '#d1d5db' },
+                                  '&:hover fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                },
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Policy Holder Name
+                        </label>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.policyHolderName}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'policyHolderName')
+                          }
+                          placeholder="Enter policy holder name"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
                     </div>
 
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Policy Holder Name
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.policyHolderName}
-                        onChange={(e) =>
-                          handleChange(e.target.value, 'policyHolderName')
-                        }
-                        placeholder="Enter policy holder name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
+                    {/* Right Column */}
+                    <div className="space-y-3">
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Appointment Date{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <DatePicker
+                          value={values.appointmentDate}
+                          onChange={handleAppointmentDateChange}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              placeholder: 'Select appointment date',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  '& fieldset': { borderColor: '#d1d5db' },
+                                  '&:hover fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                },
+                              },
                             },
-                          },
-                        }}
-                      />
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Appointment Time
+                        </label>
+                        <TimePicker
+                          value={values.appointmentTime}
+                          onChange={handleTimeChange}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              placeholder: 'Select appointment time',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  '& fieldset': { borderColor: '#d1d5db' },
+                                  '&:hover fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Patient Name <span className="text-red-500">*</span>
+                        </label>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.patientName}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'patientName')
+                          }
+                          placeholder="Enter patient name"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          MID/SSN <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.png"
+                          style={{ display: 'none' }}
+                          id="upload-file-input"
+                          onChange={handleUpload}
+                          encType="multipart/form-data"
+                        />
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.MIDSSN}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'MIDSSN')
+                          }
+                          placeholder="Enter MID/SSN"
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  edge="end"
+                                  size="small"
+                                  onClick={() =>
+                                    document
+                                      .getElementById('upload-file-input')
+                                      .click()
+                                  }
+                                  className="text-gray-500 hover:text-indigo-600 transition-colors"
+                                >
+                                  <Upload size={20} />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Insurance Contact
+                        </label>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={values.insurancePhone}
+                          onChange={(e) =>
+                            handleChange(e.target.value, 'insurancePhone')
+                          }
+                          placeholder="Enter insurance contact number"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              '& fieldset': { borderColor: '#d1d5db' },
+                              '&:hover fieldset': { borderColor: '#6366f1' },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#6366f1',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Policy Holder Date of Birth
+                        </label>
+                        <DatePicker
+                          value={values.policyHolderDOB}
+                          onChange={handlePolicyHolderDOBChange}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              placeholder: 'Select date',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  '& fieldset': { borderColor: '#d1d5db' },
+                                  '&:hover fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#6366f1',
+                                  },
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Right Column */}
-                  <div className="space-y-4">
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Appointment Date <span className="text-red-500">*</span>
-                      </label>
-                      <DatePicker
-                        value={values.appointmentDate}
-                        onChange={handleAppointmentDateChange}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            placeholder: 'Select appointment date',
-                            sx: {
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: '8px',
-                                '& fieldset': { borderColor: '#d1d5db' },
-                                '&:hover fieldset': { borderColor: '#6366f1' },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: '#6366f1',
-                                },
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Appointment Time
-                      </label>
-                      <TimePicker
-                        value={values.appointmentTime}
-                        onChange={handleTimeChange}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            placeholder: 'Select appointment time',
-                            sx: {
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: '8px',
-                                '& fieldset': { borderColor: '#d1d5db' },
-                                '&:hover fieldset': { borderColor: '#6366f1' },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: '#6366f1',
-                                },
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Patient Name <span className="text-red-500">*</span>
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.patientName}
-                        onChange={(e) =>
-                          handleChange(e.target.value, 'patientName')
-                        }
-                        placeholder="Enter patient name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        MID/SSN <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.png"
-                        style={{ display: 'none' }}
-                        id="upload-file-input"
-                        onChange={handleUpload}
-                        encType="multipart/form-data"
-                      />
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.MIDSSN}
-                        onChange={(e) => handleChange(e.target.value, 'MIDSSN')}
-                        placeholder="Enter MID/SSN"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                edge="end"
-                                size="small"
-                                onClick={() =>
-                                  document
-                                    .getElementById('upload-file-input')
-                                    .click()
-                                }
-                                className="text-gray-500 hover:text-indigo-600 transition-colors"
-                              >
-                                <Upload size={20} />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Insurance Contact
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={values.insurancePhone}
-                        onChange={(e) =>
-                          handleChange(e.target.value, 'insurancePhone')
-                        }
-                        placeholder="Enter insurance contact number"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                            '& fieldset': { borderColor: '#d1d5db' },
-                            '&:hover fieldset': { borderColor: '#6366f1' },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#6366f1',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Policy Holder Date of Birth
-                      </label>
-                      <DatePicker
-                        value={values.policyHolderDOB}
-                        onChange={handlePolicyHolderDOBChange}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            placeholder: 'Select date',
-                            sx: {
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: '8px',
-                                '& fieldset': { borderColor: '#d1d5db' },
-                                '&:hover fieldset': { borderColor: '#6366f1' },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: '#6366f1',
-                                },
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
+                  {/* Submit Button */}
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      Submit Rush IV Request
+                    </button>
                   </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="mt-8 flex justify-center">
-                  <button
-                    type="submit"
-                    className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    Submit Rush IV Request
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -772,7 +798,7 @@ const Rush = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </>
+    </div>
   );
 };
 
