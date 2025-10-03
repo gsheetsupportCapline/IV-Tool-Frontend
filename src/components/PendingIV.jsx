@@ -109,7 +109,9 @@ const PendingIV = () => {
                   <th
                     key={index}
                     className={`px-4 py-3 text-left text-sm font-semibold text-white border-b border-slate-600 min-w-[120px] ${
-                      header === 'Total'
+                      header === 'Office'
+                        ? 'sticky left-0 bg-gradient-to-r from-slate-800 to-slate-900 border-r-2 border-slate-600 z-40'
+                        : header === 'Total'
                         ? 'sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40'
                         : ''
                     }`}
@@ -127,7 +129,7 @@ const PendingIV = () => {
                     index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
                   }`}
                 >
-                  <td className="px-4 py-3 font-medium text-slate-900 text-sm border-r border-slate-100">
+                  <td className="px-4 py-3 font-medium text-slate-900 text-sm border-r border-slate-100 sticky left-0 bg-white z-20">
                     {officeNameObj.officeName}
                   </td>
                   {uniqueDates.map((date) => {
@@ -164,7 +166,7 @@ const PendingIV = () => {
 
               {/* Bottom Total Row */}
               <tr className="bg-slate-100 border-t-2 border-slate-300 sticky bottom-0 z-30">
-                <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200">
+                <td className="px-4 py-3 font-bold text-slate-900 text-sm border-r border-slate-200 sticky left-0 bg-slate-100 z-40">
                   Total
                 </td>
                 {dateTotals.map((total, index) => (
