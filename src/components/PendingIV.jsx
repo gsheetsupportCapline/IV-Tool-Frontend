@@ -225,7 +225,7 @@ const PendingIV = () => {
         </div>
       )}
 
-      <div className="p-6">
+      <div className="p-4" style={{ padding: '15px' }}>
         {/* Date Filter Section */}
         <div className="bg-white rounded-lg shadow border border-slate-200 p-4 mb-6">
           <div className="flex items-center gap-4">

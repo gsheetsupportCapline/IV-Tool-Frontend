@@ -655,10 +655,11 @@ const UserAttendance = () => {
 
   return (
     <div
-      className="flex flex-col overflow-hidden"
+      className="flex flex-col overflow-hidden p-4"
       style={{
         height: 'calc(100vh - 7.5rem)',
         maxHeight: 'calc(100vh - 7.5rem)',
+        padding: '15px',
       }}
     >
       {/* Header with Date Picker */}

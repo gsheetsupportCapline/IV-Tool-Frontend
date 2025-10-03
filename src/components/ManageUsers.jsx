@@ -199,10 +199,11 @@ const ManageUsers = () => {
 
   return (
     <div
-      className="flex flex-col h-full"
+      className="flex flex-col h-full p-4"
       style={{
         minHeight: 'calc(100vh - 7.5rem)',
         maxHeight: 'calc(100vh - 7.5rem)',
+        padding: '15px',
       }}
     >
       <div className="bg-gray-100 p-3 rounded border mb-4">

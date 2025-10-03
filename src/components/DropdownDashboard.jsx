@@ -167,7 +167,7 @@ const DropdownDashboard = () => {
   };
 
   return (
-    <div className="h-full overflow-auto p-6">
+    <div className="h-full overflow-auto p-4" style={{ padding: '15px' }}>
       {/* Page Header */}
 
       {/* Cards Grid */}

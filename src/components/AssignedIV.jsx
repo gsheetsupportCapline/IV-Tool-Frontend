@@ -180,7 +180,7 @@ const AssignedIV = () => {
         </div>
       )}
 
-      <div className="p-6">
+      <div className="p-4" style={{ padding: '15px' }}>
         {/* Filters Section */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 mb-6">
           <div className="p-6 border-b border-slate-200">
