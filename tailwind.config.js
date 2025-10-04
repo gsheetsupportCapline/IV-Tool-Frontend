@@ -2,20 +2,21 @@
 
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './node_modules/react-tailwindcss-datepicker/dist/index.esm.js',
   ],
   theme: {
     extend: {
-      cursor: ["pointer"],
+      cursor: ['pointer'],
       colors: {
-        "light-blue": "#add8e6", // This is a light blue color
+        'light-blue': '#add8e6', // This is a light blue color
       },
       fontFamily: {
-        tahoma: ["Tahoma", "sans-serif"],
+        sans: ['Mulish', 'system-ui', 'sans-serif'],
+        tahoma: ['Tahoma', 'sans-serif'],
+        mulish: ['Mulish', 'sans-serif'],
       },
-      
     },
   },
   plugins: [],

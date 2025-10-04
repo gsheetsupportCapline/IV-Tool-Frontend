@@ -242,7 +242,9 @@ const Rush = () => {
   }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+    }
 
     const currentTime = new Date().toISOString();
 
@@ -390,7 +392,7 @@ const Rush = () => {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleSubmit(e);
                   }}
                 >
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

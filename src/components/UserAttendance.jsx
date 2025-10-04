@@ -19,6 +19,60 @@ const UserAttendance = () => {
   const [error, setError] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState(new Set());
 
+  // Utility function to get current IST time and check shift availability
+  const getShiftAvailability = () => {
+    // Get current IST time
+    const now = new Date();
+    const istTime = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+    );
+    const currentHour = istTime.getHours();
+    const currentMinute = istTime.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+    // Define shift windows in IST (24-hour format)
+    const shifts = {
+      '6PM-3AM': {
+        start: 18 * 60, // 6 PM = 18:00
+        end: 3 * 60, // 3 AM = 03:00 (next day)
+        color: 'bg-purple-100 text-purple-700',
+      },
+      '7PM-4AM': {
+        start: 19 * 60, // 7 PM = 19:00
+        end: 4 * 60, // 4 AM = 04:00 (next day)
+        color: 'bg-green-100 text-green-700',
+      },
+      '8PM-5AM': {
+        start: 20 * 60, // 8 PM = 20:00
+        end: 5 * 60, // 5 AM = 05:00 (next day)
+        color: 'bg-orange-100 text-orange-700',
+      },
+    };
+
+    // Check if current time falls within shift window
+    const isTimeInShift = (shiftTime) => {
+      const shift = shifts[shiftTime];
+      if (!shift) return false;
+
+      // Handle overnight shifts (end time is next day)
+      if (shift.end < shift.start) {
+        // Current time is either after start time today OR before end time today (next day)
+        return (
+          currentTimeInMinutes >= shift.start ||
+          currentTimeInMinutes <= shift.end
+        );
+      } else {
+        // Normal shift within same day
+        return (
+          currentTimeInMinutes >= shift.start &&
+          currentTimeInMinutes <= shift.end
+        );
+      }
+    };
+
+    return { isTimeInShift, shifts };
+  };
+
   // Fetch all users
   const fetchUsers = async () => {
     try {
@@ -66,6 +120,8 @@ const UserAttendance = () => {
 
   // Combine user and attendance data
   const combineData = (usersList, attendanceList) => {
+    const { isTimeInShift } = getShiftAvailability();
+
     const combined = usersList.map((user) => {
       // Find matching attendance record for this user
       const userAttendance = attendanceList.find(
@@ -75,6 +131,19 @@ const UserAttendance = () => {
       const attendanceValue = userAttendance
         ? userAttendance.attendance
         : 'No Record';
+
+      // Check if user has valid shift time and if current time allows selection
+      const hasValidShift = user.shiftTime && user.shiftTime !== 'Not Assigned';
+      const isShiftTimeActive = hasValidShift
+        ? isTimeInShift(user.shiftTime)
+        : false;
+
+      // User is selectable if:
+      // 1. Attendance is Present or Half AND
+      // 2. Either has no valid shift OR current time is within their shift window
+      const isUserSelectable =
+        (attendanceValue === 'Present' || attendanceValue === 'Half') &&
+        (!hasValidShift || isShiftTimeActive);
 
       return {
         userId: user._id,
@@ -91,8 +160,8 @@ const UserAttendance = () => {
           ? userAttendance.assigned.appointmentIds
           : [], // Keep this for backward compatibility
         pendingIVs: 0, // Default to 0 for now
-        isSelectable:
-          attendanceValue === 'Present' || attendanceValue === 'Half', // Only Present/Half can be selected
+        isSelectable: isUserSelectable,
+        shiftTimeActive: isShiftTimeActive, // Track if shift is currently active
       };
     });
 
@@ -806,17 +875,29 @@ const UserAttendance = () => {
                       }`}
                     >
                       <td className="px-3 py-2 border-r border-gray-200">
-                        <input
-                          type="checkbox"
-                          checked={selectedUsers.has(user.userId)}
-                          onChange={() => handleUserSelection(user.userId)}
-                          disabled={!user.isSelectable}
-                          className={`rounded border-gray-300 focus:ring-blue-500 ${
-                            user.isSelectable
-                              ? 'text-blue-600 cursor-pointer'
-                              : 'text-gray-300 cursor-not-allowed'
-                          }`}
-                        />
+                        <div className="flex justify-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.has(user.userId)}
+                            onChange={() => handleUserSelection(user.userId)}
+                            disabled={!user.isSelectable}
+                            title={
+                              !user.isSelectable
+                                ? user.attendance !== 'Present' &&
+                                  user.attendance !== 'Half'
+                                  ? 'User must be Present or Half to be selected'
+                                  : !user.shiftTimeActive
+                                  ? `User's shift (${user.shiftTime}) is not currently active`
+                                  : 'User not selectable'
+                                : 'Select user for auto assignment'
+                            }
+                            className={`rounded border-gray-300 focus:ring-blue-500 ${
+                              user.isSelectable
+                                ? 'text-blue-600 cursor-pointer'
+                                : 'text-gray-300 cursor-not-allowed'
+                            }`}
+                          />
+                        </div>
                       </td>
                       <td className="px-3 py-2 text-sm font-medium text-gray-900 border-r border-gray-200">
                         <div>
@@ -831,10 +912,25 @@ const UserAttendance = () => {
                           className={`px-2 py-1 rounded-full text-xs ${
                             user.shiftTime === 'Not Assigned'
                               ? 'bg-gray-100 text-gray-600'
+                              : user.shiftTime === '6PM-3AM'
+                              ? 'bg-purple-100 text-purple-700'
+                              : user.shiftTime === '7PM-4AM'
+                              ? 'bg-green-100 text-green-700'
+                              : user.shiftTime === '8PM-5AM'
+                              ? 'bg-orange-100 text-orange-700'
                               : 'bg-blue-100 text-blue-700'
+                          } ${
+                            !user.shiftTimeActive &&
+                            user.shiftTime !== 'Not Assigned'
+                              ? 'opacity-50'
+                              : ''
                           }`}
                         >
                           {user.shiftTime}
+                          {user.shiftTime !== 'Not Assigned' &&
+                            !user.shiftTimeActive && (
+                              <span className="ml-1 text-xs">⏰</span>
+                            )}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-sm text-center border-r border-gray-200">
