@@ -253,6 +253,47 @@ const Admin = () => {
     setLoading(true);
     const selectedAppointmentIds = selectedRows.map((row) => row._id);
 
+    // First check if user is present today before assigning
+    try {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const attendanceResponse = await axios.get(
+        `${BASE_URL}/api/attendance/by-date`,
+        {
+          params: {
+            date: currentDate,
+            office: 'all',
+          },
+        }
+      );
+
+      let userAttendanceStatus = 'No Record';
+      if (attendanceResponse.data.success) {
+        const userAttendanceData = attendanceResponse.data.data.find(
+          (u) => u.userId === user._id
+        );
+        if (userAttendanceData) {
+          userAttendanceStatus = userAttendanceData.attendance;
+        }
+      }
+
+      // Check if user is eligible for assignment (Present or Half)
+      if (
+        userAttendanceStatus !== 'Present' &&
+        userAttendanceStatus !== 'Half'
+      ) {
+        setLoading(false);
+        alert(
+          `Cannot assign IVs to ${user.name}.\nUser attendance status: ${userAttendanceStatus}\nOnly users marked as 'Present' or 'Half' can be assigned IVs.`
+        );
+        return;
+      }
+    } catch (attendanceError) {
+      setLoading(false);
+      alert(`Error checking attendance for ${user.name}. Please try again.`);
+      console.error('Error checking user attendance:', attendanceError);
+      return;
+    }
+
     // Process assignments sequentially to avoid state conflicts
     for (let i = 0; i < selectedAppointmentIds.length; i++) {
       const id = selectedAppointmentIds[i];
@@ -399,6 +440,26 @@ const Admin = () => {
   const handleUnassignClick = async () => {
     const selectedAppointmentIds = selectedRows.map((row) => row._id);
 
+    // Group appointments by user for attendance updates
+    const userAppointmentMap = {};
+    selectedRows.forEach((row) => {
+      if (row.assignedUser) {
+        const userId = row.assignedUser;
+        const user = users.find((u) => u._id === userId);
+
+        if (user) {
+          if (!userAppointmentMap[userId]) {
+            userAppointmentMap[userId] = {
+              user: user,
+              appointmentIds: [],
+            };
+          }
+          userAppointmentMap[userId].appointmentIds.push(row._id);
+        }
+      }
+    });
+
+    // Process unassignments
     for (let id of selectedAppointmentIds) {
       try {
         const officeNameForCurrentId = selectedRows.find(
@@ -427,6 +488,121 @@ const Admin = () => {
         }
       } catch (error) {
         console.error('Failed to update appointment', error);
+      }
+    }
+
+    // Update attendance for each affected user
+    for (const userId in userAppointmentMap) {
+      const { user, appointmentIds } = userAppointmentMap[userId];
+
+      try {
+        const currentDate = new Date().toISOString().split('T')[0];
+        let currentAssignedCount = 0;
+        let currentAppointmentIds = [];
+
+        try {
+          const attendanceResponse = await axios.get(
+            `${BASE_URL}/api/attendance/by-date`,
+            {
+              params: {
+                date: currentDate,
+                office: 'all',
+              },
+            }
+          );
+
+          if (attendanceResponse.data.success) {
+            const userAttendanceData = attendanceResponse.data.data.find(
+              (u) => u.userId === userId
+            );
+            if (userAttendanceData && userAttendanceData.assigned) {
+              currentAssignedCount = userAttendanceData.assigned.count || 0;
+              currentAppointmentIds = [
+                ...(userAttendanceData.assigned.appointmentIds || []),
+              ];
+            }
+          }
+        } catch (fetchError) {
+          console.log('No existing attendance data found for user:', user.name);
+        }
+
+        // Remove unassigned appointment IDs from current list
+        console.log(
+          'Current appointment IDs in attendance:',
+          currentAppointmentIds
+        );
+        console.log('Appointment IDs to remove:', appointmentIds);
+
+        // Convert all IDs to strings for proper comparison
+        const currentAppointmentIdsStr = currentAppointmentIds.map((id) =>
+          id.toString()
+        );
+        const appointmentIdsToRemoveStr = appointmentIds.map((id) =>
+          id.toString()
+        );
+
+        console.log('Current IDs as strings:', currentAppointmentIdsStr);
+        console.log('IDs to remove as strings:', appointmentIdsToRemoveStr);
+
+        const updatedAppointmentIds = currentAppointmentIdsStr.filter(
+          (id) => !appointmentIdsToRemoveStr.includes(id)
+        );
+
+        console.log(
+          'Updated appointment IDs after removal:',
+          updatedAppointmentIds
+        );
+
+        // Decrease count by the number of unassigned appointments
+        const updatedCount = Math.max(
+          0,
+          currentAssignedCount - appointmentIds.length
+        );
+
+        // Update attendance using same API pattern as Auto Assignment
+        console.log(`Sending attendance update for ${user.name}:`, {
+          userId,
+          date: currentDate,
+          assigned: {
+            count: updatedCount,
+            appointmentIds: updatedAppointmentIds,
+          },
+        });
+
+        const attendanceUpdateResponse = await axios.put(
+          `${BASE_URL}/api/attendance/update-assigned`,
+          {
+            userId: userId,
+            date: currentDate,
+            assigned: {
+              count: updatedCount,
+              appointmentIds: updatedAppointmentIds,
+            },
+          }
+        );
+
+        console.log(
+          `Attendance update response for ${user.name}:`,
+          attendanceUpdateResponse.data
+        );
+
+        if (
+          attendanceUpdateResponse.data.success ||
+          attendanceUpdateResponse.status === 200
+        ) {
+          console.log(
+            `✅ Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs (decreased by ${appointmentIds.length})`
+          );
+          console.log(
+            `Final appointment IDs for ${user.name}:`,
+            updatedAppointmentIds
+          );
+        }
+      } catch (attendanceError) {
+        console.error(
+          `Error updating attendance for user ${user.name}:`,
+          attendanceError
+        );
       }
     }
 
