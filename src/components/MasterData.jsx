@@ -4,15 +4,18 @@ import BASE_URL from '../config/apiConfig';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
 
-const MasterData = () => {
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null,
-  });
-  const [selectedDateType, setSelectedDateType] = useState('');
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const MasterData = ({
+  masterDataState,
+  setMasterDataState,
+  isVisible = true,
+}) => {
+  // Use lifted state from App.jsx instead of local state
+  const { dateRange, selectedDateType, data, loading, error } = masterDataState;
+
+  // Helper function to update specific parts of the state
+  const updateMasterDataState = (updates) => {
+    setMasterDataState((prev) => ({ ...prev, ...updates }));
+  };
 
   const dateTypeOptions = [
     { name: 'Appointment Date', value: 'appointmentDate' },
@@ -187,12 +190,13 @@ const MasterData = () => {
   // Fetch data from API
   const fetchData = async () => {
     if (!dateRange.startDate || !dateRange.endDate || !selectedDateType) {
-      setError('Please select date range and date type');
+      updateMasterDataState({
+        error: 'Please select date range and date type',
+      });
       return;
     }
 
-    setLoading(true);
-    setError('');
+    updateMasterDataState({ loading: true, error: '' });
 
     try {
       const response = await fetch(
@@ -217,46 +221,66 @@ const MasterData = () => {
         // Handle different error scenarios
         if (response.status === 400) {
           if (result.message.includes('date range exceeds 31 days')) {
-            setError(
-              'Date range cannot exceed 31 days. Please select a shorter period.'
-            );
+            updateMasterDataState({
+              error:
+                'Date range cannot exceed 31 days. Please select a shorter period.',
+            });
           } else if (
             result.message.includes('fromDate cannot be later than toDate')
           ) {
-            setError('Start date cannot be later than end date.');
+            updateMasterDataState({
+              error: 'Start date cannot be later than end date.',
+            });
           } else if (result.message.includes('Invalid date format')) {
-            setError('Please select valid dates.');
+            updateMasterDataState({ error: 'Please select valid dates.' });
           } else if (result.message.includes('Invalid dateType')) {
-            setError('Please select a valid date type.');
+            updateMasterDataState({
+              error: 'Please select a valid date type.',
+            });
           } else if (result.message.includes('required fields')) {
-            setError('Please fill in all required fields.');
+            updateMasterDataState({
+              error: 'Please fill in all required fields.',
+            });
           } else {
-            setError('Invalid request. Please check your inputs.');
+            updateMasterDataState({
+              error: 'Invalid request. Please check your inputs.',
+            });
           }
         } else if (response.status === 401) {
-          setError('You are not authorized to access this data.');
+          updateMasterDataState({
+            error: 'You are not authorized to access this data.',
+          });
         } else if (response.status === 403) {
-          setError('Access denied. Please contact administrator.');
+          updateMasterDataState({
+            error: 'Access denied. Please contact administrator.',
+          });
         } else if (response.status === 500) {
-          setError('Server error occurred. Please try again later.');
+          updateMasterDataState({
+            error: 'Server error occurred. Please try again later.',
+          });
         } else {
-          setError('Failed to fetch data. Please try again.');
+          updateMasterDataState({
+            error: 'Failed to fetch data. Please try again.',
+          });
         }
         return;
       }
 
       if (result.success) {
-        setData(result.data?.appointments || []);
+        updateMasterDataState({ data: result.data?.appointments || [] });
       } else {
-        setError('No data found for the selected criteria.');
+        updateMasterDataState({
+          error: 'No data found for the selected criteria.',
+        });
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError(
-        'Network error occurred. Please check your connection and try again.'
-      );
+      updateMasterDataState({
+        error:
+          'Network error occurred. Please check your connection and try again.',
+      });
     } finally {
-      setLoading(false);
+      updateMasterDataState({ loading: false });
     }
   };
 
@@ -292,7 +316,12 @@ const MasterData = () => {
                   Date Range
                 </label>
                 <div className="h-10">
-                  <DatePicker onDateChange={setDateRange} />
+                  <DatePicker
+                    onDateChange={(newDateRange) =>
+                      updateMasterDataState({ dateRange: newDateRange })
+                    }
+                    value={dateRange}
+                  />
                 </div>
               </div>
 
@@ -303,7 +332,9 @@ const MasterData = () => {
                 </label>
                 <select
                   value={selectedDateType}
-                  onChange={(e) => setSelectedDateType(e.target.value)}
+                  onChange={(e) =>
+                    updateMasterDataState({ selectedDateType: e.target.value })
+                  }
                   className="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
                 >
                   <option value="">Select Date Type</option>
@@ -351,118 +382,126 @@ const MasterData = () => {
                 width: '100%',
               }}
             >
-              <DataGrid
-                rows={transformedData}
-                columns={columns}
-                initialState={{
-                  pagination: {
-                    paginationModel: { page: 0, pageSize: 100 },
-                  },
-                }}
-                pageSizeOptions={[50, 100, 200, 500]}
-                pagination
-                sortingOrder={['asc', 'desc']}
-                disableSelectionOnClick
-                loading={loading}
-                density="compact"
-                filterMode="client"
-                sortingMode="client"
-                getRowId={(row) => row.id}
-                sx={{
-                  border: 'none',
-                  '.MuiDataGrid-columnHeader': {
-                    backgroundColor: '#1e293b', // slate-800
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
-                  },
-                  '.MuiDataGrid-columnHeaderTitle': {
-                    color: '#ffffff',
-                    fontWeight: 600,
-                  },
-                  '.MuiDataGrid-columnSeparator': {
-                    color: '#ffffff',
-                  },
-                  '.MuiDataGrid-iconSeparator': {
-                    color: '#ffffff',
-                  },
-                  '.MuiDataGrid-sortIcon': {
-                    color: '#ffffff',
-                  },
-                  '.MuiDataGrid-menuIcon': {
-                    color: '#ffffff',
-                  },
-                  '.MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
-                    {
+              {/* Only render DataGrid when component is visible for better performance */}
+              {isVisible ? (
+                <DataGrid
+                  rows={transformedData}
+                  columns={columns}
+                  initialState={{
+                    pagination: {
+                      paginationModel: { page: 0, pageSize: 100 },
+                    },
+                  }}
+                  pageSizeOptions={[50, 100, 200, 500]}
+                  pagination
+                  sortingOrder={['asc', 'desc']}
+                  disableSelectionOnClick
+                  loading={loading}
+                  density="compact"
+                  filterMode="client"
+                  sortingMode="client"
+                  getRowId={(row) => row.id}
+                  sx={{
+                    border: 'none',
+                    '.MuiDataGrid-columnHeader': {
+                      backgroundColor: '#1e293b', // slate-800
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                    },
+                    '.MuiDataGrid-columnHeaderTitle': {
+                      color: '#ffffff',
+                      fontWeight: 600,
+                    },
+                    '.MuiDataGrid-columnSeparator': {
                       color: '#ffffff',
                     },
-                  '.MuiDataGrid-filterIcon': {
-                    color: '#ffffff',
-                  },
-                  '.MuiDataGrid-row:hover': {
-                    backgroundColor: '#f8fafc', // slate-50
-                  },
-                  '.MuiDataGrid-cell': {
-                    borderColor: '#e2e8f0', // slate-200
-                    fontSize: '0.875rem',
-                  },
-                  '.MuiDataGrid-footerContainer': {
-                    backgroundColor: '#f8fafc', // slate-50
-                    borderTop: '1px solid #e2e8f0', // slate-200
-                  },
-                  '.MuiTablePagination-root': {
-                    color: '#475569', // slate-600
-                  },
-                  '.MuiDataGrid-overlay': {
-                    backgroundColor: 'rgba(248, 250, 252, 0.8)',
-                  },
-                  // Performance optimizations
-                  '.MuiDataGrid-virtualScroller': {
-                    willChange: 'transform',
-                  },
-                  '.MuiDataGrid-virtualScrollerContent': {
-                    willChange: 'transform',
-                  },
-                }}
-                slotProps={{
-                  loadingOverlay: {
-                    variant: 'skeleton',
-                    noRowsVariant: 'skeleton',
-                  },
-                }}
-                slots={{
-                  noRowsOverlay: () => (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                        <svg
-                          className="w-8 h-8 text-slate-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
+                    '.MuiDataGrid-iconSeparator': {
+                      color: '#ffffff',
+                    },
+                    '.MuiDataGrid-sortIcon': {
+                      color: '#ffffff',
+                    },
+                    '.MuiDataGrid-menuIcon': {
+                      color: '#ffffff',
+                    },
+                    '.MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+                      {
+                        color: '#ffffff',
+                      },
+                    '.MuiDataGrid-filterIcon': {
+                      color: '#ffffff',
+                    },
+                    '.MuiDataGrid-row:hover': {
+                      backgroundColor: '#f8fafc', // slate-50
+                    },
+                    '.MuiDataGrid-cell': {
+                      borderColor: '#e2e8f0', // slate-200
+                      fontSize: '0.875rem',
+                    },
+                    '.MuiDataGrid-footerContainer': {
+                      backgroundColor: '#f8fafc', // slate-50
+                      borderTop: '1px solid #e2e8f0', // slate-200
+                    },
+                    '.MuiTablePagination-root': {
+                      color: '#475569', // slate-600
+                    },
+                    '.MuiDataGrid-overlay': {
+                      backgroundColor: 'rgba(248, 250, 252, 0.8)',
+                    },
+                    // Performance optimizations
+                    '.MuiDataGrid-virtualScroller': {
+                      willChange: 'transform',
+                    },
+                    '.MuiDataGrid-virtualScrollerContent': {
+                      willChange: 'transform',
+                    },
+                  }}
+                  slotProps={{
+                    loadingOverlay: {
+                      variant: 'skeleton',
+                      noRowsVariant: 'skeleton',
+                    },
+                  }}
+                  slots={{
+                    noRowsOverlay: () => (
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                          <svg
+                            className="w-8 h-8 text-slate-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="text-slate-500 text-lg font-medium">
+                          No Data Found
+                        </div>
+                        <div className="text-slate-400 text-sm mt-1">
+                          {!dateRange.startDate ||
+                          !dateRange.endDate ||
+                          !selectedDateType
+                            ? 'Please select date range and date type to view data'
+                            : 'No records found for the selected criteria'}
+                        </div>
                       </div>
-                      <div className="text-slate-500 text-lg font-medium">
-                        No Data Found
-                      </div>
-                      <div className="text-slate-400 text-sm mt-1">
-                        {!dateRange.startDate ||
-                        !dateRange.endDate ||
-                        !selectedDateType
-                          ? 'Please select date range and date type to view data'
-                          : 'No records found for the selected criteria'}
-                      </div>
-                    </div>
-                  ),
-                }}
-              />
+                    ),
+                  }}
+                />
+              ) : (
+                // Show a placeholder when not visible to maintain layout
+                <div className="h-full flex items-center justify-center text-slate-500">
+                  <span>MasterData ready to display</span>
+                </div>
+              )}
             </Box>
           </div>
         </div>

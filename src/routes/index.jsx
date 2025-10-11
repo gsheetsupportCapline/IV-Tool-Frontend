@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 import { siteRoutes, dashboardRoutes } from './allroutes';
 
-function ParamsExample() {
+function ParamsExample({ masterDataState, setMasterDataState }) {
   let userId = localStorage.getItem('loggedinUserId');
   let userRole = localStorage.getItem('role');
 
@@ -55,7 +55,13 @@ function ParamsExample() {
               }
 
               const Component = route.component;
-              return <Component {...props} />;
+              return (
+                <Component
+                  {...props}
+                  masterDataState={masterDataState}
+                  setMasterDataState={setMasterDataState}
+                />
+              );
             }}
           />
         ))}

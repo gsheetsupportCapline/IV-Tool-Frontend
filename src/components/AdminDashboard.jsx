@@ -12,7 +12,7 @@ import MasterData from './MasterData';
 import SmilepointIVInfo from './SmilepointIVInfo';
 import Header from './Header';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ masterDataState, setMasterDataState }) => {
   const [selectedItem, setSelectedItem] = useState('PendingIV');
 
   // Check user role for access control
@@ -168,14 +168,76 @@ const AdminDashboard = () => {
         <div className="w-4/5 bg-gray-50 overflow-hidden">
           <div className="h-full">
             <div className="h-full">
-              {selectedItem === 'PendingIV' && <PendingIV />}
-              {selectedItem === 'AssignedIV' && <AssignedIV />}
-              {selectedItem === 'ProductionIV' && <ProductionIV />}
-              {selectedItem === 'MasterData' && <MasterData />}
-              {selectedItem === 'DropdownValues' && <DropdownDashboard />}
-              {selectedItem === 'ManageUsers' && <ManageUsers />}
-              {selectedItem === 'UserAttendance' && <UserAttendance />}
-              {selectedItem === 'SmilepointIVInfo' && <SmilepointIVInfo />}
+              {/* Keep all components mounted but use visibility to show/hide */}
+              <div
+                style={{
+                  display: selectedItem === 'PendingIV' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <PendingIV />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'AssignedIV' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <AssignedIV />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'ProductionIV' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <ProductionIV />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'MasterData' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <MasterData
+                  masterDataState={masterDataState}
+                  setMasterDataState={setMasterDataState}
+                  isVisible={selectedItem === 'MasterData'}
+                />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'DropdownValues' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <DropdownDashboard />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'ManageUsers' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <ManageUsers />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === 'UserAttendance' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <UserAttendance />
+              </div>
+              <div
+                style={{
+                  display:
+                    selectedItem === 'SmilepointIVInfo' ? 'block' : 'none',
+                }}
+                className="h-full"
+              >
+                <SmilepointIVInfo />
+              </div>
             </div>
           </div>
         </div>

@@ -14,8 +14,8 @@
 // import AwaitingIV from "./AwaitingIV";
 // import AdminDashboard from "./AdminDashboard";
 // import SignIn from "./SignIn";
-import Routes from "../routes";
-const Body = () => {
+import Routes from '../routes';
+const Body = ({ masterDataState, setMasterDataState }) => {
   // const appRouter = createBrowserRouter([
   //   {
   //     path: "/",
@@ -75,7 +75,10 @@ const Body = () => {
   // ]);
   return (
     <div>
-      <Routes />
+      <Routes
+        masterDataState={masterDataState}
+        setMasterDataState={setMasterDataState}
+      />
     </div>
   );
 };
