@@ -3,6 +3,7 @@ import DatePicker from './DatePicker';
 import BASE_URL from '../config/apiConfig';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
+import moment from 'moment-timezone';
 
 const MasterData = ({
   masterDataState,
@@ -62,7 +63,7 @@ const MasterData = ({
     provider: 'Provider',
   };
 
-  // Format date for display
+  // Format date for display (keep original timezone)
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -77,28 +78,37 @@ const MasterData = ({
     }
   };
 
-  // Format date and time for IV related columns
-  const formatDateTime = (dateString) => {
+  // Format date and time for IV related columns (keep original timezone except completed date)
+  const formatDateTime = (dateString, isCompletedDate = false) => {
     if (!dateString) return '-';
     try {
-      const date = new Date(dateString);
-      const dateFormatted = date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-      const timeFormatted = date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-      return `${dateFormatted} ${timeFormatted}`;
+      if (isCompletedDate) {
+        // Convert only completed date to CST timezone
+        const cstDateTime = moment(dateString).tz('America/Chicago');
+        const dateFormatted = cstDateTime.format('MM/DD/YYYY');
+        const timeFormatted = cstDateTime.format('hh:mm A');
+        return `${dateFormatted} ${timeFormatted}`;
+      } else {
+        // Keep original timezone for other IV dates
+        const date = new Date(dateString);
+        const dateFormatted = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+        const timeFormatted = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+        return `${dateFormatted} ${timeFormatted}`;
+      }
     } catch (error) {
       return '-';
     }
   };
 
-  // Format time for display
+  // Format time for display (keep original timezone)
   const formatTime = (timeString) => {
     if (!timeString || timeString === '-NO-DATA-') return '-';
 
@@ -116,7 +126,7 @@ const MasterData = ({
         }
       }
 
-      // If it's a date object or date string, try to extract time
+      // If it's a date object or date string, extract time (keep original timezone)
       const date = new Date(timeString);
       if (!isNaN(date.getTime())) {
         return date.toLocaleTimeString('en-US', {
@@ -145,15 +155,17 @@ const MasterData = ({
         let value = item[dataKey];
 
         // Handle special cases
-        if (
+        if (dataKey === 'ivCompletedDate') {
+          // Show completed date in CST timezone
+          value = formatDateTime(value, true);
+        } else if (
           dataKey === 'ivRequestedDate' ||
-          dataKey === 'ivAssignedDate' ||
-          dataKey === 'ivCompletedDate'
+          dataKey === 'ivAssignedDate'
         ) {
-          // Show date and time for IV related dates
-          value = formatDateTime(value);
+          // Show date and time for other IV related dates (original timezone)
+          value = formatDateTime(value, false);
         } else if (dataKey.includes('Date') && dataKey !== 'appointmentTime') {
-          // Show only date for other date fields
+          // Show only date for other date fields (original timezone)
           value = formatDate(value);
         } else if (dataKey === 'appointmentTime') {
           value = formatTime(value);
