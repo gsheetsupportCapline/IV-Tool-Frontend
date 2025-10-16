@@ -104,7 +104,7 @@ const Header = () => {
   const navigation = useMemo(
     () => [
       { link: '/schedule-patient', text: 'Scheduled Patients', show: true },
-      { link: '/awaitingIV', text: 'IVs Awaiting', show: true },
+      { link: '/awaitingIV', text: 'IVs - Office Review', show: true },
       { link: '/request-rush', text: 'Request a Rush', show: true },
       {
         link: '/admin',
