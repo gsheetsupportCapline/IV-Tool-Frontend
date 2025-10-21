@@ -301,6 +301,59 @@ const MasterData = ({
     fetchData();
   };
 
+  // Handle CSV download
+  const handleDownloadCSV = () => {
+    if (!transformedData || transformedData.length === 0) {
+      alert('No data available to download');
+      return;
+    }
+
+    try {
+      // Get headers from column mapping
+      const headers = Object.values(columnMapping);
+
+      // Create CSV content
+      let csvContent = headers.join(',') + '\n';
+
+      // Add data rows
+      transformedData.forEach((row) => {
+        const rowData = headers.map((header) => {
+          const value = row[header];
+          // Handle values that contain commas, quotes, or newlines
+          if (
+            value &&
+            (value.toString().includes(',') ||
+              value.toString().includes('"') ||
+              value.toString().includes('\n'))
+          ) {
+            return `"${value.toString().replace(/"/g, '""')}"`;
+          }
+          return value || '';
+        });
+        csvContent += rowData.join(',') + '\n';
+      });
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      // Generate filename with date range
+      const fileName = `MasterData_${dateRange.startDate}_to_${dateRange.endDate}_${selectedDateType}.csv`;
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('Error downloading CSV file. Please try again.');
+    }
+  };
+
   return (
     <div className="h-full bg-slate-50 relative">
       {/* Loading Overlay */}
@@ -321,7 +374,7 @@ const MasterData = ({
         <div className="p-4 h-full flex flex-col">
           {/* Filters Section */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4 flex-shrink-0">
-            <div className="grid grid-cols-3 gap-6 items-end">
+            <div className="grid grid-cols-4 gap-4 items-end">
               {/* Date Range */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-700">
@@ -375,6 +428,38 @@ const MasterData = ({
                 >
                   Search Data
                 </button>
+              </div>
+
+              {/* Download CSV Button - Only visible when data exists */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700">
+                  &nbsp;
+                </label>
+                {transformedData && transformedData.length > 0 ? (
+                  <button
+                    onClick={handleDownloadCSV}
+                    disabled={loading}
+                    className="w-full h-10 px-4 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    Download CSV
+                  </button>
+                ) : (
+                  <div className="w-full h-10"></div>
+                )}
               </div>
             </div>
 
