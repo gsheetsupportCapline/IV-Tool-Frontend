@@ -5,6 +5,7 @@ import OfficeDropdown from './OfficeDropdown';
 import DatePicker from './DatePicker';
 import BASE_URL from '../config/apiConfig';
 import PageNotFound from './PageNotFound';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
 
 const Home = () => {
   const [selectedOffice, setSelectedOffice] = useState('');
@@ -44,48 +45,32 @@ const Home = () => {
 
   // Set allowed offices based on user role
   useEffect(() => {
-    const role = localStorage.getItem('role');
-    if (role === 'admin') {
-      setAllowedOffices([
-        'Aransas',
-        'Azle',
-        'Beaumont',
-        'Benbrook',
-        'Calallen',
-        'Crosby',
-        'Devine',
-        'Elgin',
-        'Grangerland',
-        'Huffman',
-        'Jasper',
-        'Lavaca',
-        'Liberty',
-        'Lytle',
-        'Mathis',
-        'Potranco',
-        'Rio Bravo',
-        'Riverwalk',
-        'Rockdale',
-        'Sinton',
-        'Splendora',
-        'Springtown',
-        'Tidwell',
-        'Victoria',
-        'Westgreen',
-        'Winnie',
-      ]);
-    } else if (role === 'officeuser') {
-      const assignedOfficesString = localStorage.getItem('assignedOffice');
-      const assignedOffices = assignedOfficesString
-        ? assignedOfficesString.split(',')
-        : [];
-      setAllowedOffices(assignedOffices);
-      if (assignedOfficesString) {
-        setSelectedOffice(assignedOfficesString);
+    const loadOffices = async () => {
+      try {
+        const offices = await fetchOfficeOptions();
+        const officeNamesList = offices.map((office) => office.name);
+
+        const role = localStorage.getItem('role');
+        if (role === 'officeuser') {
+          const assignedOfficesString = localStorage.getItem('assignedOffice');
+          const assignedOffices = assignedOfficesString
+            ? assignedOfficesString.split(',').map((o) => o.trim())
+            : [];
+          setAllowedOffices(assignedOffices);
+          if (assignedOfficesString) {
+            setSelectedOffice(assignedOfficesString.trim());
+          }
+        } else {
+          // For admin and other roles, use all fetched offices
+          setAllowedOffices(officeNamesList);
+        }
+      } catch (error) {
+        console.error('Error loading offices:', error);
+        setAllowedOffices([]);
       }
-    } else {
-      setAllowedOffices([]);
-    }
+    };
+
+    loadOffices();
   }, []);
 
   useEffect(() => {

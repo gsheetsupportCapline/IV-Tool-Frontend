@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 import Datepicker from 'react-tailwindcss-datepicker';
-import * as DropdownValues from './DropdownValues';
 import BASE_URL from '../config/apiConfig';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+
 const ProductionIV = () => {
   const [users, setUsers] = useState([]);
   const [data, setData] = useState([]);
@@ -14,6 +15,22 @@ const ProductionIV = () => {
   });
   const [userIdToUserMap, setUserIdToUserMap] = useState({});
   const [dateType, setDateType] = useState('appointmentDate');
+  const [officeNames, setOfficeNames] = useState([]);
+
+  // Fetch offices from API on component mount
+  useEffect(() => {
+    const loadOffices = async () => {
+      try {
+        const offices = await fetchOfficeOptions();
+        setOfficeNames(offices);
+      } catch (error) {
+        console.error('Error loading offices:', error);
+        setOfficeNames([]);
+      }
+    };
+
+    loadOffices();
+  }, []);
   const handleValueChange = (newValue) => {
     console.log('New Value:', newValue); // Debugging
     setValue({
@@ -99,9 +116,9 @@ const ProductionIV = () => {
 
     // Calculate column totals (for each user)
     const columnTotals = userName.map((username) =>
-      DropdownValues.officeNames.reduce(
+      officeNames.reduce(
         (total, officeNameObj) =>
-          total + (processedData[officeNameObj.officeName]?.[username] || 0),
+          total + (processedData[officeNameObj.name]?.[username] || 0),
         0
       )
     );
@@ -136,11 +153,11 @@ const ProductionIV = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {DropdownValues.officeNames.map((officeNameObj, index) => {
+              {officeNames.map((officeNameObj, index) => {
                 const rowTotal = userName.reduce(
                   (total, username) =>
                     total +
-                    (processedData[officeNameObj.officeName]?.[username] || 0),
+                    (processedData[officeNameObj.name]?.[username] || 0),
                   0
                 );
 
@@ -152,12 +169,11 @@ const ProductionIV = () => {
                     }`}
                   >
                     <td className="px-4 py-2 font-medium text-slate-900 border-r border-slate-100 text-sm">
-                      {officeNameObj.officeName}
+                      {officeNameObj.name}
                     </td>
                     {userName.map((username, userIndex) => {
                       const count =
-                        processedData[officeNameObj.officeName]?.[username] ||
-                        0;
+                        processedData[officeNameObj.name]?.[username] || 0;
                       return (
                         <td key={userIndex} className="px-4 py-2 text-center">
                           <div
@@ -226,7 +242,7 @@ const ProductionIV = () => {
         {/* Table Footer */}
         <div className="bg-slate-50 px-4 py-2 border-t border-slate-200">
           <div className="flex justify-between items-center text-xs text-slate-600">
-            <span>Total Offices: {DropdownValues.officeNames.length}</span>
+            <span>Total Offices: {officeNames.length}</span>
             <span>Active Team Members: {userName.length}</span>
           </div>
         </div>

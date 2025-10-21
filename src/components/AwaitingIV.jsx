@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import Datepicker from 'react-tailwindcss-datepicker';
-import { officeNames } from './DropdownValues';
 import BASE_URL from '../config/apiConfig';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+
 const AwaitingIV = () => {
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState({
@@ -14,27 +15,35 @@ const AwaitingIV = () => {
   });
   const [selectedOffice, setSelectedOffice] = useState(''); // Initialize as empty string for consistency
   const [appointments, setAppointments] = useState([]);
-  const [filteredOffices, setFilteredOffices] = useState(officeNames);
+  const [filteredOffices, setFilteredOffices] = useState([]);
   const [error, setError] = useState(false);
 
   // Function to filter offices based on user role
-  const filterOffices = () => {
-    const userRole = localStorage.getItem('role');
-    if (userRole === 'officeuser') {
-      const assignedOffice = localStorage.getItem('assignedOffice');
-      const assignedOfficesList = assignedOffice
-        ? assignedOffice.split(',')
-        : [];
-      setFilteredOffices(
-        officeNames.filter((office) =>
-          assignedOfficesList.includes(office.officeName)
-        )
-      );
-      if (assignedOffice) {
-        setSelectedOffice(assignedOffice);
+  const filterOffices = async () => {
+    try {
+      const offices = await fetchOfficeOptions();
+      const userRole = localStorage.getItem('role');
+
+      if (userRole === 'officeuser') {
+        const assignedOffice = localStorage.getItem('assignedOffice');
+        const assignedOfficesList = assignedOffice
+          ? assignedOffice.split(',').map((o) => o.trim())
+          : [];
+
+        const filtered = offices.filter((office) =>
+          assignedOfficesList.includes(office.name)
+        );
+        setFilteredOffices(filtered);
+
+        if (assignedOffice) {
+          setSelectedOffice(assignedOffice.trim());
+        }
+      } else {
+        setFilteredOffices(offices);
       }
-    } else {
-      setFilteredOffices(officeNames);
+    } catch (error) {
+      console.error('Error filtering offices:', error);
+      setFilteredOffices([]);
     }
   };
 
@@ -144,15 +153,15 @@ const AwaitingIV = () => {
                       value={selectedOffice}
                     >
                       {filteredOffices.length === 1 ? (
-                        <option value={filteredOffices[0].officeName}>
-                          {filteredOffices[0].officeName}
+                        <option value={filteredOffices[0].name}>
+                          {filteredOffices[0].name}
                         </option>
                       ) : (
                         <>
                           <option value="">Select Office</option>
                           {filteredOffices.map((office) => (
-                            <option key={office.id} value={office.officeName}>
-                              {office.officeName}
+                            <option key={office.id} value={office.name}>
+                              {office.name}
                             </option>
                           ))}
                         </>

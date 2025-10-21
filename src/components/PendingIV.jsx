@@ -1,8 +1,8 @@
 // Import necessary hooks and components
 import { useState, useEffect } from 'react';
 import Datepicker from 'react-tailwindcss-datepicker';
-import * as DropdownValues from './DropdownValues';
 import BASE_URL from '../config/apiConfig';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
 
 const PendingIV = () => {
   const [value, setValue] = useState({
@@ -11,6 +11,22 @@ const PendingIV = () => {
   });
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [officeNames, setOfficeNames] = useState([]);
+
+  // Fetch offices from API on component mount
+  useEffect(() => {
+    const loadOffices = async () => {
+      try {
+        const offices = await fetchOfficeOptions();
+        setOfficeNames(offices);
+      } catch (error) {
+        console.error('Error loading offices:', error);
+        setOfficeNames([]);
+      }
+    };
+
+    loadOffices();
+  }, []);
 
   const handleValueChange = (newValue) => {
     console.log('New Value:', newValue);
@@ -59,10 +75,8 @@ const PendingIV = () => {
     });
 
     // Ensure all offices are present for every date, filling missing counts with 0
-    const officeNames = DropdownValues.officeNames.map(
-      (name) => name.officeName
-    );
-    officeNames.forEach((officeName) => {
+    const officeNamesList = officeNames.map((office) => office.name);
+    officeNamesList.forEach((officeName) => {
       data.forEach((item) => {
         if (!processedData[item._id]) {
           processedData[item._id] = {};
@@ -82,15 +96,15 @@ const PendingIV = () => {
     const headers = ['Office', ...uniqueDates, 'Total'];
 
     // Calculate totals
-    const officeTotals = DropdownValues.officeNames.map((office) => {
+    const officeTotals = officeNames.map((office) => {
       return uniqueDates.reduce((total, date) => {
-        return total + (processedData[date]?.[office.officeName] || 0);
+        return total + (processedData[date]?.[office.name] || 0);
       }, 0);
     });
 
     const dateTotals = uniqueDates.map((date) => {
-      return DropdownValues.officeNames.reduce((total, office) => {
-        return total + (processedData[date]?.[office.officeName] || 0);
+      return officeNames.reduce((total, office) => {
+        return total + (processedData[date]?.[office.name] || 0);
       }, 0);
     });
 
@@ -122,7 +136,7 @@ const PendingIV = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {DropdownValues.officeNames.map((officeNameObj, index) => (
+              {officeNames.map((officeNameObj, index) => (
                 <tr
                   key={index}
                   className={`hover:bg-blue-50 transition-colors duration-200 ${
@@ -130,11 +144,11 @@ const PendingIV = () => {
                   }`}
                 >
                   <td className="px-4 py-3 font-medium text-slate-900 text-sm border-r border-slate-100 sticky left-0 bg-white z-20">
-                    {officeNameObj.officeName}
+                    {officeNameObj.name}
                   </td>
                   {uniqueDates.map((date) => {
                     const count =
-                      processedData[date]?.[officeNameObj.officeName] || 0;
+                      processedData[date]?.[officeNameObj.name] || 0;
                     return (
                       <td key={date} className="px-4 py-3 text-center">
                         <span
@@ -202,7 +216,7 @@ const PendingIV = () => {
         {/* Table Footer */}
         <div className="bg-slate-50 px-4 py-2 border-t border-slate-200">
           <div className="flex justify-between items-center text-xs text-slate-600">
-            <span>Total Offices: {DropdownValues.officeNames.length}</span>
+            <span>Total Offices: {officeNames.length}</span>
             <span>Date Range: {uniqueDates.length} days</span>
             <span>Total Pending: {grandTotal}</span>
           </div>
