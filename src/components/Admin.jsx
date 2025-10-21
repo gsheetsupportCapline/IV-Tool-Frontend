@@ -13,6 +13,7 @@ import Datepicker from 'react-tailwindcss-datepicker';
 import ShimmerTableComponent from './ShimmerTableComponent';
 import BASE_URL from '../config/apiConfig';
 import ImageViewer from 'react-simple-image-viewer';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
 
 const Admin = () => {
   // Check user role for access control
@@ -42,36 +43,27 @@ const Admin = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [images, setImages] = useState([]);
   const [patientIdFilter, setPatientIdFilter] = useState('');
+  const [officeName, setOfficeName] = useState([]);
 
-  const officeName = [
-    'AllOffices',
-    'Aransas',
-    'Azle',
-    'Beaumont',
-    'Benbrook',
-    'Calallen',
-    'Crosby',
-    'Devine',
-    'Elgin',
-    'Grangerland',
-    'Huffman',
-    'Jasper',
-    'Lavaca',
-    'Liberty',
-    'Lytle',
-    'Mathis',
-    'Potranco',
-    'Rio Bravo',
-    'Riverwalk',
-    'Rockdale',
-    'Sinton',
-    'Splendora',
-    'Springtown',
-    'Tidwell',
-    'Victoria',
-    'Westgreen',
-    'Winnie',
-  ];
+  // Fetch offices from API on component mount
+  useEffect(() => {
+    const loadOffices = async () => {
+      try {
+        const offices = await fetchOfficeOptions();
+        // Add "AllOffices" option at the beginning for admin
+        const officeList = [
+          'AllOffices',
+          ...offices.map((office) => office.name),
+        ];
+        setOfficeName(officeList);
+      } catch (error) {
+        console.error('Error loading offices:', error);
+        setOfficeName(['AllOffices']); // At least show AllOffices option
+      }
+    };
+
+    loadOffices();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {

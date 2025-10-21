@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { officeNames } from './DropdownValues.js';
 import BASE_URL from '../config/apiConfig.js';
 import DatePicker from './DatePicker';
+import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
 
 const AssignedIV = () => {
   const [users, setUsers] = useState([]);
@@ -15,6 +15,22 @@ const AssignedIV = () => {
     startDate: null,
     endDate: null,
   });
+  const [officeNames, setOfficeNames] = useState([]);
+
+  // Fetch offices from API on component mount
+  useEffect(() => {
+    const loadOffices = async () => {
+      try {
+        const offices = await fetchOfficeOptions();
+        setOfficeNames(offices);
+      } catch (error) {
+        console.error('Error loading offices:', error);
+        setOfficeNames([]);
+      }
+    };
+
+    loadOffices();
+  }, []);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -348,8 +364,8 @@ const AssignedIV = () => {
                 >
                   <option value="">Choose an office...</option>
                   {officeNames.map((office) => (
-                    <option key={office.id} value={office.officeName}>
-                      {office.officeName}
+                    <option key={office.id} value={office.name}>
+                      {office.name}
                     </option>
                   ))}
                 </select>
