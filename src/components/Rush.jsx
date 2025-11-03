@@ -68,10 +68,25 @@ const Rush = () => {
       let officeOptions = [];
       let insuranceOptions = [];
       if (localStorage.getItem('role') === 'officeuser') {
-        // For office users, get only assigned offices
+        // For office users, get only assigned offices (comma separated)
         const assignedOffice = localStorage.getItem('assignedOffice');
-        officeOptions = [{ name: assignedOffice }];
-        setSelectedOffice(assignedOffice);
+        const assignedOfficesList = assignedOffice
+          ? assignedOffice.split(',').map((o) => o.trim())
+          : [];
+
+        // Fetch all offices from API
+        const allOffices = await fetchDropdownOptions('Office');
+
+        // Filter to show only assigned offices
+        officeOptions = allOffices.filter((office) =>
+          assignedOfficesList.includes(office.name)
+        );
+
+        // If only one office assigned, auto-select it
+        if (officeOptions.length === 1) {
+          setSelectedOffice(officeOptions[0].name);
+        }
+
         insuranceOptions = await fetchDropdownOptions('Insurance Name');
       } else {
         // For other roles, fetch all available options
