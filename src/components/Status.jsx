@@ -101,13 +101,13 @@ const Status = ({ data, dateRange, patientId }) => {
       const transformed = {};
       Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
         if (dataKey === 'appointmentDate' && item[dataKey]) {
-          // Format appointment date to show only date part
-          const date = new Date(item[dataKey]);
-          transformed[displayName] = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          });
+          // Display date exactly as stored in database (YYYY-MM-DD format)
+          // Extract date string directly without timezone conversion
+          const dateString = item[dataKey].split('T')[0]; // Get YYYY-MM-DD part only
+          
+          // Format to MM/DD/YYYY for display
+          const [year, month, day] = dateString.split('-');
+          transformed[displayName] = `${month}/${day}/${year}`;
         } else {
           transformed[displayName] = item[dataKey] || '';
         }
