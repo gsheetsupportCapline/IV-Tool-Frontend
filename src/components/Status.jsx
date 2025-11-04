@@ -104,7 +104,7 @@ const Status = ({ data, dateRange, patientId }) => {
           // Display date exactly as stored in database (YYYY-MM-DD format)
           // Extract date string directly without timezone conversion
           const dateString = item[dataKey].split('T')[0]; // Get YYYY-MM-DD part only
-          
+
           // Format to MM/DD/YYYY for display
           const [year, month, day] = dateString.split('-');
           transformed[displayName] = `${month}/${day}/${year}`;
