@@ -345,6 +345,16 @@ const IVUsers = () => {
                               fontSize: '0.75rem',
                             }}
                           >
+                            Office
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              backgroundColor: '#f8fafc',
+                              fontWeight: 600,
+                              color: '#374151',
+                              fontSize: '0.75rem',
+                            }}
+                          >
                             Patient ID
                           </TableCell>
                           <TableCell
@@ -390,6 +400,16 @@ const IVUsers = () => {
                                     : 'none',
                               }}
                             >
+                              <TableCell
+                                sx={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500,
+                                  color: '#1f2937',
+                                  py: 1,
+                                }}
+                              >
+                                {appointment.office || 'N/A'}
+                              </TableCell>
                               <TableCell
                                 sx={{
                                   fontSize: '0.75rem',
