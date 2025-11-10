@@ -136,7 +136,7 @@ const SmilepointIVInfo = () => {
 
   return (
     <div
-      className="flex flex-col h-full p-4"
+      className="flex flex-col h-full"
       style={{
         minHeight: 'calc(100vh - 7.5rem)',
         maxHeight: 'calc(100vh - 7.5rem)',
@@ -144,7 +144,7 @@ const SmilepointIVInfo = () => {
       }}
     >
       {/* Filters Header */}
-      <div className="bg-gray-100 p-4 rounded border mb-4">
+      <div className="bg-gray-100 p-4 rounded border mb-4 flex-shrink-0">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <h2 className="text-lg font-semibold text-gray-800">
@@ -212,7 +212,7 @@ const SmilepointIVInfo = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4 flex-shrink-0">
           <div className="flex items-center">
             <div className="text-red-400 mr-3">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -239,7 +239,7 @@ const SmilepointIVInfo = () => {
 
       {/* Loading Overlay */}
       {loading && (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-12 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             <span className="text-gray-600 font-medium">
@@ -250,10 +250,13 @@ const SmilepointIVInfo = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-hidden">
         {!loading && !error && data.length > 0 && (
-          <div className="bg-white rounded border">
-            <div className="max-h-96 overflow-auto">
+          <div className="bg-white rounded border h-full">
+            <div
+              style={{ maxHeight: 'calc(100vh - 16rem)' }}
+              className="overflow-auto"
+            >
               <table className="min-w-full">
                 <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
