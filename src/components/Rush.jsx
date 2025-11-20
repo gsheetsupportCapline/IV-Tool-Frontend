@@ -286,6 +286,42 @@ const Rush = () => {
       setSnackbarMessage(errorMessage);
       return;
     }
+
+    // Determine IV Type based on CST date comparison
+    // Get current date in CST timezone
+    const cstDate = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    // Convert CST date string to Date object for comparison (MM/DD/YYYY format)
+    const [cstMonth, cstDay, cstYear] = cstDate.split('/');
+    const currentCSTDate = new Date(`${cstYear}-${cstMonth}-${cstDay}`);
+
+    // Get appointment date (without time for comparison)
+    const appointmentDateOnly = new Date(values.appointmentDate);
+    appointmentDateOnly.setHours(0, 0, 0, 0);
+
+    // Determine IV Type
+    // If current CST date < appointment date → Normal
+    // If current CST date >= appointment date → Rush
+    let ivType = 'Normal';
+    if (currentCSTDate >= appointmentDateOnly) {
+      ivType = 'Rush';
+    }
+
+    console.log(
+      'Current CST Date:',
+      currentCSTDate.toISOString().split('T')[0]
+    );
+    console.log(
+      'Appointment Date:',
+      appointmentDateOnly.toISOString().split('T')[0]
+    );
+    console.log('Determined IV Type:', ivType);
+
     // Constructing the payload
     const payload = {
       appointmentDate: values.appointmentDate
@@ -307,7 +343,7 @@ const Rush = () => {
       insurancePhone: values.insurancePhone,
       imageUrl: values.imageUrl,
       ivRequestedDate: currentTime,
-      ivType: 'Rush',
+      ivType: ivType, // Dynamically determined based on date comparison
     };
     console.log('Submitting payload:', payload);
     try {
@@ -317,7 +353,7 @@ const Rush = () => {
       );
       setSnackbarOpen(true);
       setSnackbarSeverity('success');
-      setSnackbarMessage('Rush IV created successfully!');
+      setSnackbarMessage(`${ivType} IV created successfully!`);
       // Clear the form after successful submission
       setValues({
         appointmentDate: null,
