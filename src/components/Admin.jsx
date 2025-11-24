@@ -45,6 +45,18 @@ const Admin = () => {
   const [patientIdFilter, setPatientIdFilter] = useState('');
   const [officeName, setOfficeName] = useState([]);
 
+  // Close IV Modal states
+  const [isCloseIVModalOpen, setIsCloseIVModalOpen] = useState(false);
+  const [closeIVFormData, setCloseIVFormData] = useState({
+    source: '',
+    planType: '',
+    ivRemarks: '',
+    noteRemarks: '',
+  });
+  const [sourceOptions, setSourceOptions] = useState([]);
+  const [planTypeOptions, setPlanTypeOptions] = useState([]);
+  const [ivRemarksOptions, setIvRemarksOptions] = useState([]);
+
   // Fetch offices from API on component mount
   useEffect(() => {
     const loadOffices = async () => {
@@ -77,10 +89,38 @@ const Admin = () => {
     fetchUsers();
   }, []);
 
+  // Fetch dropdown options for Close IV form
+  useEffect(() => {
+    const fetchDropdownOptions = async (category) => {
+      try {
+        const encodedCategory = encodeURIComponent(category);
+        const response = await axios.get(
+          `${BASE_URL}/api/dropdownValues/${encodedCategory}`
+        );
+        return response.data.options;
+      } catch (error) {
+        console.error(`Error fetching ${category} options:`, error);
+        return [];
+      }
+    };
+
+    const loadOptions = async () => {
+      const source = await fetchDropdownOptions('Source');
+      const planType = await fetchDropdownOptions('Plan Type');
+      const ivRemarks = await fetchDropdownOptions('IV Remarks');
+
+      setSourceOptions(source);
+      setPlanTypeOptions(planType);
+      setIvRemarksOptions(ivRemarks);
+    };
+
+    loadOptions();
+  }, []);
+
   // Custom cell renderer function
   const renderUserName = (params) => {
     const user = users.find((user) => user._id === params.row.assignedUser);
-    return user ? user.name : params.row.assignedUser;
+    return user ? user.name : params.row.assignedUser || 'Unassigned';
   };
 
   const handleViewImage = (imageUrl) => {
@@ -239,6 +279,139 @@ const Admin = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  // Close IV Modal handlers
+  const handleOpenCloseIVModal = () => {
+    if (selectedRows.length === 0) {
+      alert('Please select at least one appointment to close.');
+      return;
+    }
+    setIsCloseIVModalOpen(true);
+  };
+
+  const handleCloseIVModal = () => {
+    setIsCloseIVModalOpen(false);
+    // Reset form data
+    setCloseIVFormData({
+      source: '',
+      planType: '',
+      ivRemarks: '',
+      noteRemarks: '',
+    });
+  };
+
+  const handleCloseIVFormChange = (field, value) => {
+    setCloseIVFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCloseIVSubmit = async () => {
+    // Validate required fields
+    if (
+      !closeIVFormData.source ||
+      !closeIVFormData.planType ||
+      !closeIVFormData.ivRemarks
+    ) {
+      alert('Source, Plan Type, and IV Remarks are mandatory fields.');
+      return;
+    }
+
+    if (selectedRows.length === 0) {
+      alert('No appointments selected.');
+      return;
+    }
+
+    // Show confirmation
+    const confirmed = window.confirm(
+      `Are you sure you want to close ${selectedRows.length} appointment(s)?`
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+
+    try {
+      // Get current user details from localStorage
+      const completedBy = localStorage.getItem('loggedinUserName') || 'Admin';
+      const assignedUserId = localStorage.getItem('loggedinUserId') || '';
+
+      // Get current date and time in ISO format
+      const currentDate = new Date().toISOString();
+
+      // Prepare appointments array for bulk update with all required fields
+      const appointments = selectedRows.map((row) => ({
+        appointmentId: row._id,
+        ivRemarks: closeIVFormData.ivRemarks,
+        source: closeIVFormData.source,
+        planType: closeIVFormData.planType,
+        completedBy: completedBy,
+        noteRemarks: closeIVFormData.noteRemarks || '',
+        ivCompletedDate: currentDate,
+        assignedUser: assignedUserId,
+        ivAssignedByUserName: completedBy,
+        ivAssignedDate: currentDate,
+      }));
+
+      console.log('Sending bulk update request:', { appointments });
+
+      // Make API call
+      const response = await axios.post(
+        `${BASE_URL}/api/appointments/bulk-update-appointment-details`,
+        { appointments },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Bulk update response:', response.data);
+
+      // Handle response
+      if (response.data.success) {
+        const { successfulUpdates, failedUpdates, details } =
+          response.data.results;
+
+        if (failedUpdates === 0) {
+          // All successful
+          alert(`Successfully closed ${successfulUpdates} appointment(s).`);
+        } else {
+          // Partial success
+          const failedList = details
+            .filter((d) => d.status === 'failed')
+            .map((d) => `ID: ${d.appointmentId} - ${d.error}`)
+            .join('\n');
+
+          alert(
+            `Bulk update completed:\n\n` +
+              `✅ Successful: ${successfulUpdates}\n` +
+              `❌ Failed: ${failedUpdates}\n\n` +
+              `Failed appointments:\n${failedList}`
+          );
+        }
+
+        // Close modal and refresh data
+        handleCloseIVModal();
+        fetchAndFilterAppointments(value);
+      } else {
+        alert(
+          `Error: ${response.data.message || 'Failed to update appointments'}`
+        );
+      }
+    } catch (error) {
+      console.error('Error closing IVs:', error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'An error occurred while closing IVs';
+
+      alert(`Failed to close IVs: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleMenuItemClick = async (user) => {
@@ -811,6 +984,21 @@ const Admin = () => {
               <div className="flex justify-end gap-2">
                 <Button
                   variant="contained"
+                  onClick={handleOpenCloseIVModal}
+                  size="small"
+                  sx={{
+                    fontSize: '12px',
+                    padding: '6px 16px',
+                    backgroundColor: '#10b981',
+                    '&:hover': {
+                      backgroundColor: '#059669',
+                    },
+                  }}
+                >
+                  Close IV
+                </Button>
+                <Button
+                  variant="contained"
                   onClick={handleUnassignClick}
                   size="small"
                   sx={{
@@ -949,6 +1137,184 @@ const Admin = () => {
           disableScroll={true}
           closeOnClickOutside={true}
         />
+      )}
+
+      {/* Close IV Modal */}
+      {isCloseIVModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            onClick={handleCloseIVModal}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center">
+                    <svg
+                      className="w-6 h-6 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Close IVs in Bulk
+                  </h2>
+                  <p className="text-green-100 text-sm mt-1">
+                    Selected Appointments: {selectedRows.length}
+                  </p>
+                </div>
+                <button
+                  onClick={handleCloseIVModal}
+                  className="text-white hover:text-green-100 transition-colors text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Required Fields Section */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <h3 className="text-amber-800 font-semibold mb-4 flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Required Information
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Source Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Source <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={closeIVFormData.source}
+                      onChange={(e) =>
+                        handleCloseIVFormChange('source', e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select Source</option>
+                      {sourceOptions.map((option) => (
+                        <option key={option.id} value={option.name}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Plan Type Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Plan Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={closeIVFormData.planType}
+                      onChange={(e) =>
+                        handleCloseIVFormChange('planType', e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select Plan Type</option>
+                      {planTypeOptions.map((option) => (
+                        <option key={option.id} value={option.name}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* IV Remarks Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      IV Remarks <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={closeIVFormData.ivRemarks}
+                      onChange={(e) =>
+                        handleCloseIVFormChange('ivRemarks', e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select IV Remarks</option>
+                      {ivRemarksOptions.map((option) => (
+                        <option key={option.id} value={option.name}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optional Notes Section */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Note Remarks (Optional)
+                </label>
+                <textarea
+                  value={closeIVFormData.noteRemarks}
+                  onChange={(e) =>
+                    handleCloseIVFormChange('noteRemarks', e.target.value)
+                  }
+                  rows={4}
+                  placeholder="Add any additional notes or comments here..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleCloseIVModal}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCloseIVSubmit}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
+                >
+                  Submit & Close IVs
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
