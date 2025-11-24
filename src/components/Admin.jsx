@@ -1049,6 +1049,13 @@ const Admin = () => {
                   checkboxSelection
                   onRowSelectionModelChange={handleSelectionChange}
                   getRowId={(row) => row._id.toString()}
+                  getRowClassName={(params) => {
+                    // Highlight rows that were previously completed
+                    if (params.row.isPreviouslyCompleted === true) {
+                      return 'previously-completed-row';
+                    }
+                    return '';
+                  }}
                   sx={{
                     border: 'none',
                     '& .MuiDataGrid-columnHeader': {
@@ -1083,6 +1090,18 @@ const Admin = () => {
                     },
                     '& .MuiDataGrid-row:hover': {
                       backgroundColor: '#f8fafc',
+                    },
+                    '& .previously-completed-row': {
+                      backgroundColor: '#fee2e2', // light red background
+                      '&:hover': {
+                        backgroundColor: '#fecaca', // slightly darker red on hover
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fca5a5', // even darker when selected
+                        '&:hover': {
+                          backgroundColor: '#f87171',
+                        },
+                      },
                     },
                   }}
                 />
