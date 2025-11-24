@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import Header from './Header';
 import Select from '@mui/material/Select';
 import Datepicker from 'react-tailwindcss-datepicker';
@@ -14,6 +15,20 @@ import ShimmerTableComponent from './ShimmerTableComponent';
 import BASE_URL from '../config/apiConfig';
 import ImageViewer from 'react-simple-image-viewer';
 import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+
+// Custom SweetAlert2 configuration for compact size
+const Toast = Swal.mixin({
+  width: '400px',
+  padding: '1.5em',
+  customClass: {
+    popup: 'swal-compact',
+    title: 'swal-title-compact',
+    htmlContainer: 'swal-text-compact',
+    confirmButton: 'swal-button-compact',
+    cancelButton: 'swal-button-compact',
+  },
+  buttonsStyling: false,
+});
 
 const Admin = () => {
   // Check user role for access control
@@ -284,7 +299,12 @@ const Admin = () => {
   // Close IV Modal handlers
   const handleOpenCloseIVModal = () => {
     if (selectedRows.length === 0) {
-      alert('Please select at least one appointment to close.');
+      Toast.fire({
+        icon: 'warning',
+        title: 'No Selection',
+        text: 'Please select at least one appointment to close.',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
     setIsCloseIVModalOpen(true);
@@ -315,20 +335,38 @@ const Admin = () => {
       !closeIVFormData.planType ||
       !closeIVFormData.ivRemarks
     ) {
-      alert('Source, Plan Type, and IV Remarks are mandatory fields.');
+      Toast.fire({
+        icon: 'error',
+        title: 'Missing Information',
+        text: 'Source, Plan Type, and IV Remarks are mandatory fields.',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
     if (selectedRows.length === 0) {
-      alert('No appointments selected.');
+      Toast.fire({
+        icon: 'warning',
+        title: 'No Selection',
+        text: 'No appointments selected.',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
     // Show confirmation
-    const confirmed = window.confirm(
-      `Are you sure you want to close ${selectedRows.length} appointment(s)?`
-    );
-    if (!confirmed) return;
+    const result = await Toast.fire({
+      title: 'Confirm Closing',
+      text: `Are you sure you want to close ${selectedRows.length} appointment(s)?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, close them',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (!result.isConfirmed) return;
 
     setLoading(true);
 
@@ -376,7 +414,12 @@ const Admin = () => {
 
         if (failedUpdates === 0) {
           // All successful
-          alert(`Successfully closed ${successfulUpdates} appointment(s).`);
+          await Toast.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: `Successfully closed ${successfulUpdates} appointment(s).`,
+            confirmButtonColor: '#10b981',
+          });
         } else {
           // Partial success
           const failedList = details
@@ -384,21 +427,32 @@ const Admin = () => {
             .map((d) => `ID: ${d.appointmentId} - ${d.error}`)
             .join('\n');
 
-          alert(
-            `Bulk update completed:\n\n` +
-              `✅ Successful: ${successfulUpdates}\n` +
-              `❌ Failed: ${failedUpdates}\n\n` +
-              `Failed appointments:\n${failedList}`
-          );
+          await Toast.fire({
+            icon: 'warning',
+            title: 'Partial Success',
+            html: `
+              <div style="text-align: left;">
+                <p><strong>✅ Successful:</strong> ${successfulUpdates}</p>
+                <p><strong>❌ Failed:</strong> ${failedUpdates}</p>
+                <br/>
+                <p><strong>Failed appointments:</strong></p>
+                <pre style="text-align: left; font-size: 12px; max-height: 200px; overflow-y: auto;">${failedList}</pre>
+              </div>
+            `,
+            confirmButtonColor: '#3b82f6',
+          });
         }
 
         // Close modal and refresh data
         handleCloseIVModal();
         fetchAndFilterAppointments(value);
       } else {
-        alert(
-          `Error: ${response.data.message || 'Failed to update appointments'}`
-        );
+        await Toast.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: response.data.message || 'Failed to update appointments',
+          confirmButtonColor: '#ef4444',
+        });
       }
     } catch (error) {
       console.error('Error closing IVs:', error);
@@ -408,7 +462,12 @@ const Admin = () => {
         error.message ||
         'An error occurred while closing IVs';
 
-      alert(`Failed to close IVs: ${errorMessage}`);
+      await Toast.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `Failed to close IVs: ${errorMessage}`,
+        confirmButtonColor: '#ef4444',
+      });
     } finally {
       setLoading(false);
     }
@@ -447,14 +506,26 @@ const Admin = () => {
         userAttendanceStatus !== 'Half'
       ) {
         setLoading(false);
-        alert(
-          `Cannot assign IVs to ${user.name}.\nUser attendance status: ${userAttendanceStatus}\nOnly users marked as 'Present' or 'Half' can be assigned IVs.`
-        );
+        await Toast.fire({
+          icon: 'error',
+          title: 'Cannot Assign',
+          html: `
+            <p>Cannot assign IVs to <strong>${user.name}</strong>.</p>
+            <p>User attendance status: <strong>${userAttendanceStatus}</strong></p>
+            <p>Only users marked as 'Present' or 'Half' can be assigned IVs.</p>
+          `,
+          confirmButtonColor: '#ef4444',
+        });
         return;
       }
     } catch (attendanceError) {
       setLoading(false);
-      alert(`Error checking attendance for ${user.name}. Please try again.`);
+      await Toast.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `Error checking attendance for ${user.name}. Please try again.`,
+        confirmButtonColor: '#ef4444',
+      });
       console.error('Error checking user attendance:', attendanceError);
       return;
     }
@@ -854,6 +925,45 @@ const Admin = () => {
 
   return (
     <div className="h-screen bg-slate-50 overflow-hidden relative">
+      <style>{`
+        .swal-compact {
+          font-size: 14px !important;
+        }
+        .swal-title-compact {
+          font-size: 18px !important;
+          padding: 10px 0 !important;
+        }
+        .swal-text-compact {
+          font-size: 13px !important;
+          margin: 0 !important;
+        }
+        .swal-button-compact {
+          font-size: 13px !important;
+          padding: 8px 20px !important;
+          margin: 5px !important;
+          border-radius: 6px !important;
+          font-weight: 500 !important;
+        }
+        .swal2-icon {
+          width: 60px !important;
+          height: 60px !important;
+          margin: 15px auto 10px !important;
+        }
+        .swal2-confirm {
+          background-color: #3b82f6 !important;
+          color: white !important;
+        }
+        .swal2-confirm:hover {
+          background-color: #2563eb !important;
+        }
+        .swal2-cancel {
+          background-color: #ef4444 !important;
+          color: white !important;
+        }
+        .swal2-cancel:hover {
+          background-color: #dc2626 !important;
+        }
+      `}</style>
       <Header />
 
       {/* Loading Overlay */}
