@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Disclosure } from '@headlessui/react';
-import Logo from '../utils/Smilepoint_Dental.png';
-import { useHistory, useLocation } from 'react-router-dom';
-import './Header.css';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Disclosure } from "@headlessui/react";
+import Logo from "../utils/Smilepoint_Dental.png";
+import { useHistory, useLocation } from "react-router-dom";
+import "./Header.css";
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 // Memoized Navigation Button Component
@@ -19,15 +19,15 @@ const NavigationButton = React.memo(
       <button
         onClick={handleClick}
         className={classNames(
-          'nav-button px-4 py-2 text-sm font-medium rounded-lg shadow-md',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2',
+          "nav-button px-4 py-2 text-sm font-medium rounded-lg shadow-md",
+          "focus:outline-none focus:ring-2 focus:ring-offset-2",
           isLogout
-            ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500'
+            ? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
             : isActive
-            ? 'nav-button-active text-white focus:ring-blue-500'
-            : 'bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white focus:ring-blue-500'
+            ? "nav-button-active text-white focus:ring-blue-500"
+            : "bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white focus:ring-blue-500"
         )}
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive ? "page" : undefined}
       >
         <span className="nav-button-text">{item.text}</span>
       </button>
@@ -35,7 +35,7 @@ const NavigationButton = React.memo(
   }
 );
 
-NavigationButton.displayName = 'NavigationButton';
+NavigationButton.displayName = "NavigationButton";
 
 // Memoized Logo Component
 const LogoSection = React.memo(() => (
@@ -54,7 +54,7 @@ const LogoSection = React.memo(() => (
   </div>
 ));
 
-LogoSection.displayName = 'LogoSection';
+LogoSection.displayName = "LogoSection";
 
 // Memoized Navigation Container
 const NavigationContainer = React.memo(
@@ -64,7 +64,7 @@ const NavigationContainer = React.memo(
         {navigation.map((item) => {
           if (!item.show) return null;
 
-          const isLogout = item.text === 'Log Out';
+          const isLogout = item.text === "Log Out";
           const isActive = currentPath === item.link;
 
           return (
@@ -82,19 +82,19 @@ const NavigationContainer = React.memo(
   }
 );
 
-NavigationContainer.displayName = 'NavigationContainer';
+NavigationContainer.displayName = "NavigationContainer";
 
 const Header = () => {
   const history = useHistory();
   const location = useLocation();
   const [userRole, setUserRole] = useState(() => {
     // Initialize userRole from localStorage immediately
-    return localStorage.getItem('role') || '';
+    return localStorage.getItem("role") || "";
   });
 
   // Only set userRole once on mount, not on every render
   useEffect(() => {
-    const storedUserRole = localStorage.getItem('role');
+    const storedUserRole = localStorage.getItem("role");
     if (storedUserRole && storedUserRole !== userRole) {
       setUserRole(storedUserRole);
     }
@@ -103,25 +103,25 @@ const Header = () => {
   // Memoize navigation array - only recreate when userRole changes
   const navigation = useMemo(
     () => [
-      { link: '/schedule-patient', text: 'Scheduled Patients', show: true },
-      { link: '/awaitingIV', text: 'IVs - Office Review', show: true },
-      { link: '/request-rush', text: 'Request a Rush', show: true },
+      { link: "/schedule-patient", text: "Scheduled Patients", show: true },
+      { link: "/awaitingIV", text: "IVs - Office Review", show: true },
+      { link: "/request-rush", text: "Request a Rush", show: true },
       {
-        link: '/admin',
-        text: 'Assign IVs',
-        show: userRole === 'admin',
+        link: "/admin",
+        text: "Assign IVs",
+        show: userRole === "admin",
       },
       {
-        link: '/admin-dashboard',
-        text: 'Dashboard',
-        show: userRole === 'admin',
+        link: "/admin-dashboard",
+        text: "Dashboard",
+        show: userRole === "admin",
       },
       {
-        link: '/dashboard',
-        text: 'Dashboard',
-        show: userRole === 'user',
+        link: "/dashboard",
+        text: "Dashboard",
+        show: userRole === "user",
       },
-      { link: '/', text: 'Log Out', show: true },
+      { link: "/", text: "Log Out", show: true },
     ],
     [userRole]
   );
@@ -130,6 +130,19 @@ const Header = () => {
   const handleNavigation = useCallback(
     (link) => {
       if (location.pathname === link) return;
+
+      // Handle logout - clear all auth data
+      if (link === "/") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("loggedinUserId");
+        localStorage.removeItem("loggedinUserName");
+        localStorage.removeItem("role");
+        localStorage.removeItem("assignedOffice");
+        // Force reload to trigger re-authentication check
+        window.location.href = "/";
+        return;
+      }
+
       history.push(link);
     },
     [history, location.pathname]

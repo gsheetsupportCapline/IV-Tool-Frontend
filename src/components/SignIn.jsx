@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
-import axios from 'axios';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import BASE_URL from '../config/apiConfig';
+import { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import axios from "axios";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import BASE_URL from "../config/apiConfig";
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [showPassword, setShowPassword] = useState(false);
   let history = useHistory();
 
   // Create twinkling stars effect
   useEffect(() => {
     const createStars = () => {
-      const container = document.getElementById('stars-container');
+      const container = document.getElementById("stars-container");
       if (!container) return;
 
       // Create 30 stars
       for (let i = 0; i < 30; i++) {
-        const star = document.createElement('div');
-        star.className = 'twinkling-star';
+        const star = document.createElement("div");
+        star.className = "twinkling-star";
 
         // Random initial position
         const randomTop = Math.random() * 100;
@@ -68,9 +68,9 @@ const SignIn = () => {
     createStars();
 
     return () => {
-      const container = document.getElementById('stars-container');
+      const container = document.getElementById("stars-container");
       if (container) {
-        container.innerHTML = '';
+        container.innerHTML = "";
       }
     };
   }, []);
@@ -80,16 +80,16 @@ const SignIn = () => {
     let isValid = true;
 
     if (!email.trim()) {
-      setSnackbarMessage('Email is required.');
-      setSnackbarSeverity('error');
+      setSnackbarMessage("Email is required.");
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
       isValid = false;
       return;
     }
 
     if (!password.trim()) {
-      setSnackbarMessage('Password is required.');
-      setSnackbarSeverity('error');
+      setSnackbarMessage("Password is required.");
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
       isValid = false;
       return;
@@ -102,38 +102,43 @@ const SignIn = () => {
           password: password,
         });
 
-        localStorage.setItem('token', response.data.token);
+        // Store token from correct path: response.data.data.token
+        localStorage.setItem("token", response.data.data.token);
         localStorage.setItem(
-          'loggedinUserId',
+          "loggedinUserId",
           response.data.data.userDetails._id
         );
         localStorage.setItem(
-          'loggedinUserName',
+          "loggedinUserName",
           response.data.data.userDetails.name
         );
-        localStorage.setItem('role', response.data.data.userDetails.role);
+        localStorage.setItem("role", response.data.data.userDetails.role);
         localStorage.setItem(
-          'assignedOffice',
+          "assignedOffice",
           response.data.data.userDetails.assignedOffice
         );
 
-        setSnackbarMessage('Login successful!');
-        setSnackbarSeverity('success');
+        setSnackbarMessage("Login successful!");
+        setSnackbarSeverity("success");
         setSnackbarOpen(true);
 
-        history.push('/schedule-patient');
+        // Small delay to ensure localStorage is set before redirect
+        setTimeout(() => {
+          // Use window.location to force full reload and proper auth state
+          window.location.href = "/schedule-patient";
+        }, 100);
       } catch (error) {
         setSnackbarOpen(true);
-        setSnackbarSeverity('error');
-        console.error('Login failed:', error.response);
+        setSnackbarSeverity("error");
+        console.error("Login failed:", error.response);
         if (!error.response) {
-          setSnackbarMessage('Server connection lost. Please try again later.');
-        } else if (error.response.data.err?.message == 'Incorrect password') {
+          setSnackbarMessage("Server connection lost. Please try again later.");
+        } else if (error.response.data.err?.message == "Incorrect password") {
           setSnackbarMessage(
-            'Invalid credentials. Please check your email and password.'
+            "Invalid credentials. Please check your email and password."
           );
         } else {
-          setSnackbarMessage('An error occurred. Please try again.');
+          setSnackbarMessage("An error occurred. Please try again.");
         }
       }
     }
@@ -255,7 +260,7 @@ const SignIn = () => {
                 />
               </svg>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
                 required
@@ -332,7 +337,7 @@ const SignIn = () => {
 
       <Snackbar
         open={snackbarOpen}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
       >
@@ -340,7 +345,7 @@ const SignIn = () => {
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           variant="filled"
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>
@@ -354,152 +359,152 @@ const styles = {
     margin: 0,
     padding: 0,
     fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif",
-    background: '#1e293b',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    position: 'relative',
-    overflow: 'hidden',
+    background: "#1e293b",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    position: "relative",
+    overflow: "hidden",
   },
   starsContainer: {
-    position: 'absolute',
+    position: "absolute",
     inset: 0,
-    pointerEvents: 'none',
+    pointerEvents: "none",
     zIndex: 1,
   },
   container: {
-    width: '100%',
-    maxWidth: '440px',
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    padding: '48px 40px',
-    borderRadius: '24px',
+    width: "100%",
+    maxWidth: "440px",
+    backgroundColor: "rgba(255, 255, 255, 0.98)",
+    padding: "48px 40px",
+    borderRadius: "24px",
     boxShadow:
-      '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(59, 130, 246, 0.1)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    position: 'relative',
+      "0 20px 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(59, 130, 246, 0.1)",
+    backdropFilter: "blur(10px)",
+    border: "1px solid rgba(255, 255, 255, 0.2)",
+    position: "relative",
     zIndex: 10,
   },
   logoWrapper: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '24px',
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "24px",
   },
   logo: {
-    width: '180px',
-    height: 'auto',
+    width: "180px",
+    height: "auto",
   },
   appName: {
-    textAlign: 'center',
-    fontSize: '32px',
-    fontWeight: '800',
-    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    marginBottom: '8px',
-    letterSpacing: '-0.5px',
+    textAlign: "center",
+    fontSize: "32px",
+    fontWeight: "800",
+    background: "linear-gradient(135deg, #3b82f6, #1e40af)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+    marginBottom: "8px",
+    letterSpacing: "-0.5px",
   },
   heading: {
-    textAlign: 'center',
-    color: '#1e293b',
-    fontSize: '20px',
-    fontWeight: '600',
-    marginBottom: '8px',
+    textAlign: "center",
+    color: "#1e293b",
+    fontSize: "20px",
+    fontWeight: "600",
+    marginBottom: "8px",
   },
   subtitle: {
-    textAlign: 'center',
-    color: '#64748b',
-    fontSize: '14px',
-    marginBottom: '32px',
-    fontWeight: '400',
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: "14px",
+    marginBottom: "32px",
+    fontWeight: "400",
   },
   form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
   },
   inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
   },
   label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#334155',
-    marginBottom: '4px',
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#334155",
+    marginBottom: "4px",
   },
   inputWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
   },
   inputIcon: {
-    position: 'absolute',
-    left: '16px',
-    width: '20px',
-    height: '20px',
-    color: '#94a3b8',
-    pointerEvents: 'none',
+    position: "absolute",
+    left: "16px",
+    width: "20px",
+    height: "20px",
+    color: "#94a3b8",
+    pointerEvents: "none",
     zIndex: 1,
   },
   input: {
-    width: '100%',
-    padding: '14px 16px 14px 48px',
-    fontSize: '15px',
-    border: '2px solid #e2e8f0',
-    borderRadius: '12px',
-    backgroundColor: '#f8fafc',
-    transition: 'all 0.3s ease',
-    color: '#1e293b',
-    fontWeight: '500',
-    boxSizing: 'border-box',
+    width: "100%",
+    padding: "14px 16px 14px 48px",
+    fontSize: "15px",
+    border: "2px solid #e2e8f0",
+    borderRadius: "12px",
+    backgroundColor: "#f8fafc",
+    transition: "all 0.3s ease",
+    color: "#1e293b",
+    fontWeight: "500",
+    boxSizing: "border-box",
   },
   eyeButton: {
-    position: 'absolute',
-    right: '16px',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#94a3b8',
-    transition: 'color 0.2s ease',
-    outline: 'none',
+    position: "absolute",
+    right: "16px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#94a3b8",
+    transition: "color 0.2s ease",
+    outline: "none",
   },
   eyeIcon: {
-    width: '20px',
-    height: '20px',
+    width: "20px",
+    height: "20px",
   },
   btn: {
-    width: '100%',
-    padding: '16px',
-    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-    border: 'none',
-    borderRadius: '12px',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    marginTop: '8px',
+    width: "100%",
+    padding: "16px",
+    background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+    border: "none",
+    borderRadius: "12px",
+    color: "#fff",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    marginTop: "8px",
   },
   btnText: {
-    fontSize: '16px',
-    fontWeight: '600',
+    fontSize: "16px",
+    fontWeight: "600",
   },
   btnIcon: {
-    width: '20px',
-    height: '20px',
+    width: "20px",
+    height: "20px",
   },
 };
 

@@ -3,24 +3,47 @@ import {
   Switch,
   Route,
   Redirect,
-} from 'react-router-dom';
-import { siteRoutes, dashboardRoutes } from './allroutes';
+} from "react-router-dom";
+import { siteRoutes, dashboardRoutes } from "./allroutes";
 
 function ParamsExample({ masterDataState, setMasterDataState }) {
-  let userId = localStorage.getItem('loggedinUserId');
-  let userRole = localStorage.getItem('role');
+  let token = localStorage.getItem("token");
+  let userId = localStorage.getItem("loggedinUserId");
+  let userRole = localStorage.getItem("role");
 
-  console.log('Router check - userId:', userId, 'userRole:', userRole);
+  console.log(
+    "Router check - token:",
+    !!token,
+    "userId:",
+    userId,
+    "userRole:",
+    userRole
+  );
 
-  // Check if user is authenticated
+  // Check if user is authenticated - must have both token and userId
   const isAuthenticated =
-    userId && userId !== 'null' && userId !== '' && userId.trim() !== '';
+    token &&
+    token !== "null" &&
+    token !== "" &&
+    token.trim() !== "" &&
+    userId &&
+    userId !== "null" &&
+    userId !== "" &&
+    userId.trim() !== "";
+
+  const SignInComponent = siteRoutes[0].component;
 
   return (
     <Router>
       <Switch>
-        {/* Public Routes */}
-        <Route exact path="/" component={siteRoutes[0].component} />
+        {/* Public Routes - redirect to /schedule-patient if already authenticated */}
+        <Route exact path="/">
+          {isAuthenticated ? (
+            <Redirect to="/schedule-patient" />
+          ) : (
+            <SignInComponent />
+          )}
+        </Route>
 
         {/* Protected Routes */}
         {dashboardRoutes.map((route, index) => (
@@ -35,7 +58,7 @@ function ParamsExample({ masterDataState, setMasterDataState }) {
               );
 
               if (!isAuthenticated) {
-                console.log('Not authenticated, redirecting to /');
+                console.log("Not authenticated, redirecting to /");
                 return <Redirect to="/" />;
               }
 
@@ -45,9 +68,9 @@ function ParamsExample({ masterDataState, setMasterDataState }) {
                   `Access denied. Required role: ${route.requireRole}, User role: ${userRole}`
                 );
                 // Redirect based on user role
-                if (userRole === 'admin') {
+                if (userRole === "admin") {
                   return <Redirect to="/schedule-patient" />;
-                } else if (userRole === 'user') {
+                } else if (userRole === "user") {
                   return <Redirect to="/dashboard" />;
                 } else {
                   return <Redirect to="/schedule-patient" />;
