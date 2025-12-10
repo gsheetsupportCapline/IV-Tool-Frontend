@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Grid,
-  Card,
   TextField,
   Button,
-  Typography,
   Select,
   MenuItem,
   Box,
@@ -19,11 +17,11 @@ import {
   TableHead,
   Snackbar,
   Alert,
-} from '@mui/material';
-import axios from 'axios';
-import Header from './Header';
-import DatePicker from './DatePicker';
-import BASE_URL from '../config/apiConfig';
+} from "@mui/material";
+import axios from "axios";
+import Header from "./Header";
+import DatePicker from "./DatePicker";
+import BASE_URL from "../config/apiConfig";
 
 const fetchDropdownOptions = async (category) => {
   try {
@@ -39,36 +37,7 @@ const fetchDropdownOptions = async (category) => {
 };
 
 const IVUsers = () => {
-  // Check user authentication
-  const userId = localStorage.getItem('loggedinUserId');
-  const userName = localStorage.getItem('loggedinUserName') || 'User';
-  const userRole = localStorage.getItem('role') || 'user';
-
-  if (!userId || userId === 'null' || userId.trim() === '') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🔒</div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">
-              Authentication Required
-            </h2>
-            <p className="text-slate-600 mb-6">
-              Please log in to access your IV assignments
-            </p>
-            <button
-              onClick={() => (window.location.href = '/')}
-              className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg transition-colors"
-            >
-              Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // State management
+  // State management (hooks must be at the top)
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -79,20 +48,40 @@ const IVUsers = () => {
   });
 
   // Form states
-  const [noteRemarks, setNoteRemarks] = useState('');
+  const [noteRemarks, setNoteRemarks] = useState("");
   const [sourceOptions, setSourceOptions] = useState([]);
   const [planTypeOptions, setPlanTypeOptions] = useState([]);
   const [ivRemarksOptions, setIvRemarksOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  // Check user authentication (after hooks)
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("loggedinUserId");
+  const userName = localStorage.getItem("loggedinUserName") || "User";
+  // const userRole = localStorage.getItem('role') || 'user'; // Not used currently
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (
+      !token ||
+      token === "null" ||
+      token.trim() === "" ||
+      !userId ||
+      userId === "null" ||
+      userId.trim() === ""
+    ) {
+      window.location.href = "/";
+    }
+  }, [token, userId]);
 
   // Load dropdown options
   useEffect(() => {
     const loadOptions = async () => {
-      const sourceOptions = await fetchDropdownOptions('Source');
-      const planTypeOptions = await fetchDropdownOptions('Plan Type');
-      const ivRemarksOptions = await fetchDropdownOptions('IV Remarks');
+      const sourceOptions = await fetchDropdownOptions("Source");
+      const planTypeOptions = await fetchDropdownOptions("Plan Type");
+      const ivRemarksOptions = await fetchDropdownOptions("IV Remarks");
 
       setSourceOptions(sourceOptions);
       setPlanTypeOptions(planTypeOptions);
@@ -104,13 +93,13 @@ const IVUsers = () => {
 
   // Date change handler for DatePicker
   const handleDateChange = (newDateRange) => {
-    console.log('🗓️ Date range changed:', newDateRange);
+    console.log("🗓️ Date range changed:", newDateRange);
     if (newDateRange && newDateRange.startDate && newDateRange.endDate) {
       const updatedRange = {
         startDate: new Date(newDateRange.startDate),
         endDate: new Date(newDateRange.endDate),
       };
-      console.log('📊 Setting new date range:', updatedRange);
+      console.log("📊 Setting new date range:", updatedRange);
       setDateRange(updatedRange);
       // Trigger API call immediately when valid date range is selected
       fetchAppointmentsWithRange(updatedRange);
@@ -124,17 +113,17 @@ const IVUsers = () => {
       setError(null);
 
       if (!range || !range.startDate || !range.endDate) {
-        setError('Please select a valid date range');
+        setError("Please select a valid date range");
         setLoading(false);
         return;
       }
 
       // Format dates for API
-      const startDate = range.startDate.toISOString().split('T')[0];
-      const endDate = range.endDate.toISOString().split('T')[0];
+      const startDate = range.startDate.toISOString().split("T")[0];
+      const endDate = range.endDate.toISOString().split("T")[0];
 
-      console.log('Fetching appointments for user:', userId);
-      console.log('Date range:', { startDate, endDate });
+      console.log("Fetching appointments for user:", userId);
+      console.log("Date range:", { startDate, endDate });
 
       const apiUrl = `${BASE_URL}/api/appointments/user-appointments/${userId}?startDate=${startDate}&endDate=${endDate}`;
       const response = await fetch(apiUrl);
@@ -144,33 +133,33 @@ const IVUsers = () => {
       }
 
       const data = await response.json();
-      console.log('📋 Raw API response:', data);
-      console.log('📋 Data type:', typeof data);
-      console.log('📋 Is array:', Array.isArray(data));
+      console.log("📋 Raw API response:", data);
+      console.log("📋 Data type:", typeof data);
+      console.log("📋 Is array:", Array.isArray(data));
 
       let processedAppointments = [];
       if (Array.isArray(data)) {
         processedAppointments = data;
-        console.log('📋 Using direct array, length:', data.length);
+        console.log("📋 Using direct array, length:", data.length);
       } else if (data && data.success && Array.isArray(data.data)) {
         processedAppointments = data.data;
-        console.log('📋 Using data.data array, length:', data.data.length);
+        console.log("📋 Using data.data array, length:", data.data.length);
       } else if (data && Array.isArray(data.appointments)) {
         processedAppointments = data.appointments;
         console.log(
-          '📋 Using data.appointments array, length:',
+          "📋 Using data.appointments array, length:",
           data.appointments.length
         );
       } else {
-        console.log('📋 No valid array found in response');
+        console.log("📋 No valid array found in response");
         processedAppointments = [];
       }
 
-      console.log('📋 Final processed appointments:', processedAppointments);
+      console.log("📋 Final processed appointments:", processedAppointments);
       setAppointments(processedAppointments);
     } catch (err) {
-      console.error('Error fetching appointments:', err);
-      setError(err.message || 'Failed to fetch appointments');
+      console.error("Error fetching appointments:", err);
+      setError(err.message || "Failed to fetch appointments");
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -182,7 +171,7 @@ const IVUsers = () => {
     if (dateRange.startDate && dateRange.endDate) {
       await fetchAppointmentsWithRange(dateRange);
     } else {
-      setError('Please select a date range first');
+      setError("Please select a date range first");
     }
   };
 
@@ -199,8 +188,8 @@ const IVUsers = () => {
         !selectedAppointment.ivRemarks
       ) {
         setSnackbarOpen(true);
-        setSnackbarSeverity('error');
-        setSnackbarMessage('Source, Plan Type and IV Remarks are mandatory.');
+        setSnackbarSeverity("error");
+        setSnackbarMessage("Source, Plan Type and IV Remarks are mandatory.");
         return;
       }
 
@@ -222,19 +211,19 @@ const IVUsers = () => {
       );
 
       setSelectedAppointment(null);
-      setNoteRemarks('');
+      setNoteRemarks("");
       setSnackbarOpen(true);
-      setSnackbarSeverity('success');
-      setSnackbarMessage('Appointment updated successfully!');
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Appointment updated successfully!");
       // Refresh data with current date range
       if (dateRange.startDate && dateRange.endDate) {
         fetchAppointmentsWithRange(dateRange);
       }
     } catch (error) {
-      console.error('Error submitting:', error);
+      console.error("Error submitting:", error);
       setSnackbarOpen(true);
-      setSnackbarSeverity('error');
-      setSnackbarMessage('An error occurred while updating the appointment.');
+      setSnackbarSeverity("error");
+      setSnackbarMessage("An error occurred while updating the appointment.");
     }
   };
 
@@ -333,46 +322,46 @@ const IVUsers = () => {
                 </div>
               ) : (
                 <div className="h-[calc(100vh-400px)] border border-slate-200 rounded-lg">
-                  <TableContainer component={Paper} sx={{ height: '100%' }}>
+                  <TableContainer component={Paper} sx={{ height: "100%" }}>
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
                           <TableCell
                             sx={{
-                              backgroundColor: '#f8fafc',
+                              backgroundColor: "#f8fafc",
                               fontWeight: 600,
-                              color: '#374151',
-                              fontSize: '0.75rem',
+                              color: "#374151",
+                              fontSize: "0.75rem",
                             }}
                           >
                             Office
                           </TableCell>
                           <TableCell
                             sx={{
-                              backgroundColor: '#f8fafc',
+                              backgroundColor: "#f8fafc",
                               fontWeight: 600,
-                              color: '#374151',
-                              fontSize: '0.75rem',
+                              color: "#374151",
+                              fontSize: "0.75rem",
                             }}
                           >
                             Patient ID
                           </TableCell>
                           <TableCell
                             sx={{
-                              backgroundColor: '#f8fafc',
+                              backgroundColor: "#f8fafc",
                               fontWeight: 600,
-                              color: '#374151',
-                              fontSize: '0.75rem',
+                              color: "#374151",
+                              fontSize: "0.75rem",
                             }}
                           >
                             Date & Time
                           </TableCell>
                           <TableCell
                             sx={{
-                              backgroundColor: '#f8fafc',
+                              backgroundColor: "#f8fafc",
                               fontWeight: 600,
-                              color: '#374151',
-                              fontSize: '0.75rem',
+                              color: "#374151",
+                              fontSize: "0.75rem",
                             }}
                           >
                             Status
@@ -388,42 +377,42 @@ const IVUsers = () => {
                                 setSelectedAppointment(appointment)
                               }
                               sx={{
-                                cursor: 'pointer',
-                                '&:hover': { backgroundColor: '#f8fafc' },
+                                cursor: "pointer",
+                                "&:hover": { backgroundColor: "#f8fafc" },
                                 backgroundColor:
                                   selectedAppointment?._id === appointment._id
-                                    ? '#eff6ff'
-                                    : 'inherit',
+                                    ? "#eff6ff"
+                                    : "inherit",
                                 borderLeft:
                                   selectedAppointment?._id === appointment._id
-                                    ? '4px solid #3b82f6'
-                                    : 'none',
+                                    ? "4px solid #3b82f6"
+                                    : "none",
                               }}
                             >
                               <TableCell
                                 sx={{
-                                  fontSize: '0.75rem',
+                                  fontSize: "0.75rem",
                                   fontWeight: 500,
-                                  color: '#1f2937',
+                                  color: "#1f2937",
                                   py: 1,
                                 }}
                               >
-                                {appointment.office || 'N/A'}
+                                {appointment.office || "N/A"}
                               </TableCell>
                               <TableCell
                                 sx={{
-                                  fontSize: '0.75rem',
+                                  fontSize: "0.75rem",
                                   fontWeight: 500,
-                                  color: '#1f2937',
+                                  color: "#1f2937",
                                   py: 1,
                                 }}
                               >
-                                {appointment.patientId || 'N/A'}
+                                {appointment.patientId || "N/A"}
                               </TableCell>
                               <TableCell
                                 sx={{
-                                  fontSize: '0.75rem',
-                                  color: '#4b5563',
+                                  fontSize: "0.75rem",
+                                  color: "#4b5563",
                                   py: 1,
                                 }}
                               >
@@ -433,33 +422,33 @@ const IVUsers = () => {
                                       ? new Date(
                                           appointment.appointmentDate
                                         ).toLocaleDateString()
-                                      : 'N/A'}
+                                      : "N/A"}
                                   </div>
                                   <div className="text-xs text-slate-500">
-                                    {appointment.appointmentTime || 'No time'}
+                                    {appointment.appointmentTime || "No time"}
                                   </div>
                                 </div>
                               </TableCell>
                               <TableCell sx={{ py: 1 }}>
                                 <span
                                   style={{
-                                    padding: '4px 8px',
-                                    borderRadius: '9999px',
-                                    fontSize: '0.75rem',
+                                    padding: "4px 8px",
+                                    borderRadius: "9999px",
+                                    fontSize: "0.75rem",
                                     fontWeight: 500,
                                     backgroundColor:
                                       appointment.completionStatus ===
-                                      'Completed'
-                                        ? '#dcfce7'
-                                        : '#fed7aa',
+                                      "Completed"
+                                        ? "#dcfce7"
+                                        : "#fed7aa",
                                     color:
                                       appointment.completionStatus ===
-                                      'Completed'
-                                        ? '#166534'
-                                        : '#c2410c',
+                                      "Completed"
+                                        ? "#166534"
+                                        : "#c2410c",
                                   }}
                                 >
-                                  {appointment.completionStatus || 'Pending'}
+                                  {appointment.completionStatus || "Pending"}
                                 </span>
                               </TableCell>
                             </TableRow>
@@ -487,11 +476,11 @@ const IVUsers = () => {
                         📝 Appointment Details
                       </h2>
                       <p className="text-slate-600 mt-1">
-                        Patient ID: {selectedAppointment.patientId} •{' '}
+                        Patient ID: {selectedAppointment.patientId} •{" "}
                         {new Date(
                           selectedAppointment.appointmentDate
-                        ).toLocaleDateString()}{' '}
-                        • {selectedAppointment.appointmentTime || 'No time'}
+                        ).toLocaleDateString()}{" "}
+                        • {selectedAppointment.appointmentTime || "No time"}
                       </p>
                     </div>
                     <button
@@ -516,10 +505,10 @@ const IVUsers = () => {
                           <FormControl fullWidth size="small">
                             <InputLabel>Source *</InputLabel>
                             <Select
-                              value={selectedAppointment.source || ''}
+                              value={selectedAppointment.source || ""}
                               label="Source *"
                               onChange={(e) =>
-                                handleInputChange('source', e.target.value)
+                                handleInputChange("source", e.target.value)
                               }
                             >
                               {sourceOptions.map((source) => (
@@ -534,10 +523,10 @@ const IVUsers = () => {
                           <FormControl fullWidth size="small">
                             <InputLabel>Plan Type *</InputLabel>
                             <Select
-                              value={selectedAppointment.planType || ''}
+                              value={selectedAppointment.planType || ""}
                               label="Plan Type *"
                               onChange={(e) =>
-                                handleInputChange('planType', e.target.value)
+                                handleInputChange("planType", e.target.value)
                               }
                             >
                               {planTypeOptions.map((plan) => (
@@ -552,10 +541,10 @@ const IVUsers = () => {
                           <FormControl fullWidth size="small">
                             <InputLabel>IV Remarks *</InputLabel>
                             <Select
-                              value={selectedAppointment.ivRemarks || ''}
+                              value={selectedAppointment.ivRemarks || ""}
                               label="IV Remarks *"
                               onChange={(e) =>
-                                handleInputChange('ivRemarks', e.target.value)
+                                handleInputChange("ivRemarks", e.target.value)
                               }
                             >
                               {ivRemarksOptions.map((remark) => (
@@ -580,7 +569,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Patient Name"
-                            value={selectedAppointment.patientName || ''}
+                            value={selectedAppointment.patientName || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -590,7 +579,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Patient DOB"
-                            value={selectedAppointment.patientDOB || ''}
+                            value={selectedAppointment.patientDOB || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -600,7 +589,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Office"
-                            value={selectedAppointment.office || ''}
+                            value={selectedAppointment.office || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -610,7 +599,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Appointment Time"
-                            value={selectedAppointment.appointmentTime || ''}
+                            value={selectedAppointment.appointmentTime || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -629,7 +618,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Insurance Name"
-                            value={selectedAppointment.insuranceName || ''}
+                            value={selectedAppointment.insuranceName || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -639,7 +628,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Member ID"
-                            value={selectedAppointment.memberId || ''}
+                            value={selectedAppointment.memberId || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -649,7 +638,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Policy Holder Name"
-                            value={selectedAppointment.policyHolderName || ''}
+                            value={selectedAppointment.policyHolderName || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -659,7 +648,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="MID/SSN"
-                            value={selectedAppointment.MIDSSN || ''}
+                            value={selectedAppointment.MIDSSN || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -669,7 +658,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Appointment Type"
-                            value={selectedAppointment.appointmentType || ''}
+                            value={selectedAppointment.appointmentType || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -679,7 +668,7 @@ const IVUsers = () => {
                             fullWidth
                             size="small"
                             label="Insurance Phone"
-                            value={selectedAppointment.insurancePhone || ''}
+                            value={selectedAppointment.insurancePhone || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />
@@ -747,7 +736,7 @@ const IVUsers = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
       >
