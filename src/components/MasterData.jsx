@@ -77,25 +77,32 @@ const MasterData = ({
     }
   };
 
-  // Format date and time for IV related columns (keep original timezone)
+  // Format date and time for IV related columns (no timezone conversion - display as-is from database)
   const formatDateTime = (dateString) => {
     if (!dateString) return "-";
     try {
-      // Keep original timezone for all dates - no timezone conversion
-      const date = new Date(dateString);
-      const dateFormatted = date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      const timeFormatted = date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-      return `${dateFormatted} ${timeFormatted}`;
+      // Parse the date string without timezone conversion
+      // Input format from DB: "2025-12-09T22:46:00.000Z" or "2025-12-09 22:46"
+      const dateStr = dateString
+        .replace("T", " ")
+        .replace("Z", "")
+        .split(".")[0];
+      const [datePart, timePart] = dateStr.split(" ");
+
+      if (!datePart || !timePart) return dateString;
+
+      const [year, month, day] = datePart.split("-");
+      const [hours, minutes] = timePart.split(":");
+
+      // Convert to 12-hour format
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? "PM" : "AM";
+      const displayHour = hour % 12 || 12;
+
+      // Format: MM/DD/YYYY HH:MM AM/PM
+      return `${month}/${day}/${year} ${displayHour}:${minutes} ${ampm}`;
     } catch (error) {
-      return "-";
+      return dateString || "-";
     }
   };
 
