@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react';
-import Table from './Table';
+import { useState, useEffect } from "react";
+import Table from "./Table";
 
 const Status = ({ data, dateRange, patientId }) => {
-  const [selectedOption, setSelectedOption] = useState('yes');
+  const [selectedOption, setSelectedOption] = useState("yes");
   const [filteredData, setFilteredData] = useState([]);
 
   const dataHeaderMapping = {
-    'Patient ID': 'patientId',
-    'Appointment Date': 'appointmentDate',
-    'Completion Status': 'completionStatus',
-    'Plan Type': 'planType',
-    'IV Type': 'ivType',
-    Remarks: 'ivRemarks',
-    'Insurance Name': 'insuranceName',
+    "Patient Name": "patientName",
+    "Patient ID": "patientId",
+    "Appointment Date": "appointmentDate",
+    "Completion Status": "completionStatus",
+    "Plan Type": "planType",
+    "IV Type": "ivType",
+    Remarks: "ivRemarks",
+    "Insurance Name": "insuranceName",
   };
 
   const hasValidFilters = () => {
     const hasDateRange = dateRange?.startDate && dateRange?.endDate;
-    const hasPatientId = patientId && patientId.trim() !== '';
+    const hasPatientId = patientId && patientId.trim() !== "";
     return hasDateRange || hasPatientId;
   };
 
@@ -28,13 +29,13 @@ const Status = ({ data, dateRange, patientId }) => {
 
     try {
       const searchValue = String(patientId).toLowerCase().trim();
-      if (searchValue === '') {
+      if (searchValue === "") {
         return true; // Return true when no patient ID filter
       }
 
       return String(item.patientId).toLowerCase().includes(searchValue);
     } catch (error) {
-      console.error('Error matching patient ID:', error);
+      console.error("Error matching patient ID:", error);
       return false;
     }
   };
@@ -54,7 +55,7 @@ const Status = ({ data, dateRange, patientId }) => {
 
     let filtered = data.filter((item) => {
       // Patient ID filter
-      if (patientId && patientId.trim() !== '') {
+      if (patientId && patientId.trim() !== "") {
         if (!matchesPatientId(item)) return false;
       }
 
@@ -75,17 +76,17 @@ const Status = ({ data, dateRange, patientId }) => {
     });
 
     // Status filter
-    if (selectedOption === 'no') {
+    if (selectedOption === "no") {
       filtered = filtered.filter(
         (item) =>
           !item.completionStatus ||
-          item.completionStatus.toLowerCase() !== 'completed'
+          item.completionStatus.toLowerCase() !== "completed"
       );
-    } else if (selectedOption === 'yesno') {
+    } else if (selectedOption === "yesno") {
       filtered = filtered.filter(
         (item) =>
           item.completionStatus &&
-          item.completionStatus.toLowerCase() === 'completed'
+          item.completionStatus.toLowerCase() === "completed"
       );
     }
 
@@ -100,16 +101,16 @@ const Status = ({ data, dateRange, patientId }) => {
     return dataArray.map((item) => {
       const transformed = {};
       Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
-        if (dataKey === 'appointmentDate' && item[dataKey]) {
+        if (dataKey === "appointmentDate" && item[dataKey]) {
           // Display date exactly as stored in database (YYYY-MM-DD format)
           // Extract date string directly without timezone conversion
-          const dateString = item[dataKey].split('T')[0]; // Get YYYY-MM-DD part only
+          const dateString = item[dataKey].split("T")[0]; // Get YYYY-MM-DD part only
 
           // Format to MM/DD/YYYY for display
-          const [year, month, day] = dateString.split('-');
+          const [year, month, day] = dateString.split("-");
           transformed[displayName] = `${month}/${day}/${year}`;
         } else {
-          transformed[displayName] = item[dataKey] || '';
+          transformed[displayName] = item[dataKey] || "";
         }
       });
       return transformed;
@@ -119,7 +120,7 @@ const Status = ({ data, dateRange, patientId }) => {
   const getBaseCounts = () => {
     const validData = data.filter((item) => {
       // Patient ID filter
-      if (patientId && patientId.trim() !== '') {
+      if (patientId && patientId.trim() !== "") {
         if (!matchesPatientId(item)) return false;
       }
 
@@ -143,12 +144,12 @@ const Status = ({ data, dateRange, patientId }) => {
     const completed = validData.filter(
       (item) =>
         item.completionStatus &&
-        item.completionStatus.toLowerCase() === 'completed'
+        item.completionStatus.toLowerCase() === "completed"
     ).length;
     const inProcess = validData.filter(
       (item) =>
         !item.completionStatus ||
-        item.completionStatus.toLowerCase() !== 'completed'
+        item.completionStatus.toLowerCase() !== "completed"
     ).length;
 
     return { all, completed, inProcess };
@@ -163,20 +164,20 @@ const Status = ({ data, dateRange, patientId }) => {
         <div className="grid grid-cols-3 gap-2">
           {/* All Appointments Tab */}
           <button
-            onClick={() => setSelectedOption('yes')}
+            onClick={() => setSelectedOption("yes")}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
-              selectedOption === 'yes'
-                ? 'bg-yellow-100 border-yellow-300 text-yellow-800 shadow-md'
-                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+              selectedOption === "yes"
+                ? "bg-yellow-100 border-yellow-300 text-yellow-800 shadow-md"
+                : "bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>All Appointments</span>
               <span
                 className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                  selectedOption === 'yes'
-                    ? 'bg-yellow-200 text-yellow-900'
-                    : 'bg-gray-200 text-gray-700'
+                  selectedOption === "yes"
+                    ? "bg-yellow-200 text-yellow-900"
+                    : "bg-gray-200 text-gray-700"
                 }`}
               >
                 {counts.all}
@@ -186,20 +187,20 @@ const Status = ({ data, dateRange, patientId }) => {
 
           {/* In-Process Tab */}
           <button
-            onClick={() => setSelectedOption('no')}
+            onClick={() => setSelectedOption("no")}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
-              selectedOption === 'no'
-                ? 'bg-orange-100 border-orange-300 text-orange-800 shadow-md'
-                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+              selectedOption === "no"
+                ? "bg-orange-100 border-orange-300 text-orange-800 shadow-md"
+                : "bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>In-Process IVs</span>
               <span
                 className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                  selectedOption === 'no'
-                    ? 'bg-orange-200 text-orange-900'
-                    : 'bg-gray-200 text-gray-700'
+                  selectedOption === "no"
+                    ? "bg-orange-200 text-orange-900"
+                    : "bg-gray-200 text-gray-700"
                 }`}
               >
                 {counts.inProcess}
@@ -209,20 +210,20 @@ const Status = ({ data, dateRange, patientId }) => {
 
           {/* Completed Tab */}
           <button
-            onClick={() => setSelectedOption('yesno')}
+            onClick={() => setSelectedOption("yesno")}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border-2 focus:outline-none ${
-              selectedOption === 'yesno'
-                ? 'bg-green-100 border-green-300 text-green-800 shadow-md'
-                : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'
+              selectedOption === "yesno"
+                ? "bg-green-100 border-green-300 text-green-800 shadow-md"
+                : "bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <span>Completed IVs</span>
               <span
                 className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                  selectedOption === 'yesno'
-                    ? 'bg-green-200 text-green-900'
-                    : 'bg-gray-200 text-gray-700'
+                  selectedOption === "yesno"
+                    ? "bg-green-200 text-green-900"
+                    : "bg-gray-200 text-gray-700"
                 }`}
               >
                 {counts.completed}
@@ -234,7 +235,7 @@ const Status = ({ data, dateRange, patientId }) => {
 
       {/* Table Content with calculated height */}
       <div
-        style={{ height: 'calc(100vh - 14rem)' }}
+        style={{ height: "calc(100vh - 14rem)" }}
         className="overflow-hidden"
       >
         {hasValidFilters() ? (

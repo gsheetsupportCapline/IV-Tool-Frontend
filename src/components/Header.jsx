@@ -103,9 +103,13 @@ const Header = () => {
   // Memoize navigation array - only recreate when userRole changes
   const navigation = useMemo(
     () => [
-      { link: "/schedule-patient", text: "Scheduled Patients", show: true },
-      { link: "/awaitingIV", text: "IVs - Office Review", show: true },
-      { link: "/request-rush", text: "Request a Rush", show: true },
+      { link: "/schedule-patient", text: "Check IV Status", show: true },
+      {
+        link: "/awaitingIV",
+        text: "Information Needed from the Office",
+        show: true,
+      },
+      { link: "/request-rush", text: "Request a Rush IV", show: true },
       {
         link: "/admin",
         text: "Assign IVs",
