@@ -1,11 +1,12 @@
 // src/components/OfficeDropdown.jsx
-import { useState, useEffect } from 'react';
-import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+import { useState, useEffect } from "react";
+import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
 const OfficeDropdown = ({
   onSelect,
   allowedOffices,
   showAllOffices = false,
+  value = "",
 }) => {
   const [officeNames, setOfficeNames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,7 @@ const OfficeDropdown = ({
         const offices = await fetchOfficeOptions();
         setOfficeNames(offices);
       } catch (error) {
-        console.error('Error loading offices:', error);
+        console.error("Error loading offices:", error);
         setOfficeNames([]);
       } finally {
         setLoading(false);
@@ -37,6 +38,7 @@ const OfficeDropdown = ({
     <select
       className="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
       onChange={(e) => onSelect(e.target.value)}
+      value={value}
       disabled={loading}
     >
       {loading ? (

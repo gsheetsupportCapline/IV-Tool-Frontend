@@ -14,8 +14,23 @@
 // import AwaitingIV from "./AwaitingIV";
 // import AdminDashboard from "./AdminDashboard";
 // import SignIn from "./SignIn";
-import Routes from '../routes';
-const Body = ({ masterDataState, setMasterDataState }) => {
+import Routes from "../routes";
+const Body = ({
+  masterDataState,
+  setMasterDataState,
+  homeState,
+  setHomeState,
+  awaitingIVState,
+  setAwaitingIVState,
+  rushState,
+  setRushState,
+  adminState,
+  setAdminState,
+  ivUsersState,
+  setIvUsersState,
+  adminDashboardState,
+  setAdminDashboardState,
+}) => {
   // const appRouter = createBrowserRouter([
   //   {
   //     path: "/",
@@ -78,6 +93,18 @@ const Body = ({ masterDataState, setMasterDataState }) => {
       <Routes
         masterDataState={masterDataState}
         setMasterDataState={setMasterDataState}
+        homeState={homeState}
+        setHomeState={setHomeState}
+        awaitingIVState={awaitingIVState}
+        setAwaitingIVState={setAwaitingIVState}
+        rushState={rushState}
+        setRushState={setRushState}
+        adminState={adminState}
+        setAdminState={setAdminState}
+        ivUsersState={ivUsersState}
+        setIvUsersState={setIvUsersState}
+        adminDashboardState={adminDashboardState}
+        setAdminDashboardState={setAdminDashboardState}
       />
     </div>
   );

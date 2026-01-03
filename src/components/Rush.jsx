@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Header from './Header';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import axios from 'axios'; // Import Axios
-import moment from 'moment';
+import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Header from "./Header";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import axios from "axios"; // Import Axios
+import moment from "moment";
 // import { officeNames } from "./DropdownValues";
-import { Select, MenuItem, FormControl, InputLabel, Grid } from '@mui/material';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import BASE_URL from '../config/apiConfig';
+import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import BASE_URL from "../config/apiConfig";
 // import {insuranceNames} from "./DropdownValues";
-import { Autocomplete, InputAdornment, IconButton } from '@mui/material';
-import { Upload } from 'lucide-react';
+import { Autocomplete, InputAdornment, IconButton } from "@mui/material";
+import { Upload } from "lucide-react";
 const fetchDropdownOptions = async (category) => {
   try {
     const encodedCategory = encodeURIComponent(category);
@@ -31,33 +31,48 @@ const fetchDropdownOptions = async (category) => {
   }
 };
 
-const Rush = () => {
-  const [selectedOffice, setSelectedOffice] = useState('');
+const Rush = ({ pageState, setPageState }) => {
+  // Use lifted state for office and date if available
+  const selectedOffice = pageState?.selectedOffice ?? "";
+  const dateRange = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const loading = pageState?.loading ?? false;
+
+  const setSelectedOffice = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, selectedOffice: val }));
+    }
+  };
+
+  const setLoading = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, loading: val }));
+    }
+  };
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   // Prevent body scroll when component mounts
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, []);
   const [values, setValues] = useState({
     appointmentDate: null,
     appointmentTime: null,
-    treatingProvider: '',
-    patientId: '',
+    treatingProvider: "",
+    patientId: "",
     patientDOB: null,
-    patientName: '',
-    policyHolderName: '',
+    patientName: "",
+    policyHolderName: "",
     policyHolderDOB: null,
-    MIDSSN: '',
+    MIDSSN: "",
     insuranceName: null,
-    insurancePhone: '',
-    imageUrl: '',
+    insurancePhone: "",
+    imageUrl: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [insuranceOptions, setInsuranceOptions] = useState([]);
@@ -67,15 +82,15 @@ const Rush = () => {
     const loadOptions = async () => {
       let officeOptions = [];
       let insuranceOptions = [];
-      if (localStorage.getItem('role') === 'officeuser') {
+      if (localStorage.getItem("role") === "officeuser") {
         // For office users, get only assigned offices (comma separated)
-        const assignedOffice = localStorage.getItem('assignedOffice');
+        const assignedOffice = localStorage.getItem("assignedOffice");
         const assignedOfficesList = assignedOffice
-          ? assignedOffice.split(',').map((o) => o.trim())
+          ? assignedOffice.split(",").map((o) => o.trim())
           : [];
 
         // Fetch all offices from API
-        const allOffices = await fetchDropdownOptions('Office');
+        const allOffices = await fetchDropdownOptions("Office");
 
         // Filter to show only assigned offices
         officeOptions = allOffices.filter((office) =>
@@ -87,11 +102,11 @@ const Rush = () => {
           setSelectedOffice(officeOptions[0].name);
         }
 
-        insuranceOptions = await fetchDropdownOptions('Insurance Name');
+        insuranceOptions = await fetchDropdownOptions("Insurance Name");
       } else {
         // For other roles, fetch all available options
-        officeOptions = await fetchDropdownOptions('Office');
-        insuranceOptions = await fetchDropdownOptions('Insurance Name');
+        officeOptions = await fetchDropdownOptions("Office");
+        insuranceOptions = await fetchDropdownOptions("Insurance Name");
       }
 
       setOfficeOptions(officeOptions);
@@ -114,7 +129,7 @@ const Rush = () => {
   };
 
   const handleAppointmentDateChange = (date) => {
-    console.log('Selected date:', date);
+    console.log("Selected date:", date);
     setValues({
       ...values,
       appointmentDate: date,
@@ -124,17 +139,17 @@ const Rush = () => {
   const fetchProviderIfApplicable = async (office, appointmentDate) => {
     if (office && appointmentDate) {
       try {
-        const formattedDate = moment(appointmentDate).format('MM/DD/YYYY');
+        const formattedDate = moment(appointmentDate).format("MM/DD/YYYY");
         // Update Google Sheet (similar to updategsheet API call)
-        const sheetId = '1MO8i6_2paAEHku-YdKlwOikXItTPo88P00Hg3iyXR5Y'; // replace with actual ID
-        const updateRange = 'Dashboard!A2:B2'; // range to update office and date
+        const sheetId = "1MO8i6_2paAEHku-YdKlwOikXItTPo88P00Hg3iyXR5Y"; // replace with actual ID
+        const updateRange = "Dashboard!A2:B2"; // range to update office and date
         const updateUrl = `${BASE_URL}/api/spreadsheet/gsheet/updategsheet`;
 
         const updateOptions = {
-          method: 'POST',
+          method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             sheetId: sheetId,
@@ -148,14 +163,14 @@ const Rush = () => {
 
         if (updateData.status === 200) {
           // If the update is successful, read the updated data (similar to readgsheet API call)
-          const readRange = 'Dashboard!C5:D';
+          const readRange = "Dashboard!C5:D";
           const readUrl = `${BASE_URL}/api/spreadsheet/gsheet/readgsheet/${sheetId}/${readRange}`;
 
           const readOptions = {
-            method: 'POST',
+            method: "POST",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
             },
             // body: JSON.stringify({
             //   sheetId: sheetId,
@@ -189,36 +204,36 @@ const Rush = () => {
           } else {
             setValues((prevValues) => ({
               ...prevValues,
-              treatingProvider: '',
+              treatingProvider: "",
             }));
             setSnackbarOpen(true);
-            setSnackbarSeverity('error');
+            setSnackbarSeverity("error");
             setSnackbarMessage(
-              'No doctor found for selected office and appointment date.'
+              "No doctor found for selected office and appointment date."
             );
           }
         } else {
           setValues((prevValues) => ({
             ...prevValues,
-            treatingProvider: '',
+            treatingProvider: "",
           }));
           setSnackbarOpen(true);
-          setSnackbarSeverity('error');
+          setSnackbarSeverity("error");
           setSnackbarMessage(
-            'Failed to update Google Sheet. Please try again.'
+            "Failed to update Google Sheet. Please try again."
           );
         }
       } catch (error) {
-        console.error('Error fetching provider:', error);
+        console.error("Error fetching provider:", error);
         setValues((prevValues) => ({
           ...prevValues,
-          treatingProvider: '',
+          treatingProvider: "",
         }));
         setSnackbarOpen(true);
-        setSnackbarSeverity('error');
+        setSnackbarSeverity("error");
         // setSnackbarMessage("An error occurred while fetching provider. Please try again.");
         setSnackbarMessage(
-          'No provider found for selected office and appointment date.'
+          "No provider found for selected office and appointment date."
         );
       }
     }
@@ -248,12 +263,12 @@ const Rush = () => {
   };
 
   function formatDate(date) {
-    return moment(date).format('YYYY-MM-DD');
+    return moment(date).format("YYYY-MM-DD");
   }
 
   function formatTime(time) {
-    console.log('time', time);
-    return moment(time).format('HH:mm:ss');
+    console.log("time", time);
+    return moment(time).format("HH:mm:ss");
   }
 
   const handleSubmit = async (event) => {
@@ -264,7 +279,7 @@ const Rush = () => {
     const currentTime = new Date().toISOString();
 
     // Initialize an error message if any required field is missing
-    let errorMessage = '';
+    let errorMessage = "";
 
     // Check for missing fields
     if (
@@ -276,28 +291,28 @@ const Rush = () => {
       !values.MIDSSN ||
       !values.insuranceName
     ) {
-      errorMessage = 'Please fill all the required fields.';
+      errorMessage = "Please fill all the required fields.";
     }
 
     // If there's an error message, show the snackbar
     if (errorMessage) {
       setSnackbarOpen(true);
-      setSnackbarSeverity('error');
+      setSnackbarSeverity("error");
       setSnackbarMessage(errorMessage);
       return;
     }
 
     // Determine IV Type based on CST date comparison
     // Get current date in CST timezone
-    const cstDate = new Date().toLocaleString('en-US', {
-      timeZone: 'America/Chicago',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    const cstDate = new Date().toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
 
     // Convert CST date string to Date object for comparison (MM/DD/YYYY format)
-    const [cstMonth, cstDay, cstYear] = cstDate.split('/');
+    const [cstMonth, cstDay, cstYear] = cstDate.split("/");
     const currentCSTDate = new Date(`${cstYear}-${cstMonth}-${cstDay}`);
 
     // Get appointment date (without time for comparison)
@@ -307,20 +322,20 @@ const Rush = () => {
     // Determine IV Type
     // If current CST date < appointment date → Normal
     // If current CST date >= appointment date → Rush
-    let ivType = 'Normal';
+    let ivType = "Normal";
     if (currentCSTDate >= appointmentDateOnly) {
-      ivType = 'Rush';
+      ivType = "Rush";
     }
 
     console.log(
-      'Current CST Date:',
-      currentCSTDate.toISOString().split('T')[0]
+      "Current CST Date:",
+      currentCSTDate.toISOString().split("T")[0]
     );
     console.log(
-      'Appointment Date:',
-      appointmentDateOnly.toISOString().split('T')[0]
+      "Appointment Date:",
+      appointmentDateOnly.toISOString().split("T")[0]
     );
-    console.log('Determined IV Type:', ivType);
+    console.log("Determined IV Type:", ivType);
 
     // Constructing the payload
     const payload = {
@@ -345,48 +360,48 @@ const Rush = () => {
       ivRequestedDate: currentTime,
       ivType: ivType, // Dynamically determined based on date comparison
     };
-    console.log('Submitting payload:', payload);
+    console.log("Submitting payload:", payload);
     try {
       const response = await axios.post(
         `${BASE_URL}/api/appointments/create-new-appointment/${selectedOffice}`,
         payload
       );
       setSnackbarOpen(true);
-      setSnackbarSeverity('success');
+      setSnackbarSeverity("success");
       setSnackbarMessage(`${ivType} IV created successfully!`);
       // Clear the form after successful submission
       setValues({
         appointmentDate: null,
         appointmentTime: null,
-        treatingProvider: '',
-        patientId: '',
+        treatingProvider: "",
+        patientId: "",
         patientDOB: null,
-        patientName: '',
-        MIDSSN: '',
-        insuranceName: '',
-        insurancePhone: '',
-        policyHolderName: '',
+        patientName: "",
+        MIDSSN: "",
+        insuranceName: "",
+        insurancePhone: "",
+        policyHolderName: "",
         policyHolderDOB: null,
       });
-      console.log('response', response.data);
+      console.log("response", response.data);
     } catch (error) {
       console.error(
-        'Error creating new appointment:',
+        "Error creating new appointment:",
         error.response ? error.response.data : error.message
       );
       setSnackbarOpen(true);
-      setSnackbarSeverity('error');
-      setSnackbarMessage('Failed to create IV');
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Failed to create IV");
     }
   };
   const handleUpload = async (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
     setSnackbarOpen(true);
-    setSnackbarSeverity('info');
+    setSnackbarSeverity("info");
     setSnackbarMessage(`File selected: ${file.name}`);
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
     try {
       const response = await axios.post(
         `${BASE_URL}/api/image-upload/upload`,
@@ -394,24 +409,24 @@ const Rush = () => {
       );
       console.log(response);
       const imageUrl = response.data.fileInfo.url;
-      console.log('image', imageUrl);
+      console.log("image", imageUrl);
       setValues((prevValues) => ({
         ...prevValues,
         imageUrl: imageUrl,
       }));
-      console.log('Image uploaded successfully:', imageUrl);
+      console.log("Image uploaded successfully:", imageUrl);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
     }
   };
   return (
-    <div style={{ height: '100vh', overflow: 'hidden' }}>
+    <div style={{ height: "100vh", overflow: "hidden" }}>
       <Header />
       <div
         className="bg-gray-50"
         style={{
-          height: 'calc(100vh - 4rem)',
-          overflow: 'auto',
+          height: "calc(100vh - 4rem)",
+          overflow: "auto",
         }}
       >
         <div className="p-3">
@@ -460,12 +475,12 @@ const Rush = () => {
                             displayEmpty
                             className="bg-white"
                             sx={{
-                              borderRadius: '8px',
-                              '& .MuiOutlinedInput-root': {
-                                '& fieldset': { borderColor: '#d1d5db' },
-                                '&:hover fieldset': { borderColor: '#6366f1' },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: '#6366f1',
+                              borderRadius: "8px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": { borderColor: "#d1d5db" },
+                                "&:hover fieldset": { borderColor: "#6366f1" },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#6366f1",
                                 },
                               },
                             }}
@@ -484,7 +499,7 @@ const Rush = () => {
 
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Treating Provider{' '}
+                          Treating Provider{" "}
                           <span className="text-red-500">*</span>
                         </label>
                         <TextField
@@ -492,16 +507,16 @@ const Rush = () => {
                           size="small"
                           value={values.treatingProvider}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'treatingProvider')
+                            handleChange(e.target.value, "treatingProvider")
                           }
                           placeholder="Enter treating provider name"
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -517,16 +532,16 @@ const Rush = () => {
                           size="small"
                           value={values.patientId}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'patientId')
+                            handleChange(e.target.value, "patientId")
                           }
                           placeholder="Enter patient ID"
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -535,7 +550,7 @@ const Rush = () => {
 
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Patient Date of Birth{' '}
+                          Patient Date of Birth{" "}
                           <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
@@ -544,17 +559,17 @@ const Rush = () => {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              size: 'small',
-                              placeholder: 'Select date',
+                              size: "small",
+                              placeholder: "Select date",
                               sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  '& fieldset': { borderColor: '#d1d5db' },
-                                  '&:hover fieldset': {
-                                    borderColor: '#6366f1',
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "8px",
+                                  "& fieldset": { borderColor: "#d1d5db" },
+                                  "&:hover fieldset": {
+                                    borderColor: "#6366f1",
                                   },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#6366f1',
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "#6366f1",
                                   },
                                 },
                               },
@@ -569,10 +584,10 @@ const Rush = () => {
                         </label>
                         <Autocomplete
                           options={insuranceOptions}
-                          getOptionLabel={(option) => option.name || ''}
+                          getOptionLabel={(option) => option.name || ""}
                           value={values.insuranceName || null}
                           onChange={(event, newValue) =>
-                            handleChange(newValue, 'insuranceName')
+                            handleChange(newValue, "insuranceName")
                           }
                           isOptionEqualToValue={(option, value) =>
                             option.name === value?.name
@@ -584,14 +599,14 @@ const Rush = () => {
                               size="small"
                               placeholder="Search insurance name"
                               sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  '& fieldset': { borderColor: '#d1d5db' },
-                                  '&:hover fieldset': {
-                                    borderColor: '#6366f1',
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "8px",
+                                  "& fieldset": { borderColor: "#d1d5db" },
+                                  "&:hover fieldset": {
+                                    borderColor: "#6366f1",
                                   },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#6366f1',
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "#6366f1",
                                   },
                                 },
                               }}
@@ -609,16 +624,16 @@ const Rush = () => {
                           size="small"
                           value={values.policyHolderName}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'policyHolderName')
+                            handleChange(e.target.value, "policyHolderName")
                           }
                           placeholder="Enter policy holder name"
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -630,7 +645,7 @@ const Rush = () => {
                     <div className="space-y-3">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Appointment Date{' '}
+                          Appointment Date{" "}
                           <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
@@ -639,17 +654,17 @@ const Rush = () => {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              size: 'small',
-                              placeholder: 'Select appointment date',
+                              size: "small",
+                              placeholder: "Select appointment date",
                               sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  '& fieldset': { borderColor: '#d1d5db' },
-                                  '&:hover fieldset': {
-                                    borderColor: '#6366f1',
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "8px",
+                                  "& fieldset": { borderColor: "#d1d5db" },
+                                  "&:hover fieldset": {
+                                    borderColor: "#6366f1",
                                   },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#6366f1',
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "#6366f1",
                                   },
                                 },
                               },
@@ -668,17 +683,17 @@ const Rush = () => {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              size: 'small',
-                              placeholder: 'Select appointment time',
+                              size: "small",
+                              placeholder: "Select appointment time",
                               sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  '& fieldset': { borderColor: '#d1d5db' },
-                                  '&:hover fieldset': {
-                                    borderColor: '#6366f1',
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "8px",
+                                  "& fieldset": { borderColor: "#d1d5db" },
+                                  "&:hover fieldset": {
+                                    borderColor: "#6366f1",
                                   },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#6366f1',
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "#6366f1",
                                   },
                                 },
                               },
@@ -696,16 +711,16 @@ const Rush = () => {
                           size="small"
                           value={values.patientName}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'patientName')
+                            handleChange(e.target.value, "patientName")
                           }
                           placeholder="Enter patient name"
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -719,7 +734,7 @@ const Rush = () => {
                         <input
                           type="file"
                           accept=".pdf,.jpg,.png"
-                          style={{ display: 'none' }}
+                          style={{ display: "none" }}
                           id="upload-file-input"
                           onChange={handleUpload}
                           encType="multipart/form-data"
@@ -729,7 +744,7 @@ const Rush = () => {
                           size="small"
                           value={values.MIDSSN}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'MIDSSN')
+                            handleChange(e.target.value, "MIDSSN")
                           }
                           placeholder="Enter MID/SSN"
                           InputProps={{
@@ -740,7 +755,7 @@ const Rush = () => {
                                   size="small"
                                   onClick={() =>
                                     document
-                                      .getElementById('upload-file-input')
+                                      .getElementById("upload-file-input")
                                       .click()
                                   }
                                   className="text-gray-500 hover:text-indigo-600 transition-colors"
@@ -751,12 +766,12 @@ const Rush = () => {
                             ),
                           }}
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -772,16 +787,16 @@ const Rush = () => {
                           size="small"
                           value={values.insurancePhone}
                           onChange={(e) =>
-                            handleChange(e.target.value, 'insurancePhone')
+                            handleChange(e.target.value, "insurancePhone")
                           }
                           placeholder="Enter insurance contact number"
                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              '& fieldset': { borderColor: '#d1d5db' },
-                              '&:hover fieldset': { borderColor: '#6366f1' },
-                              '&.Mui-focused fieldset': {
-                                borderColor: '#6366f1',
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              "& fieldset": { borderColor: "#d1d5db" },
+                              "&:hover fieldset": { borderColor: "#6366f1" },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#6366f1",
                               },
                             },
                           }}
@@ -798,17 +813,17 @@ const Rush = () => {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              size: 'small',
-                              placeholder: 'Select date',
+                              size: "small",
+                              placeholder: "Select date",
                               sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  '& fieldset': { borderColor: '#d1d5db' },
-                                  '&:hover fieldset': {
-                                    borderColor: '#6366f1',
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "8px",
+                                  "& fieldset": { borderColor: "#d1d5db" },
+                                  "&:hover fieldset": {
+                                    borderColor: "#6366f1",
                                   },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#6366f1',
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "#6366f1",
                                   },
                                 },
                               },
@@ -838,7 +853,7 @@ const Rush = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
       >
@@ -846,7 +861,7 @@ const Rush = () => {
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: '100%', marginTop: '50px' }}
+          sx={{ width: "100%", marginTop: "50px" }}
         >
           {snackbarMessage}
         </Alert>

@@ -1,72 +1,96 @@
-import { useState, useEffect } from 'react';
-import { Redirect } from 'react-router-dom';
-import { DataGrid } from '@mui/x-data-grid';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import Header from './Header';
-import Select from '@mui/material/Select';
-import Datepicker from 'react-tailwindcss-datepicker';
-import ShimmerTableComponent from './ShimmerTableComponent';
-import BASE_URL from '../config/apiConfig';
-import ImageViewer from 'react-simple-image-viewer';
-import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+import { useState, useEffect } from "react";
+import { Redirect } from "react-router-dom";
+import { DataGrid } from "@mui/x-data-grid";
+import Button from "@mui/material/Button";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import axios from "axios";
+import Swal from "sweetalert2";
+import Header from "./Header";
+import Select from "@mui/material/Select";
+import Datepicker from "react-tailwindcss-datepicker";
+import ShimmerTableComponent from "./ShimmerTableComponent";
+import BASE_URL from "../config/apiConfig";
+import ImageViewer from "react-simple-image-viewer";
+import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
 // Custom SweetAlert2 configuration for compact size
 const Toast = Swal.mixin({
-  width: '400px',
-  padding: '1.5em',
+  width: "400px",
+  padding: "1.5em",
   customClass: {
-    popup: 'swal-compact',
-    title: 'swal-title-compact',
-    htmlContainer: 'swal-text-compact',
-    confirmButton: 'swal-button-compact',
-    cancelButton: 'swal-button-compact',
+    popup: "swal-compact",
+    title: "swal-title-compact",
+    htmlContainer: "swal-text-compact",
+    confirmButton: "swal-button-compact",
+    cancelButton: "swal-button-compact",
   },
   buttonsStyling: false,
 });
 
-const Admin = () => {
+const Admin = ({ pageState, setPageState }) => {
   // Check user role for access control
-  const userRole = localStorage.getItem('role');
+  const userRole = localStorage.getItem("role");
 
   // If user is not admin, redirect them
-  if (userRole !== 'admin') {
-    console.log('Unauthorized access attempt to Admin page by role:', userRole);
+  if (userRole !== "admin") {
+    console.log("Unauthorized access attempt to Admin page by role:", userRole);
     return (
-      <Redirect to={userRole === 'user' ? '/dashboard' : '/schedule-patient'} />
+      <Redirect to={userRole === "user" ? "/dashboard" : "/schedule-patient"} />
     );
   }
 
-  const [loading, setLoading] = useState(false);
+  // Use lifted state if available
+  const selectedOffice = pageState?.selectedOffice ?? "";
+  const valueDate = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const rows = pageState?.data ?? [];
+  const loading = pageState?.loading ?? false;
+
+  const setSelectedOffice = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, selectedOffice: val }));
+    }
+  };
+
+  const setValueDate = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, dateRange: val }));
+    }
+  };
+
+  const setRows = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, data: val }));
+    }
+  };
+
+  const setLoading = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, loading: val }));
+    }
+  };
+
+  // Local states that don't need to persist
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOffice, setSelectedOffice] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [value, setValue] = useState(0);
-  const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [valueDate, setValueDate] = useState({
-    startDate: null,
-    endDate: null,
-  });
   const [currentImage, setCurrentImage] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [images, setImages] = useState([]);
-  const [patientIdFilter, setPatientIdFilter] = useState('');
+  const [patientIdFilter, setPatientIdFilter] = useState("");
   const [officeName, setOfficeName] = useState([]);
 
   // Close IV Modal states
   const [isCloseIVModalOpen, setIsCloseIVModalOpen] = useState(false);
   const [closeIVFormData, setCloseIVFormData] = useState({
-    source: '',
-    planType: '',
-    ivRemarks: '',
-    noteRemarks: '',
+    source: "",
+    planType: "",
+    ivRemarks: "",
+    noteRemarks: "",
   });
   const [sourceOptions, setSourceOptions] = useState([]);
   const [planTypeOptions, setPlanTypeOptions] = useState([]);
@@ -79,13 +103,13 @@ const Admin = () => {
         const offices = await fetchOfficeOptions();
         // Add "AllOffices" option at the beginning for admin
         const officeList = [
-          'AllOffices',
+          "AllOffices",
           ...offices.map((office) => office.name),
         ];
         setOfficeName(officeList);
       } catch (error) {
-        console.error('Error loading offices:', error);
-        setOfficeName(['AllOffices']); // At least show AllOffices option
+        console.error("Error loading offices:", error);
+        setOfficeName(["AllOffices"]); // At least show AllOffices option
       }
     };
 
@@ -98,7 +122,7 @@ const Admin = () => {
         const response = await axios.get(`${BASE_URL}/api/auth/users`);
         setUsers(response.data.data);
       } catch (error) {
-        console.error('Error fetching users', error);
+        console.error("Error fetching users", error);
       }
     };
     fetchUsers();
@@ -120,9 +144,9 @@ const Admin = () => {
     };
 
     const loadOptions = async () => {
-      const source = await fetchDropdownOptions('Source');
-      const planType = await fetchDropdownOptions('Plan Type');
-      const ivRemarks = await fetchDropdownOptions('IV Remarks');
+      const source = await fetchDropdownOptions("Source");
+      const planType = await fetchDropdownOptions("Plan Type");
+      const ivRemarks = await fetchDropdownOptions("IV Remarks");
 
       setSourceOptions(source);
       setPlanTypeOptions(planType);
@@ -135,7 +159,7 @@ const Admin = () => {
   // Custom cell renderer function
   const renderUserName = (params) => {
     const user = users.find((user) => user._id === params.row.assignedUser);
-    return user ? user.name : params.row.assignedUser || 'Unassigned';
+    return user ? user.name : params.row.assignedUser || "Unassigned";
   };
 
   const handleViewImage = (imageUrl) => {
@@ -152,117 +176,117 @@ const Admin = () => {
 
   const columns = [
     {
-      field: 'status',
-      headerName: 'Status',
-      headerClassName: 'header-row',
+      field: "status",
+      headerName: "Status",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'completionStatus',
-      headerName: 'Completion Status',
-      headerClassName: 'header-row',
+      field: "completionStatus",
+      headerName: "Completion Status",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'office',
-      headerName: 'Office',
-      headerClassName: 'header-row',
+      field: "office",
+      headerName: "Office",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'ivType',
-      headerName: 'IV Type',
-      headerClassName: 'header-row',
+      field: "ivType",
+      headerName: "IV Type",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'assignedUser',
-      headerName: 'Assigned To',
+      field: "assignedUser",
+      headerName: "Assigned To",
       width: 150,
       renderCell: renderUserName,
-      headerClassName: 'header-row',
+      headerClassName: "header-row",
     },
     {
-      field: 'ivAssignedDate',
-      headerName: 'Assigned Date',
+      field: "ivAssignedDate",
+      headerName: "Assigned Date",
       width: 150,
-      headerClassName: 'header-row',
+      headerClassName: "header-row",
     },
     {
-      field: 'appointmentType',
-      headerName: 'Appointment Type',
-      headerClassName: 'header-row',
-      width: 150,
-    },
-    {
-      field: 'appointmentDate',
-      headerName: 'Appointment Date',
-      headerClassName: 'header-row',
+      field: "appointmentType",
+      headerName: "Appointment Type",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'appointmentTime',
-      headerName: 'Appointment Time',
-      headerClassName: 'header-row',
+      field: "appointmentDate",
+      headerName: "Appointment Date",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'patientId',
-      headerName: 'Patient Id',
-      headerClassName: 'header-row',
+      field: "appointmentTime",
+      headerName: "Appointment Time",
+      headerClassName: "header-row",
+      width: 150,
+    },
+    {
+      field: "patientId",
+      headerName: "Patient Id",
+      headerClassName: "header-row",
       width: 100,
     },
     {
-      field: 'ivRequestedDate',
-      headerName: 'IV Requested Date',
-      headerClassName: 'header-row',
+      field: "ivRequestedDate",
+      headerName: "IV Requested Date",
+      headerClassName: "header-row",
       width: 100,
     },
     {
-      field: 'insuranceName',
-      headerName: 'Insurance Name',
-      headerClassName: 'header-row',
+      field: "insuranceName",
+      headerName: "Insurance Name",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'insurancePhone',
-      headerName: 'Insurance Phone No',
-      headerClassName: 'header-row',
+      field: "insurancePhone",
+      headerName: "Insurance Phone No",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'policyHolderName',
-      headerName: 'Policy Holder Name',
-      headerClassName: 'header-row',
+      field: "policyHolderName",
+      headerName: "Policy Holder Name",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'policyHolderDOB',
-      headerName: 'Policy Holder DOB',
-      headerClassName: 'header-row',
+      field: "policyHolderDOB",
+      headerName: "Policy Holder DOB",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'memberId',
-      headerName: 'Member Id',
-      headerClassName: 'header-row',
+      field: "memberId",
+      headerName: "Member Id",
+      headerClassName: "header-row",
       width: 100,
     },
     {
-      field: 'MIDSSN',
-      headerName: 'MID/SSN',
-      headerClassName: 'header-row',
+      field: "MIDSSN",
+      headerName: "MID/SSN",
+      headerClassName: "header-row",
       width: 100,
     },
     {
-      field: 'imageUrl',
-      headerName: 'Image',
-      headerClassName: 'header-row',
+      field: "imageUrl",
+      headerName: "Image",
+      headerClassName: "header-row",
       width: 100,
       renderCell: (params) => {
         return (
           <>
-            {params.row.imageUrl && params.row.imageUrl.trim() !== '' ? (
+            {params.row.imageUrl && params.row.imageUrl.trim() !== "" ? (
               <button
                 onClick={() => handleViewImage(params.row.imageUrl)}
                 className="size-10 w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
@@ -275,15 +299,15 @@ const Admin = () => {
       },
     },
     {
-      field: 'employerName',
-      headerName: 'Employer Name',
-      headerClassName: 'header-row',
+      field: "employerName",
+      headerName: "Employer Name",
+      headerClassName: "header-row",
       width: 150,
     },
     {
-      field: 'patientName',
-      headerName: 'Patient Name',
-      headerClassName: 'header-row',
+      field: "patientName",
+      headerName: "Patient Name",
+      headerClassName: "header-row",
       width: 150,
     },
   ];
@@ -300,10 +324,10 @@ const Admin = () => {
   const handleOpenCloseIVModal = () => {
     if (selectedRows.length === 0) {
       Toast.fire({
-        icon: 'warning',
-        title: 'No Selection',
-        text: 'Please select at least one appointment to close.',
-        confirmButtonColor: '#3b82f6',
+        icon: "warning",
+        title: "No Selection",
+        text: "Please select at least one appointment to close.",
+        confirmButtonColor: "#3b82f6",
       });
       return;
     }
@@ -314,10 +338,10 @@ const Admin = () => {
     setIsCloseIVModalOpen(false);
     // Reset form data
     setCloseIVFormData({
-      source: '',
-      planType: '',
-      ivRemarks: '',
-      noteRemarks: '',
+      source: "",
+      planType: "",
+      ivRemarks: "",
+      noteRemarks: "",
     });
   };
 
@@ -336,34 +360,34 @@ const Admin = () => {
       !closeIVFormData.ivRemarks
     ) {
       Toast.fire({
-        icon: 'error',
-        title: 'Missing Information',
-        text: 'Source, Plan Type, and IV Remarks are mandatory fields.',
-        confirmButtonColor: '#3b82f6',
+        icon: "error",
+        title: "Missing Information",
+        text: "Source, Plan Type, and IV Remarks are mandatory fields.",
+        confirmButtonColor: "#3b82f6",
       });
       return;
     }
 
     if (selectedRows.length === 0) {
       Toast.fire({
-        icon: 'warning',
-        title: 'No Selection',
-        text: 'No appointments selected.',
-        confirmButtonColor: '#3b82f6',
+        icon: "warning",
+        title: "No Selection",
+        text: "No appointments selected.",
+        confirmButtonColor: "#3b82f6",
       });
       return;
     }
 
     // Show confirmation
     const result = await Toast.fire({
-      title: 'Confirm Closing',
+      title: "Confirm Closing",
       text: `Are you sure you want to close ${selectedRows.length} appointment(s)?`,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#10b981',
-      cancelButtonColor: '#ef4444',
-      confirmButtonText: 'Yes, close them',
-      cancelButtonText: 'Cancel',
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Yes, close them",
+      cancelButtonText: "Cancel",
     });
 
     if (!result.isConfirmed) return;
@@ -372,8 +396,8 @@ const Admin = () => {
 
     try {
       // Get current user details from localStorage
-      const completedBy = localStorage.getItem('loggedinUserName') || 'Admin';
-      const assignedUserId = localStorage.getItem('loggedinUserId') || '';
+      const completedBy = localStorage.getItem("loggedinUserName") || "Admin";
+      const assignedUserId = localStorage.getItem("loggedinUserId") || "";
 
       // Get current date and time in ISO format
       const currentDate = new Date().toISOString();
@@ -385,14 +409,14 @@ const Admin = () => {
         source: closeIVFormData.source,
         planType: closeIVFormData.planType,
         completedBy: completedBy,
-        noteRemarks: closeIVFormData.noteRemarks || '',
+        noteRemarks: closeIVFormData.noteRemarks || "",
         ivCompletedDate: currentDate,
         assignedUser: assignedUserId,
         ivAssignedByUserName: completedBy,
         ivAssignedDate: currentDate,
       }));
 
-      console.log('Sending bulk update request:', { appointments });
+      console.log("Sending bulk update request:", { appointments });
 
       // Make API call
       const response = await axios.post(
@@ -400,12 +424,12 @@ const Admin = () => {
         { appointments },
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
-      console.log('Bulk update response:', response.data);
+      console.log("Bulk update response:", response.data);
 
       // Handle response
       if (response.data.success) {
@@ -415,21 +439,21 @@ const Admin = () => {
         if (failedUpdates === 0) {
           // All successful
           await Toast.fire({
-            icon: 'success',
-            title: 'Success!',
+            icon: "success",
+            title: "Success!",
             text: `Successfully closed ${successfulUpdates} appointment(s).`,
-            confirmButtonColor: '#10b981',
+            confirmButtonColor: "#10b981",
           });
         } else {
           // Partial success
           const failedList = details
-            .filter((d) => d.status === 'failed')
+            .filter((d) => d.status === "failed")
             .map((d) => `ID: ${d.appointmentId} - ${d.error}`)
-            .join('\n');
+            .join("\n");
 
           await Toast.fire({
-            icon: 'warning',
-            title: 'Partial Success',
+            icon: "warning",
+            title: "Partial Success",
             html: `
               <div style="text-align: left;">
                 <p><strong>✅ Successful:</strong> ${successfulUpdates}</p>
@@ -439,7 +463,7 @@ const Admin = () => {
                 <pre style="text-align: left; font-size: 12px; max-height: 200px; overflow-y: auto;">${failedList}</pre>
               </div>
             `,
-            confirmButtonColor: '#3b82f6',
+            confirmButtonColor: "#3b82f6",
           });
         }
 
@@ -448,25 +472,25 @@ const Admin = () => {
         fetchAndFilterAppointments(value);
       } else {
         await Toast.fire({
-          icon: 'error',
-          title: 'Update Failed',
-          text: response.data.message || 'Failed to update appointments',
-          confirmButtonColor: '#ef4444',
+          icon: "error",
+          title: "Update Failed",
+          text: response.data.message || "Failed to update appointments",
+          confirmButtonColor: "#ef4444",
         });
       }
     } catch (error) {
-      console.error('Error closing IVs:', error);
+      console.error("Error closing IVs:", error);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
-        'An error occurred while closing IVs';
+        "An error occurred while closing IVs";
 
       await Toast.fire({
-        icon: 'error',
-        title: 'Error',
+        icon: "error",
+        title: "Error",
         text: `Failed to close IVs: ${errorMessage}`,
-        confirmButtonColor: '#ef4444',
+        confirmButtonColor: "#ef4444",
       });
     } finally {
       setLoading(false);
@@ -479,18 +503,18 @@ const Admin = () => {
 
     // First check if user is present today before assigning
     try {
-      const currentDate = new Date().toISOString().split('T')[0];
+      const currentDate = new Date().toISOString().split("T")[0];
       const attendanceResponse = await axios.get(
         `${BASE_URL}/api/attendance/by-date`,
         {
           params: {
             date: currentDate,
-            office: 'all',
+            office: "all",
           },
         }
       );
 
-      let userAttendanceStatus = 'No Record';
+      let userAttendanceStatus = "No Record";
       if (attendanceResponse.data.success) {
         const userAttendanceData = attendanceResponse.data.data.find(
           (u) => u.userId === user._id
@@ -502,31 +526,31 @@ const Admin = () => {
 
       // Check if user is eligible for assignment (Present or Half)
       if (
-        userAttendanceStatus !== 'Present' &&
-        userAttendanceStatus !== 'Half'
+        userAttendanceStatus !== "Present" &&
+        userAttendanceStatus !== "Half"
       ) {
         setLoading(false);
         await Toast.fire({
-          icon: 'error',
-          title: 'Cannot Assign',
+          icon: "error",
+          title: "Cannot Assign",
           html: `
             <p>Cannot assign IVs to <strong>${user.name}</strong>.</p>
             <p>User attendance status: <strong>${userAttendanceStatus}</strong></p>
             <p>Only users marked as 'Present' or 'Half' can be assigned IVs.</p>
           `,
-          confirmButtonColor: '#ef4444',
+          confirmButtonColor: "#ef4444",
         });
         return;
       }
     } catch (attendanceError) {
       setLoading(false);
       await Toast.fire({
-        icon: 'error',
-        title: 'Error',
+        icon: "error",
+        title: "Error",
         text: `Error checking attendance for ${user.name}. Please try again.`,
-        confirmButtonColor: '#ef4444',
+        confirmButtonColor: "#ef4444",
       });
-      console.error('Error checking user attendance:', attendanceError);
+      console.error("Error checking user attendance:", attendanceError);
       return;
     }
 
@@ -539,17 +563,17 @@ const Admin = () => {
         )?.office;
 
         if (!officeNameForCurrentId) {
-          console.error('Office name not found for appointment ID:', id);
+          console.error("Office name not found for appointment ID:", id);
           continue;
         }
 
-        const loggedInUserName = localStorage.getItem('loggedinUserName');
+        const loggedInUserName = localStorage.getItem("loggedinUserName");
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: user._id,
-            status: 'Assigned',
-            completionStatus: 'In Process',
+            status: "Assigned",
+            completionStatus: "In Process",
             ivAssignedDate: new Date().toISOString(),
             ivAssignedByUserName: loggedInUserName,
           }
@@ -569,14 +593,14 @@ const Admin = () => {
           return newRows;
         });
       } catch (error) {
-        console.error('Failed to update appointment', error);
+        console.error("Failed to update appointment", error);
       }
     }
 
     // Update attendance logic
     if (selectedAppointmentIds.length > 0) {
       try {
-        const currentDate = new Date().toISOString().split('T')[0];
+        const currentDate = new Date().toISOString().split("T")[0];
         let currentAssignedCount = 0;
         let currentAppointmentIds = [];
 
@@ -586,7 +610,7 @@ const Admin = () => {
             {
               params: {
                 date: currentDate,
-                office: 'all',
+                office: "all",
               },
             }
           );
@@ -604,7 +628,7 @@ const Admin = () => {
           }
         } catch (fetchError) {
           console.log(
-            'No existing attendance data found, starting fresh for user:',
+            "No existing attendance data found, starting fresh for user:",
             user.name
           );
         }
@@ -659,7 +683,7 @@ const Admin = () => {
   const handleSelectionChange = (newSelection) => {
     const filteredSelection = newSelection.filter((id) => {
       const row = rows.find((row) => row._id === id);
-      return row && row.completionStatus !== 'Completed';
+      return row && row.completionStatus !== "Completed";
     });
 
     const selectedRowsData = filteredSelection.map((id) =>
@@ -705,8 +729,8 @@ const Admin = () => {
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
           {
             userId: null,
-            status: 'Unassigned',
-            completionStatus: 'IV Not Done',
+            status: "Unassigned",
+            completionStatus: "IV Not Done",
             ivAssignedDate: null,
             ivAssignedByUserName: null,
           }
@@ -723,7 +747,7 @@ const Admin = () => {
           setRows(newRows);
         }
       } catch (error) {
-        console.error('Failed to update appointment', error);
+        console.error("Failed to update appointment", error);
       }
     }
 
@@ -732,7 +756,7 @@ const Admin = () => {
       const { user, appointmentIds } = userAppointmentMap[userId];
 
       try {
-        const currentDate = new Date().toISOString().split('T')[0];
+        const currentDate = new Date().toISOString().split("T")[0];
         let currentAssignedCount = 0;
         let currentAppointmentIds = [];
 
@@ -742,7 +766,7 @@ const Admin = () => {
             {
               params: {
                 date: currentDate,
-                office: 'all',
+                office: "all",
               },
             }
           );
@@ -759,15 +783,15 @@ const Admin = () => {
             }
           }
         } catch (fetchError) {
-          console.log('No existing attendance data found for user:', user.name);
+          console.log("No existing attendance data found for user:", user.name);
         }
 
         // Remove unassigned appointment IDs from current list
         console.log(
-          'Current appointment IDs in attendance:',
+          "Current appointment IDs in attendance:",
           currentAppointmentIds
         );
-        console.log('Appointment IDs to remove:', appointmentIds);
+        console.log("Appointment IDs to remove:", appointmentIds);
 
         // Convert all IDs to strings for proper comparison
         const currentAppointmentIdsStr = currentAppointmentIds.map((id) =>
@@ -777,15 +801,15 @@ const Admin = () => {
           id.toString()
         );
 
-        console.log('Current IDs as strings:', currentAppointmentIdsStr);
-        console.log('IDs to remove as strings:', appointmentIdsToRemoveStr);
+        console.log("Current IDs as strings:", currentAppointmentIdsStr);
+        console.log("IDs to remove as strings:", appointmentIdsToRemoveStr);
 
         const updatedAppointmentIds = currentAppointmentIdsStr.filter(
           (id) => !appointmentIdsToRemoveStr.includes(id)
         );
 
         console.log(
-          'Updated appointment IDs after removal:',
+          "Updated appointment IDs after removal:",
           updatedAppointmentIds
         );
 
@@ -865,7 +889,7 @@ const Admin = () => {
             ...appointment,
             appointmentDate: new Date(appointment.appointmentDate)
               .toISOString()
-              .split('T')[0],
+              .split("T")[0],
           })
         );
 
@@ -878,12 +902,12 @@ const Admin = () => {
         switch (tabValue) {
           case 0:
             filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === 'Unassigned'
+              (appointment) => appointment.status === "Unassigned"
             );
             break;
           case 1:
             filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === 'Assigned'
+              (appointment) => appointment.status === "Assigned"
             );
             break;
           default:
@@ -894,8 +918,8 @@ const Admin = () => {
           const dateCompare =
             new Date(a.appointmentDate) - new Date(b.appointmentDate);
           if (dateCompare === 0) {
-            const [hourA, minuteA] = a.appointmentTime.split(':').map(Number);
-            const [hourB, minuteB] = b.appointmentTime.split(':').map(Number);
+            const [hourA, minuteA] = a.appointmentTime.split(":").map(Number);
+            const [hourB, minuteB] = b.appointmentTime.split(":").map(Number);
             return hourA - hourB || minuteA - minuteB;
           }
           return dateCompare;
@@ -907,7 +931,7 @@ const Admin = () => {
       }
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to fetch appointments', error);
+      console.error("Failed to fetch appointments", error);
       setRows([]);
       setIsLoading(false);
     }
@@ -982,7 +1006,7 @@ const Admin = () => {
 
       <div
         className="h-full overflow-hidden"
-        style={{ height: 'calc(100vh - 4rem)' }}
+        style={{ height: "calc(100vh - 4rem)" }}
       >
         <div className="p-3">
           {/* Compact Filters Section */}
@@ -998,12 +1022,12 @@ const Admin = () => {
                     value={selectedOffice}
                     onChange={(e) => setSelectedOffice(e.target.value)}
                     displayEmpty
-                    inputProps={{ 'aria-label': 'Select Office' }}
+                    inputProps={{ "aria-label": "Select Office" }}
                     size="small"
                     sx={{
-                      height: '32px',
-                      fontSize: '14px',
-                      width: '100%',
+                      height: "32px",
+                      fontSize: "14px",
+                      width: "100%",
                     }}
                   >
                     <MenuItem value="">
@@ -1064,23 +1088,23 @@ const Admin = () => {
                     onChange={handleChange}
                     aria-label="status tabs"
                     sx={{
-                      minHeight: '32px',
-                      '& .MuiTab-root': {
-                        minHeight: '32px',
-                        padding: '4px 16px',
-                        fontSize: '14px',
-                        color: '#475569',
-                        border: '1px solid #e2e8f0',
-                        marginRight: '4px',
-                        borderRadius: '6px',
-                        '&.Mui-selected': {
-                          backgroundColor: '#334155',
-                          color: 'white',
-                          borderColor: '#334155',
+                      minHeight: "32px",
+                      "& .MuiTab-root": {
+                        minHeight: "32px",
+                        padding: "4px 16px",
+                        fontSize: "14px",
+                        color: "#475569",
+                        border: "1px solid #e2e8f0",
+                        marginRight: "4px",
+                        borderRadius: "6px",
+                        "&.Mui-selected": {
+                          backgroundColor: "#334155",
+                          color: "white",
+                          borderColor: "#334155",
                         },
                       },
-                      '& .MuiTabs-indicator': {
-                        display: 'none',
+                      "& .MuiTabs-indicator": {
+                        display: "none",
                       },
                     }}
                   >
@@ -1097,11 +1121,11 @@ const Admin = () => {
                   onClick={handleOpenCloseIVModal}
                   size="small"
                   sx={{
-                    fontSize: '12px',
-                    padding: '6px 16px',
-                    backgroundColor: '#10b981',
-                    '&:hover': {
-                      backgroundColor: '#059669',
+                    fontSize: "12px",
+                    padding: "6px 16px",
+                    backgroundColor: "#10b981",
+                    "&:hover": {
+                      backgroundColor: "#059669",
                     },
                   }}
                 >
@@ -1112,11 +1136,11 @@ const Admin = () => {
                   onClick={handleUnassignClick}
                   size="small"
                   sx={{
-                    fontSize: '12px',
-                    padding: '6px 16px',
-                    backgroundColor: '#ef4444',
-                    '&:hover': {
-                      backgroundColor: '#dc2626',
+                    fontSize: "12px",
+                    padding: "6px 16px",
+                    backgroundColor: "#ef4444",
+                    "&:hover": {
+                      backgroundColor: "#dc2626",
                     },
                   }}
                 >
@@ -1127,11 +1151,11 @@ const Admin = () => {
                   onClick={handleClick}
                   size="small"
                   sx={{
-                    fontSize: '12px',
-                    padding: '6px 16px',
-                    backgroundColor: '#3b82f6',
-                    '&:hover': {
-                      backgroundColor: '#2563eb',
+                    fontSize: "12px",
+                    padding: "6px 16px",
+                    backgroundColor: "#3b82f6",
+                    "&:hover": {
+                      backgroundColor: "#2563eb",
                     },
                   }}
                 >
@@ -1144,14 +1168,14 @@ const Admin = () => {
           {/* Results Section */}
           <div
             className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden"
-            style={{ height: 'calc(100vh - 13rem)' }}
+            style={{ height: "calc(100vh - 13rem)" }}
           >
             {isLoading ? (
               <div className="p-4">
                 <ShimmerTableComponent />
               </div>
             ) : rows.length > 0 ? (
-              <div style={{ height: '100%', width: '100%' }}>
+              <div style={{ height: "100%", width: "100%" }}>
                 <DataGrid
                   rows={rows}
                   columns={columns}
@@ -1162,54 +1186,54 @@ const Admin = () => {
                   getRowClassName={(params) => {
                     // Highlight rows that were previously completed
                     if (params.row.isPreviouslyCompleted === true) {
-                      return 'previously-completed-row';
+                      return "previously-completed-row";
                     }
-                    return '';
+                    return "";
                   }}
                   sx={{
-                    border: 'none',
-                    '& .MuiDataGrid-columnHeader': {
-                      backgroundColor: '#1e293b', // slate-800 dark header
-                      color: '#ffffff',
-                      fontWeight: '600',
-                      fontSize: '14px',
+                    border: "none",
+                    "& .MuiDataGrid-columnHeader": {
+                      backgroundColor: "#1e293b", // slate-800 dark header
+                      color: "#ffffff",
+                      fontWeight: "600",
+                      fontSize: "14px",
                     },
-                    '& .MuiDataGrid-columnHeaderTitle': {
-                      color: '#ffffff',
-                      fontWeight: '600',
+                    "& .MuiDataGrid-columnHeaderTitle": {
+                      color: "#ffffff",
+                      fontWeight: "600",
                     },
-                    '& .MuiDataGrid-columnSeparator': {
-                      color: '#ffffff',
+                    "& .MuiDataGrid-columnSeparator": {
+                      color: "#ffffff",
                     },
-                    '& .MuiDataGrid-iconSeparator': {
-                      color: '#ffffff',
+                    "& .MuiDataGrid-iconSeparator": {
+                      color: "#ffffff",
                     },
-                    '& .MuiDataGrid-sortIcon': {
-                      color: '#ffffff',
+                    "& .MuiDataGrid-sortIcon": {
+                      color: "#ffffff",
                     },
-                    '& .MuiDataGrid-menuIcon': {
-                      color: '#ffffff',
+                    "& .MuiDataGrid-menuIcon": {
+                      color: "#ffffff",
                     },
-                    '& .MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+                    "& .MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer":
                       {
-                        color: '#ffffff',
+                        color: "#ffffff",
                       },
-                    '& .MuiDataGrid-cell': {
-                      borderBottom: '1px solid #f1f5f9',
-                      fontSize: '13px',
+                    "& .MuiDataGrid-cell": {
+                      borderBottom: "1px solid #f1f5f9",
+                      fontSize: "13px",
                     },
-                    '& .MuiDataGrid-row:hover': {
-                      backgroundColor: '#f8fafc',
+                    "& .MuiDataGrid-row:hover": {
+                      backgroundColor: "#f8fafc",
                     },
-                    '& .previously-completed-row': {
-                      backgroundColor: '#fee2e2', // light red background
-                      '&:hover': {
-                        backgroundColor: '#fecaca', // slightly darker red on hover
+                    "& .previously-completed-row": {
+                      backgroundColor: "#fee2e2", // light red background
+                      "&:hover": {
+                        backgroundColor: "#fecaca", // slightly darker red on hover
                       },
-                      '&.Mui-selected': {
-                        backgroundColor: '#fca5a5', // even darker when selected
-                        '&:hover': {
-                          backgroundColor: '#f87171',
+                      "&.Mui-selected": {
+                        backgroundColor: "#fca5a5", // even darker when selected
+                        "&:hover": {
+                          backgroundColor: "#f87171",
                         },
                       },
                     },
@@ -1249,7 +1273,7 @@ const Admin = () => {
       {/* Menu for user assignment */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         {users
-          .filter((user) => user.role === 'user')
+          .filter((user) => user.role === "user")
           .map((user) => (
             <MenuItem key={user._id} onClick={() => handleMenuItemClick(user)}>
               {user.name}
@@ -1340,7 +1364,7 @@ const Admin = () => {
                     <select
                       value={closeIVFormData.source}
                       onChange={(e) =>
-                        handleCloseIVFormChange('source', e.target.value)
+                        handleCloseIVFormChange("source", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
@@ -1361,7 +1385,7 @@ const Admin = () => {
                     <select
                       value={closeIVFormData.planType}
                       onChange={(e) =>
-                        handleCloseIVFormChange('planType', e.target.value)
+                        handleCloseIVFormChange("planType", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
@@ -1382,7 +1406,7 @@ const Admin = () => {
                     <select
                       value={closeIVFormData.ivRemarks}
                       onChange={(e) =>
-                        handleCloseIVFormChange('ivRemarks', e.target.value)
+                        handleCloseIVFormChange("ivRemarks", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
@@ -1418,7 +1442,7 @@ const Admin = () => {
                 <textarea
                   value={closeIVFormData.noteRemarks}
                   onChange={(e) =>
-                    handleCloseIVFormChange('noteRemarks', e.target.value)
+                    handleCloseIVFormChange("noteRemarks", e.target.value)
                   }
                   rows={4}
                   placeholder="Add any additional notes or comments here..."

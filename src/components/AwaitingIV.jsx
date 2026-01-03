@@ -1,33 +1,62 @@
 // Import necessary hooks and components
-import { useState, useEffect } from 'react';
-import Header from './Header';
-import Datepicker from 'react-tailwindcss-datepicker';
-import BASE_URL from '../config/apiConfig';
-import { DataGrid } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
-import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+import { useState, useEffect } from "react";
+import Header from "./Header";
+import Datepicker from "react-tailwindcss-datepicker";
+import BASE_URL from "../config/apiConfig";
+import { DataGrid } from "@mui/x-data-grid";
+import { Box } from "@mui/material";
+import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
-const AwaitingIV = () => {
-  const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState({
-    startDate: null,
-    endDate: null,
-  });
-  const [selectedOffice, setSelectedOffice] = useState(''); // Initialize as empty string for consistency
-  const [appointments, setAppointments] = useState([]);
+const AwaitingIV = ({ pageState, setPageState }) => {
+  // Use lifted state if available
   const [filteredOffices, setFilteredOffices] = useState([]);
-  const [error, setError] = useState(false);
+
+  const loading = pageState?.loading ?? false;
+  const value = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const selectedOffice = pageState?.selectedOffice ?? "";
+  const appointments = pageState?.data ?? [];
+  const error = pageState?.error ?? false;
+
+  const setLoading = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, loading: val }));
+    }
+  };
+
+  const setValue = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, dateRange: val }));
+    }
+  };
+
+  const setSelectedOffice = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, selectedOffice: val }));
+    }
+  };
+
+  const setAppointments = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, data: val }));
+    }
+  };
+
+  const setError = (val) => {
+    if (setPageState) {
+      setPageState((prev) => ({ ...prev, error: val }));
+    }
+  };
 
   // Function to filter offices based on user role
   const filterOffices = async () => {
     try {
       const offices = await fetchOfficeOptions();
-      const userRole = localStorage.getItem('role');
+      const userRole = localStorage.getItem("role");
 
-      if (userRole === 'officeuser') {
-        const assignedOffice = localStorage.getItem('assignedOffice');
+      if (userRole === "officeuser") {
+        const assignedOffice = localStorage.getItem("assignedOffice");
         const assignedOfficesList = assignedOffice
-          ? assignedOffice.split(',').map((o) => o.trim())
+          ? assignedOffice.split(",").map((o) => o.trim())
           : [];
 
         const filtered = offices.filter((office) =>
@@ -42,7 +71,7 @@ const AwaitingIV = () => {
         setFilteredOffices(offices);
       }
     } catch (error) {
-      console.error('Error filtering offices:', error);
+      console.error("Error filtering offices:", error);
       setFilteredOffices([]);
     }
   };
@@ -62,43 +91,54 @@ const AwaitingIV = () => {
     setSelectedOffice(event.target.value);
   };
 
+  // Fetch function
+  const fetchData = async () => {
+    if (!selectedOffice || !value.startDate || !value.endDate) {
+      setAppointments([]); // Clear appointments when filters are incomplete
+      return;
+    }
+
+    setLoading(true);
+    setError(false);
+
+    try {
+      let params = "";
+      if (selectedOffice) {
+        params += `&officeName=${selectedOffice}`;
+      }
+      const startDateParam = value.startDate.toISOString().split("T")[0];
+      const endDateParam = value.endDate.toISOString().split("T")[0];
+
+      const url = `${BASE_URL}/api/appointments/appointments-by-office-and-remarks?${params}&startDate=${startDateParam}&endDate=${endDateParam}`;
+      console.log("Fetching IVs Awaiting data:", url);
+
+      const response = await fetch(url);
+      const responseData = await response.json();
+
+      setAppointments(responseData || []);
+      console.log("Fetched IVs Awaiting data:", responseData);
+    } catch (error) {
+      console.error("Error fetching IVs Awaiting data:", error);
+      setError(true);
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Don't auto-fetch on mount if data already exists
   useEffect(() => {
-    const fetchData = async () => {
-      if (!selectedOffice || !value.startDate || !value.endDate) {
-        setAppointments([]); // Clear appointments when filters are incomplete
-        return;
-      }
-
-      setLoading(true);
-      setError(false);
-
-      try {
-        let params = '';
-        if (selectedOffice) {
-          params += `&officeName=${selectedOffice}`;
-        }
-        const startDateParam = value.startDate.toISOString().split('T')[0];
-        const endDateParam = value.endDate.toISOString().split('T')[0];
-
-        const url = `${BASE_URL}/api/appointments/appointments-by-office-and-remarks?${params}&startDate=${startDateParam}&endDate=${endDateParam}`;
-        console.log('Fetching IVs Awaiting data:', url);
-
-        const response = await fetch(url);
-        const responseData = await response.json();
-
-        setAppointments(responseData || []);
-        console.log('Fetched IVs Awaiting data:', responseData);
-      } catch (error) {
-        console.error('Error fetching IVs Awaiting data:', error);
-        setError(true);
-        setAppointments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [value, selectedOffice]);
+    // Only fetch if filters are set AND data is empty
+    if (
+      selectedOffice &&
+      value.startDate &&
+      value.endDate &&
+      appointments.length === 0 &&
+      !loading
+    ) {
+      fetchData();
+    }
+  }, []);
 
   return (
     <div className="h-screen bg-slate-50 overflow-hidden relative">
@@ -135,18 +175,18 @@ const AwaitingIV = () => {
       ) : (
         <div
           className="h-full overflow-hidden"
-          style={{ height: 'calc(100vh - 4rem)' }}
+          style={{ height: "calc(100vh - 4rem)" }}
         >
           <div className="p-3">
             {/* Compact Filters Section */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 mb-3">
-              <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="flex items-center gap-4">
                 {/* Office Selector */}
                 <div className="flex items-center gap-3">
                   <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
                     Office Name:
                   </label>
-                  <div className="flex-1 h-8">
+                  <div className="w-48 h-8">
                     <select
                       className="w-full h-8 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white"
                       onChange={handleOfficeChange}
@@ -172,10 +212,10 @@ const AwaitingIV = () => {
 
                 {/* Date Range */}
                 <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[100px]">
+                  <label className="text-sm font-medium text-slate-700 whitespace-nowrap min-w-[80px]">
                     Date Range:
                   </label>
-                  <div className="flex-1 h-8">
+                  <div className="w-56 h-8">
                     <Datepicker
                       value={value}
                       onChange={handleValueChange}
@@ -184,61 +224,75 @@ const AwaitingIV = () => {
                     />
                   </div>
                 </div>
+
+                {/* Search Button */}
+                <button
+                  onClick={fetchData}
+                  disabled={
+                    !selectedOffice ||
+                    !value.startDate ||
+                    !value.endDate ||
+                    loading
+                  }
+                  className="h-8 px-6 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  Search
+                </button>
               </div>
             </div>
 
             {/* Results Section - Matching Scheduled Patients design */}
             <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
               {appointments.length > 0 ? (
-                <Box sx={{ height: 'calc(100vh - 12rem)', width: '100%' }}>
+                <Box sx={{ height: "calc(100vh - 12rem)", width: "100%" }}>
                   <DataGrid
                     rows={appointments}
                     columns={[
                       {
-                        field: 'patientName',
-                        headerName: 'Patient Name',
+                        field: "patientName",
+                        headerName: "Patient Name",
                         flex: 1.2,
                         minWidth: 150,
                       },
                       {
-                        field: 'patientId',
-                        headerName: 'Patient ID',
+                        field: "patientId",
+                        headerName: "Patient ID",
                         flex: 1,
                         minWidth: 120,
                       },
                       {
-                        field: 'appointmentDate',
-                        headerName: 'Appointment Date',
+                        field: "appointmentDate",
+                        headerName: "Appointment Date",
                         flex: 1,
                         minWidth: 130,
                       },
                       {
-                        field: 'appointmentTime',
-                        headerName: 'Appointment Time',
+                        field: "appointmentTime",
+                        headerName: "Appointment Time",
                         flex: 0.8,
                         minWidth: 100,
                       },
                       {
-                        field: 'ivType',
-                        headerName: 'IV Type',
+                        field: "ivType",
+                        headerName: "IV Type",
                         flex: 1,
                         minWidth: 120,
                       },
                       {
-                        field: 'ivRemarks',
-                        headerName: 'IV Remarks',
+                        field: "ivRemarks",
+                        headerName: "IV Remarks",
                         flex: 1.5,
                         minWidth: 180,
                       },
                       {
-                        field: 'planType',
-                        headerName: 'Plan Type',
+                        field: "planType",
+                        headerName: "Plan Type",
                         flex: 1,
                         minWidth: 120,
                       },
                       {
-                        field: 'insuranceName',
-                        headerName: 'Insurance Name',
+                        field: "insuranceName",
+                        headerName: "Insurance Name",
                         flex: 1.2,
                         minWidth: 140,
                       },
@@ -248,42 +302,42 @@ const AwaitingIV = () => {
                     getRowId={(row) => row._id}
                     disableSelectionOnClick
                     sx={{
-                      '.MuiDataGrid-columnHeader': {
-                        fontFamily: 'Tahoma',
-                        backgroundColor: '#1e293b', // slate-800
-                        color: '#ffffff',
+                      ".MuiDataGrid-columnHeader": {
+                        fontFamily: "Tahoma",
+                        backgroundColor: "#1e293b", // slate-800
+                        color: "#ffffff",
                         fontWeight: 600,
                       },
-                      '.MuiDataGrid-columnHeaderTitle': {
-                        color: '#ffffff',
+                      ".MuiDataGrid-columnHeaderTitle": {
+                        color: "#ffffff",
                         fontWeight: 600,
                       },
-                      '.MuiDataGrid-columnSeparator': {
-                        color: '#ffffff',
+                      ".MuiDataGrid-columnSeparator": {
+                        color: "#ffffff",
                       },
-                      '.MuiDataGrid-iconSeparator': {
-                        color: '#ffffff',
+                      ".MuiDataGrid-iconSeparator": {
+                        color: "#ffffff",
                       },
-                      '.MuiDataGrid-sortIcon': {
-                        color: '#ffffff',
+                      ".MuiDataGrid-sortIcon": {
+                        color: "#ffffff",
                       },
-                      '.MuiDataGrid-menuIcon': {
-                        color: '#ffffff',
+                      ".MuiDataGrid-menuIcon": {
+                        color: "#ffffff",
                       },
-                      '.MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer':
+                      ".MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer":
                         {
-                          color: '#ffffff',
+                          color: "#ffffff",
                         },
-                      '.MuiDataGrid-root': {
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
+                      ".MuiDataGrid-root": {
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
                       },
                     }}
                   />
                 </Box>
               ) : (
                 <div
-                  style={{ height: 'calc(100vh - 12rem)' }}
+                  style={{ height: "calc(100vh - 12rem)" }}
                   className="flex items-center justify-center"
                 >
                   {selectedOffice && value.startDate && value.endDate ? (

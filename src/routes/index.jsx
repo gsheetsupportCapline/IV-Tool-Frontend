@@ -6,7 +6,22 @@ import {
 } from "react-router-dom";
 import { siteRoutes, dashboardRoutes } from "./allroutes";
 
-function ParamsExample({ masterDataState, setMasterDataState }) {
+function ParamsExample({
+  masterDataState,
+  setMasterDataState,
+  homeState,
+  setHomeState,
+  awaitingIVState,
+  setAwaitingIVState,
+  rushState,
+  setRushState,
+  adminState,
+  setAdminState,
+  ivUsersState,
+  setIvUsersState,
+  adminDashboardState,
+  setAdminDashboardState,
+}) {
   let token = localStorage.getItem("token");
   let userId = localStorage.getItem("loggedinUserId");
   let userRole = localStorage.getItem("role");
@@ -78,9 +93,51 @@ function ParamsExample({ masterDataState, setMasterDataState }) {
               }
 
               const Component = route.component;
+
+              // Determine which state to pass based on the route
+              let componentProps = { ...props };
+
+              if (route.path === "/schedule-patient") {
+                componentProps = {
+                  ...props,
+                  pageState: homeState,
+                  setPageState: setHomeState,
+                };
+              } else if (route.path === "/awaitingIV") {
+                componentProps = {
+                  ...props,
+                  pageState: awaitingIVState,
+                  setPageState: setAwaitingIVState,
+                };
+              } else if (route.path === "/request-rush") {
+                componentProps = {
+                  ...props,
+                  pageState: rushState,
+                  setPageState: setRushState,
+                };
+              } else if (route.path === "/admin") {
+                componentProps = {
+                  ...props,
+                  pageState: adminState,
+                  setPageState: setAdminState,
+                };
+              } else if (route.path === "/dashboard") {
+                componentProps = {
+                  ...props,
+                  pageState: ivUsersState,
+                  setPageState: setIvUsersState,
+                };
+              } else if (route.path === "/admin-dashboard") {
+                componentProps = {
+                  ...props,
+                  pageState: adminDashboardState,
+                  setPageState: setAdminDashboardState,
+                };
+              }
+
               return (
                 <Component
-                  {...props}
+                  {...componentProps}
                   masterDataState={masterDataState}
                   setMasterDataState={setMasterDataState}
                 />
