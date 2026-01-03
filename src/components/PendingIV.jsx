@@ -1,64 +1,73 @@
 // Import necessary hooks and components
-import { useState, useEffect } from 'react';
-import Datepicker from 'react-tailwindcss-datepicker';
-import BASE_URL from '../config/apiConfig';
-import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+import { useState, useEffect } from "react";
+import Datepicker from "react-tailwindcss-datepicker";
+import BASE_URL from "../config/apiConfig";
+import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
-const PendingIV = () => {
-  const [value, setValue] = useState({
-    startDate: null,
-    endDate: null,
-  });
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [officeNames, setOfficeNames] = useState([]);
+const PendingIV = ({ pageState, setPageState }) => {
+  // Use lifted state from App.jsx
+  const dateRange = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const data = pageState?.data ?? [];
+  const loading = pageState?.loading ?? false;
+  const officeNames = pageState?.officeNames ?? [];
 
-  // Fetch offices from API on component mount
+  // Setter functions to update lifted state
+  const setDateRange = (val) =>
+    setPageState?.((prev) => ({ ...prev, dateRange: val }));
+  const setData = (val) => setPageState?.((prev) => ({ ...prev, data: val }));
+  const setLoading = (val) =>
+    setPageState?.((prev) => ({ ...prev, loading: val }));
+  const setOfficeNames = (val) =>
+    setPageState?.((prev) => ({ ...prev, officeNames: val }));
+
+  // Fetch offices from API on component mount (only once)
   useEffect(() => {
     const loadOffices = async () => {
       try {
         const offices = await fetchOfficeOptions();
         setOfficeNames(offices);
       } catch (error) {
-        console.error('Error loading offices:', error);
+        console.error("Error loading offices:", error);
         setOfficeNames([]);
       }
     };
 
-    loadOffices();
+    if (officeNames.length === 0) {
+      loadOffices();
+    }
   }, []);
 
   const handleValueChange = (newValue) => {
-    console.log('New Value:', newValue);
-    setValue({
-      startDate: new Date(newValue.startDate),
-      endDate: new Date(newValue.endDate),
-    });
+    console.log("New Value:", newValue);
+    if (newValue?.startDate && newValue?.endDate) {
+      setDateRange({
+        startDate: newValue.startDate,
+        endDate: newValue.endDate,
+      });
+    }
   };
 
-  useEffect(() => {
-    if (!value.startDate || !value.endDate) return;
+  // Manual fetch function - only called when Search button is clicked
+  const fetchData = async () => {
+    if (!dateRange.startDate || !dateRange.endDate) return;
 
-    const fetchData = async () => {
-      setLoading(true);
-      const startDateParam = value.startDate.toISOString().split('T')[0];
-      const endDateParam = value.endDate.toISOString().split('T')[0];
+    setLoading(true);
+    // Dates are already in YYYY-MM-DD format as strings
+    const startDateParam = dateRange.startDate;
+    const endDateParam = dateRange.endDate;
 
-      const url = `${BASE_URL}/api/appointments/fetch-unassigned-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
+    const url = `${BASE_URL}/api/appointments/fetch-unassigned-appointments?startDate=${startDateParam}&endDate=${endDateParam}`;
 
-      try {
-        const response = await fetch(url);
-        const responseData = await response.json();
-        setData(responseData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [value]);
+    try {
+      const response = await fetch(url);
+      const responseData = await response.json();
+      setData(responseData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const processDataForTable = () => {
     const processedData = {};
@@ -93,7 +102,7 @@ const PendingIV = () => {
   const renderTable = () => {
     const processedData = processDataForTable();
     const uniqueDates = [...new Set(data.map((item) => item._id))].sort();
-    const headers = ['Office', ...uniqueDates, 'Total'];
+    const headers = ["Office", ...uniqueDates, "Total"];
 
     // Calculate totals
     const officeTotals = officeNames.map((office) => {
@@ -114,7 +123,7 @@ const PendingIV = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
         <div
           className="overflow-auto"
-          style={{ maxHeight: 'calc(100vh - 16rem)' }}
+          style={{ maxHeight: "calc(100vh - 16rem)" }}
         >
           <table className="w-full">
             <thead className="bg-gradient-to-r from-slate-800 to-slate-900 sticky top-0 z-30">
@@ -123,11 +132,11 @@ const PendingIV = () => {
                   <th
                     key={index}
                     className={`px-4 py-3 text-left text-sm font-semibold text-white border-b border-slate-600 min-w-[120px] ${
-                      header === 'Office'
-                        ? 'sticky left-0 bg-gradient-to-r from-slate-800 to-slate-900 border-r-2 border-slate-600 z-40'
-                        : header === 'Total'
-                        ? 'sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40'
-                        : ''
+                      header === "Office"
+                        ? "sticky left-0 bg-gradient-to-r from-slate-800 to-slate-900 border-r-2 border-slate-600 z-40"
+                        : header === "Total"
+                        ? "sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40"
+                        : ""
                     }`}
                   >
                     {header}
@@ -140,7 +149,7 @@ const PendingIV = () => {
                 <tr
                   key={index}
                   className={`hover:bg-blue-50 transition-colors duration-200 ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
+                    index % 2 === 0 ? "bg-white" : "bg-slate-25"
                   }`}
                 >
                   <td className="px-4 py-3 font-medium text-slate-900 text-sm border-r border-slate-100 sticky left-0 bg-white z-20">
@@ -154,8 +163,8 @@ const PendingIV = () => {
                         <span
                           className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-semibold min-w-[40px] ${
                             count > 0
-                              ? 'bg-orange-100 text-orange-800 border border-orange-200'
-                              : 'bg-gray-50 text-gray-400 border border-gray-200'
+                              ? "bg-orange-100 text-orange-800 border border-orange-200"
+                              : "bg-gray-50 text-gray-400 border border-gray-200"
                           }`}
                         >
                           {count}
@@ -168,8 +177,8 @@ const PendingIV = () => {
                     <span
                       className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
                         officeTotals[index] > 0
-                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                          : 'bg-gray-50 text-gray-400 border border-gray-200'
+                          ? "bg-blue-100 text-blue-800 border border-blue-200"
+                          : "bg-gray-50 text-gray-400 border border-gray-200"
                       }`}
                     >
                       {officeTotals[index]}
@@ -188,8 +197,8 @@ const PendingIV = () => {
                     <span
                       className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
                         total > 0
-                          ? 'bg-green-100 text-green-800 border border-green-200'
-                          : 'bg-gray-50 text-gray-400 border border-gray-200'
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : "bg-gray-50 text-gray-400 border border-gray-200"
                       }`}
                     >
                       {total}
@@ -201,8 +210,8 @@ const PendingIV = () => {
                   <span
                     className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold min-w-[40px] ${
                       grandTotal > 0
-                        ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                        : 'bg-gray-100 text-gray-400 border border-gray-200'
+                        ? "bg-purple-100 text-purple-800 border border-purple-200"
+                        : "bg-gray-100 text-gray-400 border border-gray-200"
                     }`}
                   >
                     {grandTotal}
@@ -241,7 +250,7 @@ const PendingIV = () => {
         </div>
       )}
 
-      <div className="p-4" style={{ padding: '15px' }}>
+      <div className="p-4" style={{ padding: "15px" }}>
         {/* Date Filter Section */}
         <div className="bg-white rounded-lg shadow border border-slate-200 p-4 mb-6">
           <div className="flex items-center gap-4">
@@ -251,7 +260,7 @@ const PendingIV = () => {
               </label>
               <div className="border border-slate-300 rounded-lg bg-white">
                 <Datepicker
-                  value={value}
+                  value={dateRange}
                   onChange={handleValueChange}
                   inputClassName="text-sm px-3 py-2 border-0 focus:ring-0"
                   toggleClassName="text-slate-500"
@@ -259,11 +268,18 @@ const PendingIV = () => {
                 />
               </div>
             </div>
+            <button
+              onClick={fetchData}
+              disabled={!dateRange.startDate || !dateRange.endDate || loading}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              Search
+            </button>
           </div>
         </div>
 
         {/* Results Table */}
-        {value.startDate && value.endDate ? (
+        {dateRange.startDate && dateRange.endDate ? (
           data.length > 0 ? (
             renderTable()
           ) : (

@@ -80,6 +80,66 @@ const App = () => {
     loading: false,
   });
 
+  // State for AdminDashboard tabs - Pending IV
+  const [pendingIVState, setPendingIVState] = useState({
+    dateRange: {
+      startDate: null,
+      endDate: null,
+    },
+    data: [],
+    loading: false,
+    officeNames: [],
+  });
+
+  // State for AdminDashboard tabs - Assigned IV
+  const [assignedIVState, setAssignedIVState] = useState({
+    users: [],
+    appointments: {},
+    selectedUserId: "",
+    selectedOffice: "",
+    assignedCounts: [],
+    dateRange: {
+      startDate: null,
+      endDate: null,
+    },
+    loading: false,
+    officeNames: [],
+  });
+
+  // State for AdminDashboard tabs - Production IV
+  const [productionIVState, setProductionIVState] = useState({
+    users: [],
+    dateRange: {
+      startDate: null,
+      endDate: null,
+    },
+    data: [],
+    userIdToUserMap: {},
+    dateType: "appointmentDate",
+    officeNames: [],
+    loading: false,
+  });
+
+  // State for AdminDashboard tabs - Smilepoint IV Info
+  const [smilepointIVInfoState, setSmilepointIVInfoState] = useState({
+    dateRange: {
+      startDate: null,
+      endDate: null,
+    },
+    data: [],
+    loading: false,
+    error: null,
+    dateType: "appointmentDate",
+    ivType: "Normal",
+    detailView: {
+      isOpen: false,
+      title: "",
+      detailData: [],
+      officeName: "",
+      category: "",
+    },
+  });
+
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <Body
@@ -97,6 +157,14 @@ const App = () => {
         setIvUsersState={setIvUsersState}
         adminDashboardState={adminDashboardState}
         setAdminDashboardState={setAdminDashboardState}
+        pendingIVState={pendingIVState}
+        setPendingIVState={setPendingIVState}
+        assignedIVState={assignedIVState}
+        setAssignedIVState={setAssignedIVState}
+        productionIVState={productionIVState}
+        setProductionIVState={setProductionIVState}
+        smilepointIVInfoState={smilepointIVInfoState}
+        setSmilepointIVInfoState={setSmilepointIVInfoState}
       />
     </LocalizationProvider>
   );

@@ -1,42 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import DatePicker from './DatePicker';
-import axios from 'axios';
-import BASE_URL from '../config/apiConfig';
+import React, { useState, useEffect } from "react";
+import DatePicker from "./DatePicker";
+import axios from "axios";
+import BASE_URL from "../config/apiConfig";
 
-const SmilepointIVInfo = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null,
-  });
-  const [dateType, setDateType] = useState('appointmentDate');
-  const [ivType, setIvType] = useState('Normal');
-
-  // Detail view state
-  const [detailView, setDetailView] = useState({
+const SmilepointIVInfo = ({ pageState, setPageState }) => {
+  // Use lifted state from App.jsx
+  const data = pageState?.data ?? [];
+  const loading = pageState?.loading ?? false;
+  const error = pageState?.error ?? null;
+  const dateRange = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const dateType = pageState?.dateType ?? "appointmentDate";
+  const ivType = pageState?.ivType ?? "Normal";
+  const detailView = pageState?.detailView ?? {
     isOpen: false,
-    title: '',
+    title: "",
     detailData: [],
-    officeName: '',
-    category: '',
-  });
+    officeName: "",
+    category: "",
+  };
+
+  // Setter functions to update lifted state
+  const setData = (val) => setPageState?.((prev) => ({ ...prev, data: val }));
+  const setLoading = (val) =>
+    setPageState?.((prev) => ({ ...prev, loading: val }));
+  const setError = (val) => setPageState?.((prev) => ({ ...prev, error: val }));
+  const setDateRange = (val) =>
+    setPageState?.((prev) => ({ ...prev, dateRange: val }));
+  const setDateType = (val) =>
+    setPageState?.((prev) => ({ ...prev, dateType: val }));
+  const setIvType = (val) =>
+    setPageState?.((prev) => ({ ...prev, ivType: val }));
+  const setDetailView = (val) =>
+    setPageState?.((prev) => ({ ...prev, detailView: val }));
 
   // Handle date change from DatePicker
   const handleDateChange = (dateValues) => {
     if (dateValues?.startDate && dateValues?.endDate) {
       setDateRange({
-        startDate: new Date(dateValues.startDate),
-        endDate: new Date(dateValues.endDate),
+        startDate: dateValues.startDate,
+        endDate: dateValues.endDate,
       });
     }
   };
 
-  // Fetch completion analysis data
+  // Manual fetch function - only called when Search button is clicked
   const fetchCompletionAnalysis = async () => {
     if (!dateRange.startDate || !dateRange.endDate) {
-      setError('Please select a valid date range');
+      setError("Please select a valid date range");
       return;
     }
 
@@ -44,10 +54,9 @@ const SmilepointIVInfo = () => {
     setError(null);
 
     try {
-      const formattedStartDate = dateRange.startDate
-        .toISOString()
-        .split('T')[0];
-      const formattedEndDate = dateRange.endDate.toISOString().split('T')[0];
+      // Dates are already in YYYY-MM-DD format as strings
+      const formattedStartDate = dateRange.startDate;
+      const formattedEndDate = dateRange.endDate;
 
       const response = await axios.get(
         `${BASE_URL}/api/appointments/completion-analysis`,
@@ -61,7 +70,7 @@ const SmilepointIVInfo = () => {
         }
       );
 
-      console.log('API Response:', response.data);
+      console.log("API Response:", response.data);
 
       // Handle different possible response formats
       let responseData = response.data;
@@ -80,29 +89,29 @@ const SmilepointIVInfo = () => {
         responseData = responseData.data;
       }
 
-      console.log('Processed Response Data:', responseData);
+      console.log("Processed Response Data:", responseData);
 
       if (Array.isArray(responseData)) {
-        console.log('Setting data with array:', responseData);
+        console.log("Setting data with array:", responseData);
         setData(responseData);
-      } else if (responseData && typeof responseData === 'object') {
+      } else if (responseData && typeof responseData === "object") {
         // If it's an object, try to convert it to array format
         const dataArray = Object.keys(responseData).map((key) => ({
           officeName: key,
           ...responseData[key],
         }));
-        console.log('Converted to array:', dataArray);
+        console.log("Converted to array:", dataArray);
         setData(dataArray);
       } else {
-        console.log('Invalid data format:', responseData);
+        console.log("Invalid data format:", responseData);
         setData([]);
-        setError('Invalid data format received from server');
+        setError("Invalid data format received from server");
       }
     } catch (err) {
-      console.error('Error fetching completion analysis:', err);
+      console.error("Error fetching completion analysis:", err);
       setError(
         err.response?.data?.message ||
-          'Failed to fetch IV completion analysis data'
+          "Failed to fetch IV completion analysis data"
       );
       setData([]);
     } finally {
@@ -110,16 +119,9 @@ const SmilepointIVInfo = () => {
     }
   };
 
-  // Auto-fetch when filters change
-  useEffect(() => {
-    if (dateRange.startDate && dateRange.endDate) {
-      fetchCompletionAnalysis();
-    }
-  }, [dateRange, dateType, ivType]);
-
   // Calculate percentage for individual office - (Completed After Appointment / Total Completed IVs) * 100
   const calculatePercentage = (afterCount, totalCompletedIVs) => {
-    if (!totalCompletedIVs || totalCompletedIVs === 0) return '0.00';
+    if (!totalCompletedIVs || totalCompletedIVs === 0) return "0.00";
     return (((afterCount || 0) / totalCompletedIVs) * 100).toFixed(2);
   };
 
@@ -167,57 +169,57 @@ const SmilepointIVInfo = () => {
   const handleBackToDashboard = () => {
     setDetailView({
       isOpen: false,
-      title: '',
+      title: "",
       detailData: [],
-      officeName: '',
-      category: '',
+      officeName: "",
+      category: "",
     });
   };
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
   };
 
   // Format appointment date (without time)
   const formatAppointmentDate = (dateString) => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
     });
   };
 
   // Format date and time without timezone conversion (display as-is from backend)
   const formatDateTimeAsIs = (dateString) => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     const date = new Date(dateString);
 
     const year = date.getUTCFullYear();
-    const month = date.toLocaleString('en-US', {
-      month: 'short',
-      timeZone: 'UTC',
+    const month = date.toLocaleString("en-US", {
+      month: "short",
+      timeZone: "UTC",
     });
-    const day = String(date.getUTCDate()).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, "0");
     const hours = date.getUTCHours();
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
     const displayHours = hours % 12 || 12;
 
     return `${month} ${day}, ${year}, ${String(displayHours).padStart(
       2,
-      '0'
+      "0"
     )}:${minutes} ${ampm}`;
   };
 
@@ -225,9 +227,9 @@ const SmilepointIVInfo = () => {
     <div
       className="flex flex-col h-full"
       style={{
-        minHeight: 'calc(100vh - 7.5rem)',
-        maxHeight: 'calc(100vh - 7.5rem)',
-        padding: '15px',
+        minHeight: "calc(100vh - 7.5rem)",
+        maxHeight: "calc(100vh - 7.5rem)",
+        padding: "15px",
       }}
     >
       {/* Show Detail View or Dashboard */}
@@ -262,7 +264,7 @@ const SmilepointIVInfo = () => {
                     {detailView.title}
                   </h2>
                   <p className="text-sm text-gray-600">
-                    {detailView.officeName} - {detailView.detailData.length}{' '}
+                    {detailView.officeName} - {detailView.detailData.length}{" "}
                     records
                   </p>
                 </div>
@@ -270,12 +272,11 @@ const SmilepointIVInfo = () => {
               <div className="text-sm text-gray-600">
                 <div className="flex flex-col text-right">
                   <span>
-                    <strong>Date Range:</strong>{' '}
-                    {dateRange.startDate?.toLocaleDateString()} -{' '}
-                    {dateRange.endDate?.toLocaleDateString()}
+                    <strong>Date Range:</strong> {dateRange.startDate} -{" "}
+                    {dateRange.endDate}
                   </span>
                   <span>
-                    <strong>Date Type:</strong> {dateType} |{' '}
+                    <strong>Date Type:</strong> {dateType} |{" "}
                     <strong>IV Type:</strong> {ivType}
                   </span>
                 </div>
@@ -286,7 +287,7 @@ const SmilepointIVInfo = () => {
           {/* Detail Table */}
           <div className="flex-1 overflow-hidden bg-white rounded border">
             <div
-              style={{ maxHeight: 'calc(100vh - 14rem)' }}
+              style={{ maxHeight: "calc(100vh - 14rem)" }}
               className="overflow-auto"
             >
               {detailView.detailData.length > 0 ? (
@@ -329,19 +330,19 @@ const SmilepointIVInfo = () => {
                     {detailView.detailData.map((record, index) => (
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {record.patientId || '-'}
+                          {record.patientId || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {record.patientName || '-'}
+                          {record.patientName || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {record.insuranceName || '-'}
+                          {record.insuranceName || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {formatAppointmentDate(record.appointmentDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {record.appointmentTime || '-'}
+                          {record.appointmentTime || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {formatDateTimeAsIs(record.ivRequestedDateIST)}
@@ -400,12 +401,8 @@ const SmilepointIVInfo = () => {
                       value={
                         dateRange.startDate && dateRange.endDate
                           ? {
-                              startDate: dateRange.startDate
-                                .toISOString()
-                                .split('T')[0],
-                              endDate: dateRange.endDate
-                                .toISOString()
-                                .split('T')[0],
+                              startDate: dateRange.startDate,
+                              endDate: dateRange.endDate,
                             }
                           : null
                       }
@@ -441,6 +438,22 @@ const SmilepointIVInfo = () => {
                     <option value="Normal">Normal</option>
                     <option value="Rush">Rush</option>
                   </select>
+                </div>
+
+                {/* Search Button */}
+                <div className="flex flex-col">
+                  <label className="text-gray-700 text-xs font-medium mb-1 opacity-0">
+                    Action
+                  </label>
+                  <button
+                    onClick={fetchCompletionAnalysis}
+                    disabled={
+                      !dateRange.startDate || !dateRange.endDate || loading
+                    }
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loading ? "Loading..." : "Search"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -494,7 +507,7 @@ const SmilepointIVInfo = () => {
             {!loading && !error && data.length > 0 && (
               <div className="bg-white rounded border h-full">
                 <div
-                  style={{ maxHeight: 'calc(100vh - 16rem)' }}
+                  style={{ maxHeight: "calc(100vh - 16rem)" }}
                   className="overflow-auto"
                 >
                   <table className="min-w-full">
@@ -560,7 +573,7 @@ const SmilepointIVInfo = () => {
                               onClick={() =>
                                 handleNumberClick(
                                   office.officeName,
-                                  'Total Completed IVs',
+                                  "Total Completed IVs",
                                   office.totalCompletedData,
                                   `Total Completed IVs - ${office.officeName}`
                                 )
@@ -577,7 +590,7 @@ const SmilepointIVInfo = () => {
                               onClick={() =>
                                 handleNumberClick(
                                   office.officeName,
-                                  'New Patient - Completed After Appointment',
+                                  "New Patient - Completed After Appointment",
                                   office.newPatient
                                     ?.completedAfterAppointmentData,
                                   `New Patient - Completed After Appointment - ${office.officeName}`
@@ -594,7 +607,7 @@ const SmilepointIVInfo = () => {
                               onClick={() =>
                                 handleNumberClick(
                                   office.officeName,
-                                  'New Patient - Completed Within One Hour',
+                                  "New Patient - Completed Within One Hour",
                                   office.newPatient?.completedWithinOneHourData,
                                   `New Patient - Completed Within One Hour - ${office.officeName}`
                                 )
@@ -619,7 +632,7 @@ const SmilepointIVInfo = () => {
                               onClick={() =>
                                 handleNumberClick(
                                   office.officeName,
-                                  'Other Patient - Completed After Appointment',
+                                  "Other Patient - Completed After Appointment",
                                   office.others?.completedAfterAppointmentData,
                                   `Other Patient - Completed After Appointment - ${office.officeName}`
                                 )
@@ -635,7 +648,7 @@ const SmilepointIVInfo = () => {
                               onClick={() =>
                                 handleNumberClick(
                                   office.officeName,
-                                  'Other Patient - Completed Within One Hour',
+                                  "Other Patient - Completed Within One Hour",
                                   office.others?.completedWithinOneHourData,
                                   `Other Patient - Completed Within One Hour - ${office.officeName}`
                                 )
@@ -690,10 +703,10 @@ const SmilepointIVInfo = () => {
                               <button
                                 onClick={() =>
                                   handleNumberClick(
-                                    'All Offices',
-                                    'Total Completed IVs',
+                                    "All Offices",
+                                    "Total Completed IVs",
                                     allTotalCompletedData,
-                                    'Total Completed IVs - All Offices'
+                                    "Total Completed IVs - All Offices"
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-bold"
@@ -707,10 +720,10 @@ const SmilepointIVInfo = () => {
                               <button
                                 onClick={() =>
                                   handleNumberClick(
-                                    'All Offices',
-                                    'New Patient - Completed After Appointment',
+                                    "All Offices",
+                                    "New Patient - Completed After Appointment",
                                     allNewPatientAfterAppointment,
-                                    'New Patient - Completed After Appointment - All Offices'
+                                    "New Patient - Completed After Appointment - All Offices"
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -725,10 +738,10 @@ const SmilepointIVInfo = () => {
                               <button
                                 onClick={() =>
                                   handleNumberClick(
-                                    'All Offices',
-                                    'New Patient - Completed Within One Hour',
+                                    "All Offices",
+                                    "New Patient - Completed Within One Hour",
                                     allNewPatientWithinOneHour,
-                                    'New Patient - Completed Within One Hour - All Offices'
+                                    "New Patient - Completed Within One Hour - All Offices"
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -750,10 +763,10 @@ const SmilepointIVInfo = () => {
                               <button
                                 onClick={() =>
                                   handleNumberClick(
-                                    'All Offices',
-                                    'Other Patient - Completed After Appointment',
+                                    "All Offices",
+                                    "Other Patient - Completed After Appointment",
                                     allOthersAfterAppointment,
-                                    'Other Patient - Completed After Appointment - All Offices'
+                                    "Other Patient - Completed After Appointment - All Offices"
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -765,10 +778,10 @@ const SmilepointIVInfo = () => {
                               <button
                                 onClick={() =>
                                   handleNumberClick(
-                                    'All Offices',
-                                    'Other Patient - Completed Within One Hour',
+                                    "All Offices",
+                                    "Other Patient - Completed Within One Hour",
                                     allOthersWithinOneHour,
-                                    'Other Patient - Completed Within One Hour - All Offices'
+                                    "Other Patient - Completed Within One Hour - All Offices"
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"

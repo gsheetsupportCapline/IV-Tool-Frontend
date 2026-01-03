@@ -30,6 +30,14 @@ const Body = ({
   setIvUsersState,
   adminDashboardState,
   setAdminDashboardState,
+  pendingIVState,
+  setPendingIVState,
+  assignedIVState,
+  setAssignedIVState,
+  productionIVState,
+  setProductionIVState,
+  smilepointIVInfoState,
+  setSmilepointIVInfoState,
 }) => {
   // const appRouter = createBrowserRouter([
   //   {
@@ -105,6 +113,14 @@ const Body = ({
         setIvUsersState={setIvUsersState}
         adminDashboardState={adminDashboardState}
         setAdminDashboardState={setAdminDashboardState}
+        pendingIVState={pendingIVState}
+        setPendingIVState={setPendingIVState}
+        assignedIVState={assignedIVState}
+        setAssignedIVState={setAssignedIVState}
+        productionIVState={productionIVState}
+        setProductionIVState={setProductionIVState}
+        smilepointIVInfoState={smilepointIVInfoState}
+        setSmilepointIVInfoState={setSmilepointIVInfoState}
       />
     </div>
   );

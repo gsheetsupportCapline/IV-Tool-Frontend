@@ -21,6 +21,14 @@ function ParamsExample({
   setIvUsersState,
   adminDashboardState,
   setAdminDashboardState,
+  pendingIVState,
+  setPendingIVState,
+  assignedIVState,
+  setAssignedIVState,
+  productionIVState,
+  setProductionIVState,
+  smilepointIVInfoState,
+  setSmilepointIVInfoState,
 }) {
   let token = localStorage.getItem("token");
   let userId = localStorage.getItem("loggedinUserId");
@@ -132,6 +140,14 @@ function ParamsExample({
                   ...props,
                   pageState: adminDashboardState,
                   setPageState: setAdminDashboardState,
+                  pendingIVState,
+                  setPendingIVState,
+                  assignedIVState,
+                  setAssignedIVState,
+                  productionIVState,
+                  setProductionIVState,
+                  smilepointIVInfoState,
+                  setSmilepointIVInfoState,
                 };
               }
 

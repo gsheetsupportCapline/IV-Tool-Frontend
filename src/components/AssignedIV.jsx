@@ -1,56 +1,73 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import BASE_URL from '../config/apiConfig.js';
-import DatePicker from './DatePicker';
-import { fetchOfficeOptions } from '../utils/fetchOfficeOptions';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import BASE_URL from "../config/apiConfig.js";
+import DatePicker from "./DatePicker";
+import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
-const AssignedIV = () => {
-  const [users, setUsers] = useState([]);
-  const [appointments, setAppointments] = useState({});
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedOffice, setSelectedOffice] = useState('');
-  const [assignedCounts, setAssignedCounts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null,
-  });
-  const [officeNames, setOfficeNames] = useState([]);
+const AssignedIV = ({ pageState, setPageState }) => {
+  // Use lifted state from App.jsx
+  const users = pageState?.users ?? [];
+  const appointments = pageState?.appointments ?? {};
+  const selectedUserId = pageState?.selectedUserId ?? "";
+  const selectedOffice = pageState?.selectedOffice ?? "";
+  const assignedCounts = pageState?.assignedCounts ?? [];
+  const loading = pageState?.loading ?? false;
+  const dateRange = pageState?.dateRange ?? { startDate: null, endDate: null };
+  const officeNames = pageState?.officeNames ?? [];
 
-  // Fetch offices from API on component mount
+  // Setter functions to update lifted state
+  const setUsers = (val) => setPageState?.((prev) => ({ ...prev, users: val }));
+  const setAppointments = (val) =>
+    setPageState?.((prev) => ({ ...prev, appointments: val }));
+  const setSelectedUserId = (val) =>
+    setPageState?.((prev) => ({ ...prev, selectedUserId: val }));
+  const setSelectedOffice = (val) =>
+    setPageState?.((prev) => ({ ...prev, selectedOffice: val }));
+  const setAssignedCounts = (val) =>
+    setPageState?.((prev) => ({ ...prev, assignedCounts: val }));
+  const setLoading = (val) =>
+    setPageState?.((prev) => ({ ...prev, loading: val }));
+  const setDateRange = (val) =>
+    setPageState?.((prev) => ({ ...prev, dateRange: val }));
+  const setOfficeNames = (val) =>
+    setPageState?.((prev) => ({ ...prev, officeNames: val }));
+
+  // Fetch offices from API on component mount (only once)
   useEffect(() => {
     const loadOffices = async () => {
       try {
         const offices = await fetchOfficeOptions();
         setOfficeNames(offices);
       } catch (error) {
-        console.error('Error loading offices:', error);
+        console.error("Error loading offices:", error);
         setOfficeNames([]);
       }
     };
 
-    loadOffices();
+    if (officeNames.length === 0) {
+      loadOffices();
+    }
   }, []);
 
-  // Fetch users on component mount
+  // Fetch users on component mount (only once)
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const userResponse = await axios.get(`${BASE_URL}/api/auth/users`);
         const usersData = userResponse.data.data;
 
-        console.log('Total users fetched:', usersData.length);
-        console.log('All users:', usersData);
+        console.log("Total users fetched:", usersData.length);
+        console.log("All users:", usersData);
 
         // Filter users with role 'user' and isActive true
         const filteredUsers = usersData.filter(
-          (user) => user.role === 'user' && user.isActive === true
+          (user) => user.role === "user" && user.isActive === true
         );
         console.log(
-          'Filtered users (role=user & isActive=true):',
+          "Filtered users (role=user & isActive=true):",
           filteredUsers.length
         );
-        console.log('Filtered users data:', filteredUsers);
+        console.log("Filtered users data:", filteredUsers);
 
         const usersWithName = filteredUsers.map((userData) => ({
           ...userData,
@@ -59,110 +76,108 @@ const AssignedIV = () => {
 
         setUsers(usersWithName);
       } catch (error) {
-        console.error('Error fetching users', error);
+        console.error("Error fetching users", error);
       }
     };
 
-    fetchUsers();
+    if (users.length === 0) {
+      fetchUsers();
+    }
   }, []);
 
-  // Fetch appointments data for selected user
-  useEffect(() => {
-    const fetchUserAppointments = async () => {
-      // Only fetch data if user is selected and date range is provided
-      if (!selectedUserId || !dateRange.startDate || !dateRange.endDate) {
-        setAppointments({});
-        return;
-      }
+  // Manual fetch function for user appointments
+  const fetchUserAppointments = async () => {
+    // Only fetch data if user is selected and date range is provided
+    if (!selectedUserId || !dateRange.startDate || !dateRange.endDate) {
+      setAppointments({});
+      return;
+    }
 
-      setLoading(true);
-      try {
-        const queryParams = new URLSearchParams({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          dateType: 'ivAssignedDate',
-        });
-
-        const appointmentsResponse = await axios.get(
-          `${BASE_URL}/api/appointments/user-appointments/${selectedUserId}?${queryParams}`
-        );
-
-        // Data is now in response.data.data format
-        const userAppointments = appointmentsResponse.data.data || [];
-
-        // Group appointments by office for the selected user
-        const groupedByOffice = userAppointments.reduce((acc, appointment) => {
-          const { office } = appointment;
-          if (!acc[office]) {
-            acc[office] = 0;
-          }
-          acc[office]++;
-          return acc;
-        }, {});
-
-        // Set appointments in the format expected by the component
-        setAppointments({
-          [selectedUserId]: groupedByOffice,
-        });
-      } catch (error) {
-        console.error('Error fetching user appointments', error);
-        setAppointments({});
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserAppointments();
-  }, [selectedUserId, dateRange]);
-
-  useEffect(() => {
-    if (selectedOffice && dateRange.startDate && dateRange.endDate) {
-      setLoading(true);
-
+    setLoading(true);
+    try {
       const queryParams = new URLSearchParams({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
-        dateType: 'ivAssignedDate',
+        dateType: "ivAssignedDate",
       });
 
-      axios
-        .get(
-          `${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}?${queryParams}`
-        )
-        .then((response) => {
-          // Updated response structure: response.data.data.assignedCounts
-          const responseData = response.data.data;
-          const assignedCounts = responseData.assignedCounts || {};
+      const appointmentsResponse = await axios.get(
+        `${BASE_URL}/api/appointments/user-appointments/${selectedUserId}?${queryParams}`
+      );
 
-          const formattedData = Object.entries(assignedCounts).map(
-            ([userId, count], index) => ({
-              id: index,
-              userName:
-                users.find((user) => user._id === userId)?.name || 'Unknown',
-              count,
-            })
-          );
-          setAssignedCounts(formattedData);
-        })
-        .catch((error) => {
-          console.error('Error fetching assigned counts', error);
-          setAssignedCounts([]); // Clear data on error
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      // Clear assigned counts if no office or date range selected
-      setAssignedCounts([]);
+      // Data is now in response.data.data format
+      const userAppointments = appointmentsResponse.data.data || [];
+
+      // Group appointments by office for the selected user
+      const groupedByOffice = userAppointments.reduce((acc, appointment) => {
+        const { office } = appointment;
+        if (!acc[office]) {
+          acc[office] = 0;
+        }
+        acc[office]++;
+        return acc;
+      }, {});
+
+      // Set appointments in the format expected by the component
+      setAppointments({
+        [selectedUserId]: groupedByOffice,
+      });
+    } catch (error) {
+      console.error("Error fetching user appointments", error);
+      setAppointments({});
+    } finally {
+      setLoading(false);
     }
-  }, [selectedOffice, users, dateRange]);
+  };
+
+  // Manual fetch function for office assignments
+  const fetchOfficeAssignments = async () => {
+    if (!selectedOffice || !dateRange.startDate || !dateRange.endDate) {
+      setAssignedCounts([]);
+      return;
+    }
+
+    setLoading(true);
+
+    const queryParams = new URLSearchParams({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      dateType: "ivAssignedDate",
+    });
+
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}?${queryParams}`
+      );
+      // Updated response structure: response.data.data.assignedCounts
+      const responseData = response.data.data;
+      const assignedCounts = responseData.assignedCounts || {};
+
+      const formattedData = Object.entries(assignedCounts).map(
+        ([userId, count], index) => ({
+          id: index,
+          userName:
+            users.find((user) => user._id === userId)?.name || "Unknown",
+          count,
+        })
+      );
+      setAssignedCounts(formattedData);
+    } catch (error) {
+      console.error("Error fetching assigned counts", error);
+      setAssignedCounts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUserChange = (event) => {
     setSelectedUserId(event.target.value);
+    setAppointments({}); // Clear previous data
   };
 
   const handleOfficeChange = (event) => {
     setSelectedOffice(event.target.value);
+    setAssignedCounts([]); // Clear previous data
   };
 
   const getUserOfficeData = () => {
@@ -196,7 +211,7 @@ const AssignedIV = () => {
         </div>
       )}
 
-      <div className="p-4" style={{ padding: '15px' }}>
+      <div className="p-4" style={{ padding: "15px" }}>
         {/* Filters Section */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 mb-6">
           <div className="p-6 border-b border-slate-200">
@@ -221,20 +236,34 @@ const AssignedIV = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Select User
                 </label>
-                <select
-                  value={selectedUserId}
-                  onChange={handleUserChange}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700"
-                >
-                  <option value="">Choose a user...</option>
-                  {users
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((user) => (
-                      <option key={user._id} value={user._id}>
-                        {user.name}
-                      </option>
-                    ))}
-                </select>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedUserId}
+                    onChange={handleUserChange}
+                    className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700"
+                  >
+                    <option value="">Choose a user...</option>
+                    {users
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((user) => (
+                        <option key={user._id} value={user._id}>
+                          {user.name}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    onClick={fetchUserAppointments}
+                    disabled={
+                      !selectedUserId ||
+                      !dateRange.startDate ||
+                      !dateRange.endDate ||
+                      loading
+                    }
+                    className="px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                  >
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -268,8 +297,8 @@ const AssignedIV = () => {
                                 <span
                                   className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold min-w-[50px] ${
                                     row.count > 0
-                                      ? 'bg-green-100 text-green-800 border border-green-200'
-                                      : 'bg-gray-50 text-gray-400 border border-gray-200'
+                                      ? "bg-green-100 text-green-800 border border-green-200"
+                                      : "bg-gray-50 text-gray-400 border border-gray-200"
                                   }`}
                                 >
                                   {row.count}
@@ -357,18 +386,32 @@ const AssignedIV = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Select Office
                 </label>
-                <select
-                  value={selectedOffice}
-                  onChange={handleOfficeChange}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700"
-                >
-                  <option value="">Choose an office...</option>
-                  {officeNames.map((office) => (
-                    <option key={office.id} value={office.name}>
-                      {office.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedOffice}
+                    onChange={handleOfficeChange}
+                    className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-700"
+                  >
+                    <option value="">Choose an office...</option>
+                    {officeNames.map((office) => (
+                      <option key={office.id} value={office.name}>
+                        {office.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={fetchOfficeAssignments}
+                    disabled={
+                      !selectedOffice ||
+                      !dateRange.startDate ||
+                      !dateRange.endDate ||
+                      loading
+                    }
+                    className="px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                  >
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -402,8 +445,8 @@ const AssignedIV = () => {
                                 <span
                                   className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold min-w-[50px] ${
                                     row.count > 0
-                                      ? 'bg-orange-100 text-orange-800 border border-orange-200'
-                                      : 'bg-gray-50 text-gray-400 border border-gray-200'
+                                      ? "bg-orange-100 text-orange-800 border border-orange-200"
+                                      : "bg-gray-50 text-gray-400 border border-gray-200"
                                   }`}
                                 >
                                   {row.count}
