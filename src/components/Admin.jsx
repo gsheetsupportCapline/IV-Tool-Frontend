@@ -62,7 +62,12 @@ const Admin = ({ pageState, setPageState }) => {
 
   const setRows = (val) => {
     if (setPageState) {
-      setPageState((prev) => ({ ...prev, data: val }));
+      // Handle both direct values and functional updates
+      if (typeof val === "function") {
+        setPageState((prev) => ({ ...prev, data: val(prev.data ?? []) }));
+      } else {
+        setPageState((prev) => ({ ...prev, data: val }));
+      }
     }
   };
 
@@ -162,6 +167,31 @@ const Admin = ({ pageState, setPageState }) => {
     return user ? user.name : params.row.assignedUser || "Unassigned";
   };
 
+  // Format date and time without changing timezone
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "";
+
+    try {
+      const date = new Date(dateString);
+
+      // Get date parts
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      // Get time parts
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
+
+      // Return formatted date time: YYYY-MM-DD HH:MM:SS
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString;
+    }
+  };
+
   const handleViewImage = (imageUrl) => {
     const imagesArray = [imageUrl];
     setCurrentImage(0);
@@ -209,8 +239,9 @@ const Admin = ({ pageState, setPageState }) => {
     {
       field: "ivAssignedDate",
       headerName: "Assigned Date",
-      width: 150,
+      width: 180,
       headerClassName: "header-row",
+      renderCell: (params) => formatDateTime(params.row.ivAssignedDate),
     },
     {
       field: "appointmentType",
@@ -498,186 +529,212 @@ const Admin = ({ pageState, setPageState }) => {
   };
 
   const handleMenuItemClick = async (user) => {
-    setLoading(true);
-    const selectedAppointmentIds = selectedRows.map((row) => row._id);
-
-    // First check if user is present today before assigning
+    // Main try-catch block to handle all errors
     try {
-      const currentDate = new Date().toISOString().split("T")[0];
-      const attendanceResponse = await axios.get(
-        `${BASE_URL}/api/attendance/by-date`,
-        {
-          params: {
-            date: currentDate,
-            office: "all",
-          },
-        }
-      );
+      setLoading(true);
+      const selectedAppointmentIds = selectedRows.map((row) => row._id);
 
-      let userAttendanceStatus = "No Record";
-      if (attendanceResponse.data.success) {
-        const userAttendanceData = attendanceResponse.data.data.find(
-          (u) => u.userId === user._id
-        );
-        if (userAttendanceData) {
-          userAttendanceStatus = userAttendanceData.attendance;
-        }
-      }
-
-      // Check if user is eligible for assignment (Present or Half)
-      if (
-        userAttendanceStatus !== "Present" &&
-        userAttendanceStatus !== "Half"
-      ) {
-        setLoading(false);
-        await Toast.fire({
-          icon: "error",
-          title: "Cannot Assign",
-          html: `
-            <p>Cannot assign IVs to <strong>${user.name}</strong>.</p>
-            <p>User attendance status: <strong>${userAttendanceStatus}</strong></p>
-            <p>Only users marked as 'Present' or 'Half' can be assigned IVs.</p>
-          `,
-          confirmButtonColor: "#ef4444",
-        });
-        return;
-      }
-    } catch (attendanceError) {
-      setLoading(false);
-      await Toast.fire({
-        icon: "error",
-        title: "Error",
-        text: `Error checking attendance for ${user.name}. Please try again.`,
-        confirmButtonColor: "#ef4444",
-      });
-      console.error("Error checking user attendance:", attendanceError);
-      return;
-    }
-
-    // Process assignments sequentially to avoid state conflicts
-    for (let i = 0; i < selectedAppointmentIds.length; i++) {
-      const id = selectedAppointmentIds[i];
-      try {
-        const officeNameForCurrentId = selectedRows.find(
-          (row) => row._id === id
-        )?.office;
-
-        if (!officeNameForCurrentId) {
-          console.error("Office name not found for appointment ID:", id);
-          continue;
-        }
-
-        const loggedInUserName = localStorage.getItem("loggedinUserName");
-        const response = await axios.put(
-          `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
-          {
-            userId: user._id,
-            status: "Assigned",
-            completionStatus: "In Process",
-            ivAssignedDate: new Date().toISOString(),
-            ivAssignedByUserName: loggedInUserName,
-          }
-        );
-
-        const updatedAppointment = response.data;
-
-        // Update the specific row immediately
-        setRows((prevRows) => {
-          const newRows = [...prevRows];
-          const index = newRows.findIndex(
-            (row) => row._id.toString() === updatedAppointment._id.toString()
-          );
-          if (index !== -1) {
-            newRows[index] = updatedAppointment;
-          }
-          return newRows;
-        });
-      } catch (error) {
-        console.error("Failed to update appointment", error);
-      }
-    }
-
-    // Update attendance logic
-    if (selectedAppointmentIds.length > 0) {
+      // First check if user is present today before assigning
       try {
         const currentDate = new Date().toISOString().split("T")[0];
-        let currentAssignedCount = 0;
-        let currentAppointmentIds = [];
-
-        try {
-          const attendanceResponse = await axios.get(
-            `${BASE_URL}/api/attendance/by-date`,
-            {
-              params: {
-                date: currentDate,
-                office: "all",
-              },
-            }
-          );
-
-          if (attendanceResponse.data.success) {
-            const userAttendanceData = attendanceResponse.data.data.find(
-              (u) => u.userId === user._id
-            );
-            if (userAttendanceData && userAttendanceData.assigned) {
-              currentAssignedCount = userAttendanceData.assigned.count || 0;
-              currentAppointmentIds = [
-                ...(userAttendanceData.assigned.appointmentIds || []),
-              ];
-            }
-          }
-        } catch (fetchError) {
-          console.log(
-            "No existing attendance data found, starting fresh for user:",
-            user.name
-          );
-        }
-
-        const updatedCount =
-          currentAssignedCount + selectedAppointmentIds.length;
-        const updatedAppointmentIds = [
-          ...currentAppointmentIds,
-          ...selectedAppointmentIds,
-        ];
-
-        const attendanceUpdateResponse = await axios.put(
-          `${BASE_URL}/api/attendance/update-assigned`,
+        const attendanceResponse = await axios.get(
+          `${BASE_URL}/api/attendance/by-date`,
           {
-            userId: user._id,
-            date: currentDate,
-            assigned: {
-              count: updatedCount,
-              appointmentIds: updatedAppointmentIds,
+            params: {
+              date: currentDate,
+              office: "all",
             },
           }
         );
 
-        if (
-          attendanceUpdateResponse.data.success ||
-          attendanceUpdateResponse.status === 200
-        ) {
-          console.log(
-            `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`
+        let userAttendanceStatus = "No Record";
+        if (attendanceResponse.data.success) {
+          const userAttendanceData = attendanceResponse.data.data.find(
+            (u) => u.userId === user._id
           );
+          if (userAttendanceData) {
+            userAttendanceStatus = userAttendanceData.attendance;
+          }
+        }
+
+        // Check if user is eligible for assignment (Present or Half)
+        if (
+          userAttendanceStatus !== "Present" &&
+          userAttendanceStatus !== "Half"
+        ) {
+          setLoading(false);
+          await Toast.fire({
+            icon: "error",
+            title: "Cannot Assign",
+            html: `
+              <p>Cannot assign IVs to <strong>${user.name}</strong>.</p>
+              <p>User attendance status: <strong>${userAttendanceStatus}</strong></p>
+              <p>Only users marked as 'Present' or 'Half' can be assigned IVs.</p>
+            `,
+            confirmButtonColor: "#ef4444",
+          });
+          return;
         }
       } catch (attendanceError) {
-        console.error(
-          `Error updating attendance for user ${user.name}:`,
-          attendanceError
-        );
+        setLoading(false);
+        await Toast.fire({
+          icon: "error",
+          title: "Error",
+          text: `Error checking attendance for ${user.name}. Please try again.`,
+          confirmButtonColor: "#ef4444",
+        });
+        console.error("Error checking user attendance:", attendanceError);
+        return;
       }
+
+      // Process assignments sequentially to avoid state conflicts
+      for (let i = 0; i < selectedAppointmentIds.length; i++) {
+        const id = selectedAppointmentIds[i];
+        try {
+          const officeNameForCurrentId = selectedRows.find(
+            (row) => row._id === id
+          )?.office;
+
+          if (!officeNameForCurrentId) {
+            console.error("Office name not found for appointment ID:", id);
+            continue;
+          }
+
+          const loggedInUserName = localStorage.getItem("loggedinUserName");
+          const response = await axios.put(
+            `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
+            {
+              userId: user._id,
+              status: "Assigned",
+              completionStatus: "In Process",
+              ivAssignedDate: new Date().toISOString(),
+              ivAssignedByUserName: loggedInUserName,
+            }
+          );
+
+          const updatedAppointment = response.data;
+
+          // Update the specific row immediately
+          setRows((prevRows) => {
+            const newRows = [...prevRows];
+            const index = newRows.findIndex(
+              (row) => row._id.toString() === updatedAppointment._id.toString()
+            );
+            if (index !== -1) {
+              newRows[index] = updatedAppointment;
+            }
+            return newRows;
+          });
+        } catch (error) {
+          console.error("Failed to update appointment", error);
+        }
+      }
+
+      // Update attendance logic
+      if (selectedAppointmentIds.length > 0) {
+        try {
+          const currentDate = new Date().toISOString().split("T")[0];
+          let currentAssignedCount = 0;
+          let currentAppointmentIds = [];
+
+          try {
+            const attendanceResponse = await axios.get(
+              `${BASE_URL}/api/attendance/by-date`,
+              {
+                params: {
+                  date: currentDate,
+                  office: "all",
+                },
+              }
+            );
+
+            if (attendanceResponse.data.success) {
+              const userAttendanceData = attendanceResponse.data.data.find(
+                (u) => u.userId === user._id
+              );
+              if (userAttendanceData && userAttendanceData.assigned) {
+                currentAssignedCount = userAttendanceData.assigned.count || 0;
+                currentAppointmentIds = [
+                  ...(userAttendanceData.assigned.appointmentIds || []),
+                ];
+              }
+            }
+          } catch (fetchError) {
+            console.log(
+              "No existing attendance data found, starting fresh for user:",
+              user.name
+            );
+          }
+
+          const updatedCount =
+            currentAssignedCount + selectedAppointmentIds.length;
+          const updatedAppointmentIds = [
+            ...currentAppointmentIds,
+            ...selectedAppointmentIds,
+          ];
+
+          const attendanceUpdateResponse = await axios.put(
+            `${BASE_URL}/api/attendance/update-assigned`,
+            {
+              userId: user._id,
+              date: currentDate,
+              assigned: {
+                count: updatedCount,
+                appointmentIds: updatedAppointmentIds,
+              },
+            }
+          );
+
+          if (
+            attendanceUpdateResponse.data.success ||
+            attendanceUpdateResponse.status === 200
+          ) {
+            console.log(
+              `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`
+            );
+          }
+        } catch (attendanceError) {
+          console.error(
+            `Error updating attendance for user ${user.name}:`,
+            attendanceError
+          );
+        }
+      }
+
+      // Clear selection and close menu
+      setSelectedRows([]);
+      handleClose();
+
+      // Set loading to false before showing success message
+      setLoading(false);
+
+      // Show success message
+      await Toast.fire({
+        icon: "success",
+        title: "Success",
+        text: `Successfully assigned ${selectedAppointmentIds.length} appointment(s) to ${user.name}`,
+        confirmButtonColor: "#10b981",
+        timer: 2000,
+      });
+
+      // Refresh the appointments data after success message
+      await fetchAndFilterAppointments(value);
+    } catch (error) {
+      // Catch any unexpected errors
+      console.error("Error in handleMenuItemClick:", error);
+
+      // Set loading to false before showing error
+      setLoading(false);
+
+      await Toast.fire({
+        icon: "error",
+        title: "Assignment Failed",
+        text: `An unexpected error occurred: ${
+          error.message || "Please try again"
+        }`,
+        confirmButtonColor: "#ef4444",
+      });
     }
-
-    // Clear selection and refresh data to ensure consistency
-    setSelectedRows([]);
-
-    // Refresh the appointments data to show latest state
-    setTimeout(() => {
-      fetchAndFilterAppointments(value);
-    }, 500);
-
-    handleClose();
-    setLoading(false);
   };
 
   const handleSelectionChange = (newSelection) => {
