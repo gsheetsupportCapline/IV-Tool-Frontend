@@ -65,12 +65,8 @@ const MasterData = ({
   // Format date for display (keep original timezone)
   const formatDate = (dateString) => {
     if (!dateString) return "-";
-    try {
-      const date = new Date(dateString);
-      return date;
-    } catch (error) {
-      return "-";
-    }
+    // Return date as-is from database without conversion
+    return dateString;
   };
 
   // Format date and time for IV related columns (no timezone conversion - display as-is from database)
@@ -156,13 +152,21 @@ const MasterData = ({
         ) {
           // Show date and time for IV related dates (original timezone)
           value = formatDateTime(value);
+        } else if (dataKey === "appointmentDate") {
+          // Show only date part (before T) for appointment date
+          if (value && typeof value === "string" && value.includes("T")) {
+            value = value.split("T")[0];
+          } else {
+            value = value || "-";
+          }
         } else if (dataKey.includes("Date") && dataKey !== "appointmentTime") {
           // Show only date for other date fields (original timezone)
           value = formatDate(value);
         } else if (dataKey === "appointmentTime") {
           value = formatTime(value);
         } else if (dataKey.includes("DOB")) {
-          value = formatDate(value);
+          // Show DOB as-is from database
+          value = value || "-";
         }
 
         // Handle null, undefined, empty values, and -NO-DATA-
