@@ -20,16 +20,26 @@ export const getCSTDateTime = () => {
     hour12: false,
   });
 
-  // Parse the CST string and convert back to ISO format
+  // Parse the CST string and convert to ISO format
   // Format: MM/DD/YYYY, HH:mm:ss
   const [datePart, timePart] = cstString.split(", ");
   const [month, day, year] = datePart.split("/");
   const [hour, minute, second] = timePart.split(":");
 
-  // Create date object with CST components
-  const cstDate = new Date(
-    `${year}-${month}-${day}T${hour}:${minute}:${second}`
-  );
+  // Log for debugging
+  console.log("🕐 CST Time Debug:", {
+    originalCSTString: cstString,
+    parsed: `${year}-${month}-${day} ${hour}:${minute}:${second}`,
+    readableCST: `${month}/${day}/${year} ${hour}:${minute}:${second} CST`,
+  });
 
-  return cstDate.toISOString();
+  // Return ISO format string with CST time (treating it as if it's UTC)
+  // This ensures the exact CST time is stored in the database
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(
+    2,
+    "0"
+  )}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:${second.padStart(
+    2,
+    "0"
+  )}.000Z`;
 };
