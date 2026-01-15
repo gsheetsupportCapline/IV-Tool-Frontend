@@ -22,6 +22,7 @@ import axios from "axios";
 import Header from "./Header";
 import DatePicker from "./DatePicker";
 import BASE_URL from "../config/apiConfig";
+import { getCSTDateTime } from "../utils/timezoneUtils";
 
 const fetchDropdownOptions = async (category) => {
   try {
@@ -193,7 +194,6 @@ const IVUsers = () => {
         return;
       }
 
-      const currentDate = new Date();
       const payload = {
         userAppointmentId: selectedAppointment.assignedUser,
         appointmentId: selectedAppointment._id,
@@ -202,7 +202,7 @@ const IVUsers = () => {
         planType: selectedAppointment.planType,
         completedBy: userName,
         noteRemarks: noteRemarks,
-        ivCompletedDate: currentDate.toISOString(),
+        ivCompletedDate: getCSTDateTime(), // Use CST timezone
       };
 
       await axios.post(

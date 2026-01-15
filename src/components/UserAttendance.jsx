@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import BASE_URL from '../config/apiConfig';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import BASE_URL from "../config/apiConfig";
+import { getCSTDateTime } from "../utils/timezoneUtils";
 
 const UserAttendance = () => {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0]
   );
   const [users, setUsers] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
@@ -24,7 +25,7 @@ const UserAttendance = () => {
     // Get current IST time
     const now = new Date();
     const istTime = new Date(
-      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     );
     const currentHour = istTime.getHours();
     const currentMinute = istTime.getMinutes();
@@ -32,20 +33,20 @@ const UserAttendance = () => {
 
     // Define shift windows in IST (24-hour format)
     const shifts = {
-      '6PM-3AM': {
+      "6PM-3AM": {
         start: 18 * 60, // 6 PM = 18:00
         end: 3 * 60, // 3 AM = 03:00 (next day)
-        color: 'bg-purple-100 text-purple-700',
+        color: "bg-purple-100 text-purple-700",
       },
-      '7PM-4AM': {
+      "7PM-4AM": {
         start: 19 * 60, // 7 PM = 19:00
         end: 4 * 60, // 4 AM = 04:00 (next day)
-        color: 'bg-green-100 text-green-700',
+        color: "bg-green-100 text-green-700",
       },
-      '8PM-5AM': {
+      "8PM-5AM": {
         start: 20 * 60, // 8 PM = 20:00
         end: 5 * 60, // 5 AM = 05:00 (next day)
-        color: 'bg-orange-100 text-orange-700',
+        color: "bg-orange-100 text-orange-700",
       },
     };
 
@@ -85,14 +86,14 @@ const UserAttendance = () => {
 
       // Filter active users with role 'user'
       const activeUsers = userData.filter(
-        (user) => user.role === 'user' && user.isActive === true
+        (user) => user.role === "user" && user.isActive === true
       );
 
       setUsers(activeUsers);
       return activeUsers;
     } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('Failed to fetch users data');
+      console.error("Error fetching users:", err);
+      setError("Failed to fetch users data");
       return [];
     }
   };
@@ -112,8 +113,8 @@ const UserAttendance = () => {
       setAttendanceData(attendanceInfo);
       return attendanceInfo;
     } catch (err) {
-      console.error('Error fetching attendance data:', err);
-      setError('Failed to fetch attendance data');
+      console.error("Error fetching attendance data:", err);
+      setError("Failed to fetch attendance data");
       return [];
     }
   };
@@ -130,10 +131,10 @@ const UserAttendance = () => {
 
       const attendanceValue = userAttendance
         ? userAttendance.attendance
-        : 'No Record';
+        : "No Record";
 
       // Check if user has valid shift time and if current time allows selection
-      const hasValidShift = user.shiftTime && user.shiftTime !== 'Not Assigned';
+      const hasValidShift = user.shiftTime && user.shiftTime !== "Not Assigned";
       const isShiftTimeActive = hasValidShift
         ? isTimeInShift(user.shiftTime)
         : false;
@@ -142,14 +143,14 @@ const UserAttendance = () => {
       // 1. Attendance is Present or Half AND
       // 2. Either has no valid shift OR current time is within their shift window
       const isUserSelectable =
-        (attendanceValue === 'Present' || attendanceValue === 'Half') &&
+        (attendanceValue === "Present" || attendanceValue === "Half") &&
         (!hasValidShift || isShiftTimeActive);
 
       return {
         userId: user._id,
         userName: user.name,
         userEmail: user.email,
-        shiftTime: user.shiftTime || 'Not Assigned',
+        shiftTime: user.shiftTime || "Not Assigned",
         attendance: attendanceValue,
         originalAttendance: attendanceValue, // Store original for comparison
         assignedCount: userAttendance ? userAttendance.assigned.count : 0,
@@ -187,7 +188,7 @@ const UserAttendance = () => {
       const attendanceList = await fetchAttendanceData(selectedDate);
       combineData(usersList, attendanceList);
     } catch (err) {
-      setError('Failed to load data');
+      setError("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -245,9 +246,9 @@ const UserAttendance = () => {
   const fetchPendingCounts = async () => {
     try {
       console.log(
-        'Starting fetchPendingCounts for',
+        "Starting fetchPendingCounts for",
         combinedData.length,
-        'users'
+        "users"
       );
       const updatedPendingCounts = {};
 
@@ -259,7 +260,7 @@ const UserAttendance = () => {
 
       if (usersWithIVs.length === 0) {
         console.log(
-          'No users with assigned IVs found, setting all pending counts to 0'
+          "No users with assigned IVs found, setting all pending counts to 0"
         );
         combinedData.forEach((user) => {
           updatedPendingCounts[user.userId] = 0;
@@ -338,13 +339,13 @@ const UserAttendance = () => {
       });
 
       console.log(
-        'Final pending counts before setState:',
+        "Final pending counts before setState:",
         updatedPendingCounts
       );
       setPendingCounts(updatedPendingCounts);
-      console.log('All pending counts updated successfully');
+      console.log("All pending counts updated successfully");
     } catch (error) {
-      console.error('Error in fetchPendingCounts:', error);
+      console.error("Error in fetchPendingCounts:", error);
     }
   };
 
@@ -375,7 +376,7 @@ const UserAttendance = () => {
         attendanceData: attendanceData,
       };
 
-      console.log('Sending attendance update:', requestBody);
+      console.log("Sending attendance update:", requestBody);
 
       // Call bulk save API
       const response = await axios.post(
@@ -383,7 +384,7 @@ const UserAttendance = () => {
         requestBody
       );
 
-      console.log('Attendance update response:', response.data);
+      console.log("Attendance update response:", response.data);
 
       // Check if response is successful
       if (response.data.success || response.status === 200) {
@@ -404,16 +405,16 @@ const UserAttendance = () => {
         // Optionally reload data to ensure consistency
         // await loadData();
       } else {
-        throw new Error(response.data.message || 'Failed to update attendance');
+        throw new Error(response.data.message || "Failed to update attendance");
       }
     } catch (err) {
-      console.error('Error updating attendance:', err);
+      console.error("Error updating attendance:", err);
 
       // Show error message
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
-        'Failed to update attendance';
+        "Failed to update attendance";
       alert(`❌ Error: ${errorMessage}`);
 
       // You might want to show a more user-friendly error display
@@ -435,16 +436,16 @@ const UserAttendance = () => {
 
     combinedData.forEach((user) => {
       switch (user.attendance) {
-        case 'No Record':
+        case "No Record":
           summary.noRecord++;
           break;
-        case 'Present':
+        case "Present":
           summary.present++;
           break;
-        case 'Absent':
+        case "Absent":
           summary.absent++;
           break;
-        case 'Half':
+        case "Half":
           summary.half++;
           break;
         default:
@@ -477,7 +478,7 @@ const UserAttendance = () => {
     );
 
     if (selectedUsersList.length === 0) {
-      alert('Please select users for auto assignment');
+      alert("Please select users for auto assignment");
       return;
     }
 
@@ -486,13 +487,13 @@ const UserAttendance = () => {
     // Immediately set all selected users to processing state
     const processingStatus = {};
     selectedUsersList.forEach((user) => {
-      processingStatus[user.userId] = 'processing';
+      processingStatus[user.userId] = "processing";
     });
     setUserActionStatus(processingStatus);
 
     try {
       // Get logged in user info from localStorage (same as Admin.jsx)
-      const loggedInUserName = localStorage.getItem('loggedinUserName');
+      const loggedInUserName = localStorage.getItem("loggedinUserName");
 
       // Fetch unassigned appointments
       const appointmentsResponse = await axios.get(
@@ -503,7 +504,7 @@ const UserAttendance = () => {
         !appointmentsResponse.data.success ||
         !appointmentsResponse.data.data
       ) {
-        alert('No unassigned appointments found');
+        alert("No unassigned appointments found");
         setAutoAssigning(false);
         return;
       }
@@ -545,13 +546,13 @@ const UserAttendance = () => {
 
             try {
               // Log API call details for debugging
-              console.log('Making API call:', {
+              console.log("Making API call:", {
                 url: `${BASE_URL}/api/appointments/update-appointments/${appointment.office}/${appointment.appointmentId}`,
                 data: {
                   userId: user.userId,
-                  status: 'Assigned',
-                  completionStatus: 'In Process',
-                  ivAssignedDate: new Date().toISOString(),
+                  status: "Assigned",
+                  completionStatus: "In Process",
+                  ivAssignedDate: getCSTDateTime(), // Use CST timezone
                   ivAssignedByUserName: loggedInUserName,
                 },
               });
@@ -561,18 +562,18 @@ const UserAttendance = () => {
                 `${BASE_URL}/api/appointments/update-appointments/${appointment.office}/${appointment.appointmentId}`,
                 {
                   userId: user.userId,
-                  status: 'Assigned',
-                  completionStatus: 'In Process',
-                  ivAssignedDate: new Date().toISOString(),
+                  status: "Assigned",
+                  completionStatus: "In Process",
+                  ivAssignedDate: getCSTDateTime(), // Use CST timezone
                   ivAssignedByUserName: loggedInUserName,
                 }
               );
 
-              console.log('API Response:', assignResponse.data);
+              console.log("API Response:", assignResponse.data);
 
               // Check if assignment was successful by verifying status and assignedUser fields
               if (
-                assignResponse.data.status === 'Assigned' &&
+                assignResponse.data.status === "Assigned" &&
                 assignResponse.data.assignedUser
               ) {
                 console.log(
@@ -625,7 +626,7 @@ const UserAttendance = () => {
       }
 
       // After all assignments are done, update attendance for users who got new assignments
-      console.log('All assignments completed. Updating attendance data...');
+      console.log("All assignments completed. Updating attendance data...");
 
       for (const user of selectedUsersList) {
         const userTracking = userAssignmentTracking[user.userId];
@@ -638,8 +639,8 @@ const UserAttendance = () => {
 
             if (
               currentUserData &&
-              currentUserData.attendance !== 'No Record' &&
-              currentUserData.attendance !== 'Absent'
+              currentUserData.attendance !== "No Record" &&
+              currentUserData.attendance !== "Absent"
             ) {
               console.log(`Updating attendance for ${user.userName}:`, {
                 finalCount: userTracking.assignedCount,
@@ -699,20 +700,20 @@ const UserAttendance = () => {
       // Mark all users as completed
       const completedStatus = {};
       selectedUsersList.forEach((user) => {
-        completedStatus[user.userId] = 'completed';
+        completedStatus[user.userId] = "completed";
       });
       setUserActionStatus(completedStatus);
 
       // Refresh pending counts after successful assignments
       await fetchPendingCounts();
     } catch (error) {
-      console.error('Error in auto assignment:', error);
-      alert('Error occurred during auto assignment. Please try again.');
+      console.error("Error in auto assignment:", error);
+      alert("Error occurred during auto assignment. Please try again.");
 
       // Mark all users as warning
       const warningStatus = {};
       selectedUsersList.forEach((user) => {
-        warningStatus[user.userId] = 'warning';
+        warningStatus[user.userId] = "warning";
       });
       setUserActionStatus(warningStatus);
     }
@@ -726,9 +727,9 @@ const UserAttendance = () => {
     <div
       className="flex flex-col overflow-hidden p-4"
       style={{
-        height: 'calc(100vh - 7.5rem)',
-        maxHeight: 'calc(100vh - 7.5rem)',
-        padding: '15px',
+        height: "calc(100vh - 7.5rem)",
+        maxHeight: "calc(100vh - 7.5rem)",
+        padding: "15px",
       }}
     >
       {/* Header with Date Picker */}
@@ -818,8 +819,8 @@ const UserAttendance = () => {
             <div
               className="overflow-auto"
               style={{
-                height: 'calc(100% - 0px)',
-                maxHeight: 'calc(100vh - 16rem)', // Ensure table doesn't exceed viewport minus header and summary space
+                height: "calc(100% - 0px)",
+                maxHeight: "calc(100vh - 16rem)", // Ensure table doesn't exceed viewport minus header and summary space
               }}
             >
               <table className="min-w-full">
@@ -871,7 +872,7 @@ const UserAttendance = () => {
                     <tr
                       key={user.userId}
                       className={`hover:bg-gray-50 ${
-                        selectedUsers.has(user.userId) ? 'bg-blue-50' : ''
+                        selectedUsers.has(user.userId) ? "bg-blue-50" : ""
                       }`}
                     >
                       <td className="px-3 py-2 border-r border-gray-200">
@@ -883,18 +884,18 @@ const UserAttendance = () => {
                             disabled={!user.isSelectable}
                             title={
                               !user.isSelectable
-                                ? user.attendance !== 'Present' &&
-                                  user.attendance !== 'Half'
-                                  ? 'User must be Present or Half to be selected'
+                                ? user.attendance !== "Present" &&
+                                  user.attendance !== "Half"
+                                  ? "User must be Present or Half to be selected"
                                   : !user.shiftTimeActive
                                   ? `User's shift (${user.shiftTime}) is not currently active`
-                                  : 'User not selectable'
-                                : 'Select user for auto assignment'
+                                  : "User not selectable"
+                                : "Select user for auto assignment"
                             }
                             className={`rounded border-gray-300 focus:ring-blue-500 ${
                               user.isSelectable
-                                ? 'text-blue-600 cursor-pointer'
-                                : 'text-gray-300 cursor-not-allowed'
+                                ? "text-blue-600 cursor-pointer"
+                                : "text-gray-300 cursor-not-allowed"
                             }`}
                           />
                         </div>
@@ -910,24 +911,24 @@ const UserAttendance = () => {
                       <td className="px-3 py-2 text-sm text-center text-gray-700 border-r border-gray-200">
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
-                            user.shiftTime === 'Not Assigned'
-                              ? 'bg-gray-100 text-gray-600'
-                              : user.shiftTime === '6PM-3AM'
-                              ? 'bg-purple-100 text-purple-700'
-                              : user.shiftTime === '7PM-4AM'
-                              ? 'bg-green-100 text-green-700'
-                              : user.shiftTime === '8PM-5AM'
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-blue-100 text-blue-700'
+                            user.shiftTime === "Not Assigned"
+                              ? "bg-gray-100 text-gray-600"
+                              : user.shiftTime === "6PM-3AM"
+                              ? "bg-purple-100 text-purple-700"
+                              : user.shiftTime === "7PM-4AM"
+                              ? "bg-green-100 text-green-700"
+                              : user.shiftTime === "8PM-5AM"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-blue-100 text-blue-700"
                           } ${
                             !user.shiftTimeActive &&
-                            user.shiftTime !== 'Not Assigned'
-                              ? 'opacity-50'
-                              : ''
+                            user.shiftTime !== "Not Assigned"
+                              ? "opacity-50"
+                              : ""
                           }`}
                         >
                           {user.shiftTime}
-                          {user.shiftTime !== 'Not Assigned' &&
+                          {user.shiftTime !== "Not Assigned" &&
                             !user.shiftTimeActive && (
                               <span className="ml-1 text-xs">⏰</span>
                             )}
@@ -940,13 +941,13 @@ const UserAttendance = () => {
                             handleAttendanceChange(user.userId, e.target.value)
                           }
                           className={`px-2 py-1 rounded text-xs font-medium border-0 focus:ring-2 focus:ring-blue-500 ${
-                            user.attendance === 'Present'
-                              ? 'bg-green-100 text-green-700'
-                              : user.attendance === 'Absent'
-                              ? 'bg-red-100 text-red-700'
-                              : user.attendance === 'Half'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-gray-100 text-gray-600'
+                            user.attendance === "Present"
+                              ? "bg-green-100 text-green-700"
+                              : user.attendance === "Absent"
+                              ? "bg-red-100 text-red-700"
+                              : user.attendance === "Half"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           <option value="No Record" disabled>
@@ -961,8 +962,8 @@ const UserAttendance = () => {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             user.assignedCount > 0
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-500'
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {user.assignedCount}
@@ -974,15 +975,15 @@ const UserAttendance = () => {
                             user.appointmentIds
                           )}
                         >
-                          {user.appointmentIds.join(',')}
+                          {user.appointmentIds.join(",")}
                         </div>
                       </td>
                       <td className="px-3 py-2 text-sm text-center text-gray-700 border-r border-gray-200">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             (pendingCounts[user.userId] || 0) > 0
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-gray-100 text-gray-500'
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {pendingCounts[user.userId] || 0}
@@ -990,17 +991,17 @@ const UserAttendance = () => {
                       </td>
                       <td className="px-3 py-2 text-sm text-center text-gray-700">
                         {/* Action Column */}
-                        {userActionStatus[user.userId] === 'processing' && (
+                        {userActionStatus[user.userId] === "processing" && (
                           <div className="flex justify-center">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                           </div>
                         )}
-                        {userActionStatus[user.userId] === 'completed' && (
+                        {userActionStatus[user.userId] === "completed" && (
                           <div className="flex justify-center">
                             <span className="text-green-600 text-lg">✅</span>
                           </div>
                         )}
-                        {userActionStatus[user.userId] === 'warning' && (
+                        {userActionStatus[user.userId] === "warning" && (
                           <div className="flex justify-center">
                             <span className="text-yellow-600 text-lg">⚠️</span>
                           </div>
@@ -1093,8 +1094,8 @@ const UserAttendance = () => {
                   disabled={autoAssigning}
                   className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
                     autoAssigning
-                      ? 'bg-gray-400 cursor-not-allowed text-white'
-                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      ? "bg-gray-400 cursor-not-allowed text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white"
                   }`}
                 >
                   {autoAssigning ? (
@@ -1130,8 +1131,8 @@ const UserAttendance = () => {
                   disabled={updating}
                   className={`px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
                     updating
-                      ? 'bg-gray-400 cursor-not-allowed text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
+                      ? "bg-gray-400 cursor-not-allowed text-white"
+                      : "bg-green-600 hover:bg-green-700 text-white"
                   }`}
                 >
                   {updating ? (

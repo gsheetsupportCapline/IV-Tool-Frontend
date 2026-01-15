@@ -15,6 +15,7 @@ import { Select, MenuItem, FormControl, InputLabel, Grid } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import BASE_URL from "../config/apiConfig";
+import { getCSTDateTime } from "../utils/timezoneUtils";
 // import {insuranceNames} from "./DropdownValues";
 import { Autocomplete, InputAdornment, IconButton } from "@mui/material";
 import { Upload } from "lucide-react";
@@ -276,8 +277,6 @@ const Rush = ({ pageState, setPageState }) => {
       event.preventDefault();
     }
 
-    const currentTime = new Date().toISOString();
-
     // Initialize an error message if any required field is missing
     let errorMessage = "";
 
@@ -357,7 +356,7 @@ const Rush = ({ pageState, setPageState }) => {
       insuranceName: values.insuranceName.name,
       insurancePhone: values.insurancePhone,
       imageUrl: values.imageUrl,
-      ivRequestedDate: currentTime,
+      ivRequestedDate: getCSTDateTime(), // Use CST timezone
       ivType: ivType, // Dynamically determined based on date comparison
     };
     console.log("Submitting payload:", payload);

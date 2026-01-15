@@ -15,6 +15,7 @@ import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
 import ImageViewer from "react-simple-image-viewer";
 import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
+import { getCSTDateTime } from "../utils/timezoneUtils";
 
 // Custom SweetAlert2 configuration for compact size
 const Toast = Swal.mixin({
@@ -430,9 +431,6 @@ const Admin = ({ pageState, setPageState }) => {
       const completedBy = localStorage.getItem("loggedinUserName") || "Admin";
       const assignedUserId = localStorage.getItem("loggedinUserId") || "";
 
-      // Get current date and time in ISO format
-      const currentDate = new Date().toISOString();
-
       // Prepare appointments array for bulk update with all required fields
       const appointments = selectedRows.map((row) => ({
         appointmentId: row._id,
@@ -441,10 +439,10 @@ const Admin = ({ pageState, setPageState }) => {
         planType: closeIVFormData.planType,
         completedBy: completedBy,
         noteRemarks: closeIVFormData.noteRemarks || "",
-        ivCompletedDate: currentDate,
+        ivCompletedDate: getCSTDateTime(), // Use CST timezone
         assignedUser: assignedUserId,
         ivAssignedByUserName: completedBy,
-        ivAssignedDate: currentDate,
+        ivAssignedDate: getCSTDateTime(), // Use CST timezone
       }));
 
       console.log("Sending bulk update request:", { appointments });
@@ -607,7 +605,7 @@ const Admin = ({ pageState, setPageState }) => {
               userId: user._id,
               status: "Assigned",
               completionStatus: "In Process",
-              ivAssignedDate: new Date().toISOString(),
+              ivAssignedDate: getCSTDateTime(), // Use CST timezone
               ivAssignedByUserName: loggedInUserName,
             }
           );
