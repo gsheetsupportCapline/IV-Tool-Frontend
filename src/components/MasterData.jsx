@@ -2,7 +2,16 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import DatePicker from "./DatePicker";
 import BASE_URL from "../config/apiConfig";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box } from "@mui/material";
+import {
+  Box,
+  Popover,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Button,
+} from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const MasterData = ({
   masterDataState,
@@ -11,6 +20,12 @@ const MasterData = ({
 }) => {
   // Use lifted state from App.jsx instead of local state
   const { dateRange, selectedDateType, data, loading, error } = masterDataState;
+
+  // Local state for column filters
+  const [columnFilters, setColumnFilters] = useState({});
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [currentFilterColumn, setCurrentFilterColumn] = useState(null);
+  const [searchText, setSearchText] = useState("");
 
   // Helper function to update specific parts of the state
   const updateMasterDataState = (updates) => {
@@ -183,17 +198,156 @@ const MasterData = ({
     });
   }, [data]);
 
-  // Memoized columns generation
+  // Get unique values for a column based on currently filtered data (excluding the current column filter)
+  const getUniqueValues = useCallback(
+    (columnName) => {
+      // Get data filtered by all columns except the current one
+      const otherFilters = Object.entries(columnFilters).filter(
+        ([col]) => col !== columnName
+      );
+
+      let dataToUse = transformedData;
+      if (otherFilters.length > 0) {
+        dataToUse = transformedData.filter((row) => {
+          return otherFilters.every(([column, selectedValues]) => {
+            if (!selectedValues || selectedValues.length === 0) return true;
+            const cellValue = row[column];
+            return selectedValues.includes(cellValue);
+          });
+        });
+      }
+
+      const values = dataToUse
+        .map((row) => row[columnName])
+        .filter((val) => val !== null && val !== undefined && val !== "-");
+      return [...new Set(values)].sort();
+    },
+    [transformedData, columnFilters]
+  );
+
+  // Filter data based on column filters
+  const filteredData = useMemo(() => {
+    if (Object.keys(columnFilters).length === 0) {
+      return transformedData;
+    }
+
+    return transformedData.filter((row) => {
+      return Object.entries(columnFilters).every(([column, selectedValues]) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
+        const cellValue = row[column];
+        return selectedValues.includes(cellValue);
+      });
+    });
+  }, [transformedData, columnFilters]);
+
+  // Handle filter icon click
+  const handleFilterClick = (event, columnName) => {
+    event.stopPropagation();
+    setCurrentFilterColumn(columnName);
+    setFilterAnchorEl(event.currentTarget);
+    setSearchText("");
+  };
+
+  // Handle filter close
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+    setCurrentFilterColumn(null);
+    setSearchText("");
+  };
+
+  // Handle checkbox change
+  const handleCheckboxChange = (columnName, value) => {
+    setColumnFilters((prev) => {
+      const currentFilters = prev[columnName] || [];
+      const newFilters = currentFilters.includes(value)
+        ? currentFilters.filter((v) => v !== value)
+        : [...currentFilters, value];
+
+      if (newFilters.length === 0) {
+        const { [columnName]: removed, ...rest } = prev;
+        return rest;
+      }
+
+      return { ...prev, [columnName]: newFilters };
+    });
+  };
+
+  // Handle select all
+  const handleSelectAll = (columnName) => {
+    const uniqueValues = getUniqueValues(columnName);
+    setColumnFilters((prev) => ({
+      ...prev,
+      [columnName]: uniqueValues,
+    }));
+  };
+
+  // Handle clear all for a column
+  const handleClearColumn = (columnName) => {
+    setColumnFilters((prev) => {
+      const { [columnName]: removed, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // Handle clear all filters
+  const handleClearAllFilters = () => {
+    setColumnFilters({});
+  };
+
+  // Custom header renderer with filter icon
+  const renderHeader = (params) => {
+    const columnName = params.colDef.headerName;
+    const hasFilter =
+      columnFilters[columnName] && columnFilters[columnName].length > 0;
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+        <span
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+        >
+          {columnName}
+        </span>
+        <FilterListIcon
+          onClick={(e) => handleFilterClick(e, columnName)}
+          style={{
+            cursor: "pointer",
+            fontSize: "18px",
+            color: hasFilter ? "#2563eb" : "#64748b",
+            marginLeft: "4px",
+            flexShrink: 0,
+            fontWeight: hasFilter ? "bold" : "normal",
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Memoized columns generation with custom header
   const columns = useMemo(() => {
     return Object.values(columnMapping).map((header) => ({
       field: header,
       headerName: header,
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
       sortable: true,
-      filterable: true,
+      filterable: false, // Disable default filtering
+      renderHeader: renderHeader,
+      disableColumnMenu: false,
     }));
-  }, []);
+  }, [columnFilters]);
 
   // Fetch data from API
   const fetchData = async () => {
@@ -370,11 +524,11 @@ const MasterData = ({
         <div className="p-4 h-full flex flex-col">
           {/* Filters Section */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4 flex-shrink-0">
-            <div className="grid grid-cols-4 gap-4 items-end">
+            <div className="flex items-center gap-4 flex-wrap">
               {/* Date Range */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
-                  Date Range
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                  Date Range:
                 </label>
                 <div className="h-10">
                   <DatePicker
@@ -387,16 +541,16 @@ const MasterData = ({
               </div>
 
               {/* Date Type Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
-                  Date Type
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                  Date Type:
                 </label>
                 <select
                   value={selectedDateType}
                   onChange={(e) =>
                     updateMasterDataState({ selectedDateType: e.target.value })
                   }
-                  className="w-full h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
+                  className="h-10 px-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-slate-400 transition-colors bg-white text-slate-700"
                 >
                   <option value="">Select Date Type</option>
                   {dateTypeOptions.map((option) => (
@@ -408,55 +562,43 @@ const MasterData = ({
               </div>
 
               {/* Search Button */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
-                  &nbsp;
-                </label>
-                <button
-                  onClick={handleSearch}
-                  disabled={
-                    !dateRange.startDate ||
-                    !dateRange.endDate ||
-                    !selectedDateType ||
-                    loading
-                  }
-                  className="w-full h-10 px-4 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Search Data
-                </button>
-              </div>
+              <button
+                onClick={handleSearch}
+                disabled={
+                  !dateRange.startDate ||
+                  !dateRange.endDate ||
+                  !selectedDateType ||
+                  loading
+                }
+                className="h-10 px-6 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+              >
+                Search
+              </button>
 
               {/* Download CSV Button - Only visible when data exists */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
-                  &nbsp;
-                </label>
-                {transformedData && transformedData.length > 0 ? (
-                  <button
-                    onClick={handleDownloadCSV}
-                    disabled={loading}
-                    className="w-full h-10 px-4 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              {transformedData && transformedData.length > 0 && (
+                <button
+                  onClick={handleDownloadCSV}
+                  disabled={loading}
+                  className="h-10 px-6 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-0 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    Download CSV
-                  </button>
-                ) : (
-                  <div className="w-full h-10"></div>
-                )}
-              </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Download CSV
+                </button>
+              )}
             </div>
 
             {/* Error Message */}
@@ -468,7 +610,19 @@ const MasterData = ({
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 min-h-0 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 min-h-0 mb-2 relative">
+            {/* Clear All Filters Button - Floating above the Box, outside table area */}
+            {Object.keys(columnFilters).length > 0 && (
+              <div className="absolute -top-10 right-2 z-50">
+                <button
+                  onClick={handleClearAllFilters}
+                  className="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded shadow-lg hover:bg-red-700 transition-colors flex items-center gap-1"
+                >
+                  <ClearIcon style={{ fontSize: "14px" }} />
+                  Clear Filters ({Object.keys(columnFilters).length})
+                </button>
+              </div>
+            )}
             <Box
               sx={{
                 height: "calc(100vh - 200px)",
@@ -478,7 +632,7 @@ const MasterData = ({
               {/* Only render DataGrid when component is visible for better performance */}
               {isVisible ? (
                 <DataGrid
-                  rows={transformedData}
+                  rows={filteredData}
                   columns={columns}
                   initialState={{
                     pagination: {
@@ -501,6 +655,35 @@ const MasterData = ({
                       color: "#ffffff",
                       fontWeight: 600,
                       fontSize: "0.75rem",
+                      padding: "0 8px",
+                    },
+                    ".MuiDataGrid-columnHeaderTitle": {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    },
+                    ".MuiDataGrid-iconButtonContainer": {
+                      visibility: "visible",
+                      width: "auto",
+                      marginLeft: "2px",
+                    },
+                    ".MuiDataGrid-menuIcon": {
+                      visibility: "visible",
+                      width: "auto",
+                    },
+                    ".MuiDataGrid-sortIcon": {
+                      color: "#ffffff",
+                      opacity: 0.7,
+                    },
+                    ".MuiDataGrid-menuIconButton": {
+                      color: "#ffffff",
+                      opacity: 0.8,
+                      "&:hover": {
+                        opacity: 1,
+                      },
+                    },
+                    ".MuiDataGrid-columnSeparator": {
+                      color: "#475569",
                     },
                     ".MuiDataGrid-columnHeaderTitle": {
                       color: "#ffffff",
@@ -599,6 +782,122 @@ const MasterData = ({
           </div>
         </div>
       </div>
+
+      {/* Filter Popover */}
+      <Popover
+        open={Boolean(filterAnchorEl)}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <div style={{ padding: "16px", minWidth: "280px", maxWidth: "400px" }}>
+          {currentFilterColumn && (
+            <>
+              <div
+                style={{
+                  marginBottom: "12px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#1e293b",
+                }}
+              >
+                Filter: {currentFilterColumn}
+              </div>
+
+              {/* Search Box */}
+              <TextField
+                size="small"
+                placeholder="Search values..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                fullWidth
+                style={{ marginBottom: "12px" }}
+              />
+
+              {/* Select All / Clear All Buttons */}
+              <div
+                style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+              >
+                <Button
+                  size="small"
+                  onClick={() => handleSelectAll(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Select All
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleClearColumn(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Clear
+                </Button>
+              </div>
+
+              {/* Checkbox List */}
+              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {getUniqueValues(currentFilterColumn)
+                  .filter(
+                    (value) =>
+                      searchText === "" ||
+                      String(value)
+                        .toLowerCase()
+                        .includes(searchText.toLowerCase())
+                  )
+                  .map((value) => (
+                    <FormControlLabel
+                      key={value}
+                      control={
+                        <Checkbox
+                          checked={
+                            columnFilters[currentFilterColumn]?.includes(
+                              value
+                            ) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange(currentFilterColumn, value)
+                          }
+                          size="small"
+                        />
+                      }
+                      label={<span style={{ fontSize: "13px" }}>{value}</span>}
+                      style={{ display: "block", margin: "4px 0" }}
+                    />
+                  ))}
+              </div>
+
+              {/* Apply and Close Button */}
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleFilterClose}
+                  style={{
+                    backgroundColor: "#1e293b",
+                    textTransform: "none",
+                    fontSize: "12px",
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Popover>
     </div>
   );
 };
