@@ -1,27 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Body from "./components/Body";
-import MaintenancePage from "./components/MaintenancePage";
 import "./App.css";
 
 const App = () => {
-  // Check if maintenance mode is enabled (default: true for everyone)
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true);
-
-  useEffect(() => {
-    // Check localStorage for maintenance mode override (admin only)
-    const maintenanceFlag = localStorage.getItem("maintenanceMode");
-    // If explicitly set to false in localStorage, allow access (admin override)
-    if (maintenanceFlag === "false") {
-      setIsMaintenanceMode(false);
-    }
-  }, []);
-
-  // If maintenance mode is active, show maintenance page
-  if (isMaintenanceMode) {
-    return <MaintenancePage />;
-  }
   // Lifted state for MasterData to preserve across route changes
   const [masterDataState, setMasterDataState] = useState({
     dateRange: {
