@@ -20,6 +20,8 @@ const Body = ({
   setMasterDataState,
   homeState,
   setHomeState,
+  statusState,
+  setStatusState,
   awaitingIVState,
   setAwaitingIVState,
   rushState,
@@ -36,6 +38,8 @@ const Body = ({
   setAssignedIVState,
   productionIVState,
   setProductionIVState,
+  userDashboardState,
+  setUserDashboardState,
   smilepointIVInfoState,
   setSmilepointIVInfoState,
 }) => {
@@ -103,6 +107,8 @@ const Body = ({
         setMasterDataState={setMasterDataState}
         homeState={homeState}
         setHomeState={setHomeState}
+        statusState={statusState}
+        setStatusState={setStatusState}
         awaitingIVState={awaitingIVState}
         setAwaitingIVState={setAwaitingIVState}
         rushState={rushState}
@@ -119,6 +125,8 @@ const Body = ({
         setAssignedIVState={setAssignedIVState}
         productionIVState={productionIVState}
         setProductionIVState={setProductionIVState}
+        userDashboardState={userDashboardState}
+        setUserDashboardState={setUserDashboardState}
         smilepointIVInfoState={smilepointIVInfoState}
         setSmilepointIVInfoState={setSmilepointIVInfoState}
       />

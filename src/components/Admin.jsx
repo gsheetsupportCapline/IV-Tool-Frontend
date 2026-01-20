@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Redirect } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
@@ -16,6 +16,8 @@ import BASE_URL from "../config/apiConfig";
 import ImageViewer from "react-simple-image-viewer";
 import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 import { getCSTDateTime } from "../utils/timezoneUtils";
+import { Popover, Checkbox, FormControlLabel, TextField } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 // Custom SweetAlert2 configuration for compact size
 const Toast = Swal.mixin({
@@ -90,6 +92,12 @@ const Admin = ({ pageState, setPageState }) => {
   const [patientIdFilter, setPatientIdFilter] = useState("");
   const [officeName, setOfficeName] = useState([]);
 
+  // Filter states
+  const [columnFilters, setColumnFilters] = useState({});
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [currentFilterColumn, setCurrentFilterColumn] = useState(null);
+  const [searchText, setSearchText] = useState("");
+
   // Close IV Modal states
   const [isCloseIVModalOpen, setIsCloseIVModalOpen] = useState(false);
   const [closeIVFormData, setCloseIVFormData] = useState({
@@ -140,7 +148,7 @@ const Admin = ({ pageState, setPageState }) => {
       try {
         const encodedCategory = encodeURIComponent(category);
         const response = await axios.get(
-          `${BASE_URL}/api/dropdownValues/${encodedCategory}`
+          `${BASE_URL}/api/dropdownValues/${encodedCategory}`,
         );
         return response.data.options;
       } catch (error) {
@@ -161,6 +169,98 @@ const Admin = ({ pageState, setPageState }) => {
 
     loadOptions();
   }, []);
+
+  // Filter handler functions
+  const handleFilterClick = (event, columnName) => {
+    event.stopPropagation();
+    setCurrentFilterColumn(columnName);
+    setFilterAnchorEl(event.currentTarget);
+    setSearchText("");
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+    setCurrentFilterColumn(null);
+    setSearchText("");
+  };
+
+  const getUniqueValues = (columnName) => {
+    const values = new Set();
+
+    // Map column names to field names
+    const columnFieldMap = {
+      Status: "status",
+      "Completion Status": "completionStatus",
+      Office: "office",
+      "IV Type": "ivType",
+      "Assigned To": "assignedUser",
+      "Assigned Date": "ivAssignedDate",
+      "Appointment Type": "appointmentType",
+      "Appointment Date": "appointmentDate",
+      "Appointment Time": "appointmentTime",
+      "Patient ID": "patientId",
+      "IV Requested Date": "ivRequestedDate",
+      "Insurance Name": "insuranceName",
+      "Insurance Phone No": "insurancePhone",
+      "Policy Holder Name": "policyHolderName",
+      "Policy Holder DOB": "policyHolderDOB",
+      "Member Id": "memberId",
+      "MID/SSN": "MIDSSN",
+      "Employer Name": "employerName",
+      "Patient Name": "patientName",
+    };
+
+    const fieldName = columnFieldMap[columnName];
+
+    rows.forEach((row) => {
+      let value;
+
+      if (columnName === "Assigned To") {
+        const user = users.find((user) => user._id === row.assignedUser);
+        value = user ? user.name : row.assignedUser || "Unassigned";
+      } else if (columnName === "Assigned Date") {
+        value = formatDateTime(row.ivAssignedDate);
+      } else if (fieldName) {
+        value = row[fieldName];
+      }
+
+      if (value !== undefined && value !== null && value !== "") {
+        values.add(String(value));
+      }
+    });
+    return Array.from(values).sort();
+  };
+
+  const handleCheckboxChange = (columnName, value) => {
+    setColumnFilters((prev) => {
+      const currentFilters = prev[columnName] || [];
+      const newFilters = currentFilters.includes(value)
+        ? currentFilters.filter((v) => v !== value)
+        : [...currentFilters, value];
+
+      if (newFilters.length === 0) {
+        const { [columnName]: removed, ...rest } = prev;
+        return rest;
+      }
+
+      return { ...prev, [columnName]: newFilters };
+    });
+  };
+
+  const handleSelectAll = (columnName) => {
+    const uniqueValues = getUniqueValues(columnName);
+    setColumnFilters((prev) => ({
+      ...prev,
+      [columnName]: uniqueValues,
+    }));
+  };
+
+  const handleClearColumn = (columnName) => {
+    setColumnFilters((prev) => {
+      const { [columnName]: removed, ...rest } = prev;
+      return rest;
+    });
+  };
 
   // Custom cell renderer function
   const renderUserName = (params) => {
@@ -205,144 +305,257 @@ const Admin = ({ pageState, setPageState }) => {
     setIsViewerOpen(false);
   };
 
-  const columns = [
-    {
-      field: "status",
-      headerName: "Status",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "completionStatus",
-      headerName: "Completion Status",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "office",
-      headerName: "Office",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "ivType",
-      headerName: "IV Type",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "assignedUser",
-      headerName: "Assigned To",
-      width: 150,
-      renderCell: renderUserName,
-      headerClassName: "header-row",
-    },
-    {
-      field: "ivAssignedDate",
-      headerName: "Assigned Date",
-      width: 180,
-      headerClassName: "header-row",
-      renderCell: (params) => formatDateTime(params.row.ivAssignedDate),
-    },
-    {
-      field: "appointmentType",
-      headerName: "Appointment Type",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "appointmentDate",
-      headerName: "Appointment Date",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "appointmentTime",
-      headerName: "Appointment Time",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "patientId",
-      headerName: "Patient Id",
-      headerClassName: "header-row",
-      width: 100,
-    },
-    {
-      field: "ivRequestedDate",
-      headerName: "IV Requested Date",
-      headerClassName: "header-row",
-      width: 100,
-    },
-    {
-      field: "insuranceName",
-      headerName: "Insurance Name",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "insurancePhone",
-      headerName: "Insurance Phone No",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "policyHolderName",
-      headerName: "Policy Holder Name",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "policyHolderDOB",
-      headerName: "Policy Holder DOB",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "memberId",
-      headerName: "Member Id",
-      headerClassName: "header-row",
-      width: 100,
-    },
-    {
-      field: "MIDSSN",
-      headerName: "MID/SSN",
-      headerClassName: "header-row",
-      width: 100,
-    },
-    {
-      field: "imageUrl",
-      headerName: "Image",
-      headerClassName: "header-row",
-      width: 100,
-      renderCell: (params) => {
-        return (
-          <>
-            {params.row.imageUrl && params.row.imageUrl.trim() !== "" ? (
-              <button
-                onClick={() => handleViewImage(params.row.imageUrl)}
-                className="size-10 w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
-              >
-                View Image
-              </button>
-            ) : null}
-          </>
-        );
+  // Custom header renderer with filter icon
+  const renderHeader = (params) => {
+    const columnName = params.colDef.headerName;
+    const hasFilter =
+      columnFilters[columnName] && columnFilters[columnName].length > 0;
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+        <span
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+        >
+          {columnName}
+        </span>
+        <FilterListIcon
+          onClick={(e) => handleFilterClick(e, columnName)}
+          style={{
+            cursor: "pointer",
+            fontSize: "18px",
+            color: hasFilter ? "#2563eb" : "#64748b",
+            marginLeft: "4px",
+            flexShrink: 0,
+            fontWeight: hasFilter ? "bold" : "normal",
+            opacity: 1,
+          }}
+        />
+      </div>
+    );
+  };
+
+  const columns = useMemo(
+    () => [
+      {
+        field: "status",
+        headerName: "Status",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
       },
-    },
-    {
-      field: "employerName",
-      headerName: "Employer Name",
-      headerClassName: "header-row",
-      width: 150,
-    },
-    {
-      field: "patientName",
-      headerName: "Patient Name",
-      headerClassName: "header-row",
-      width: 150,
-    },
-  ];
+      {
+        field: "completionStatus",
+        headerName: "Completion Status",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "office",
+        headerName: "Office",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "ivType",
+        headerName: "IV Type",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "assignedUser",
+        headerName: "Assigned To",
+        width: 150,
+        renderCell: renderUserName,
+        headerClassName: "header-row",
+        renderHeader: renderHeader,
+      },
+      {
+        field: "ivAssignedDate",
+        headerName: "Assigned Date",
+        width: 180,
+        headerClassName: "header-row",
+        renderCell: (params) => formatDateTime(params.row.ivAssignedDate),
+        renderHeader: renderHeader,
+      },
+      {
+        field: "appointmentType",
+        headerName: "Appointment Type",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "appointmentDate",
+        headerName: "Appointment Date",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "appointmentTime",
+        headerName: "Appointment Time",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "patientId",
+        headerName: "Patient ID",
+        headerClassName: "header-row",
+        width: 100,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "ivRequestedDate",
+        headerName: "IV Requested Date",
+        headerClassName: "header-row",
+        width: 100,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "insuranceName",
+        headerName: "Insurance Name",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "insurancePhone",
+        headerName: "Insurance Phone No",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "policyHolderName",
+        headerName: "Policy Holder Name",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "policyHolderDOB",
+        headerName: "Policy Holder DOB",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "memberId",
+        headerName: "Member Id",
+        headerClassName: "header-row",
+        width: 100,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "MIDSSN",
+        headerName: "MID/SSN",
+        headerClassName: "header-row",
+        width: 100,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "imageUrl",
+        headerName: "Image",
+        headerClassName: "header-row",
+        width: 100,
+        renderCell: (params) => {
+          return (
+            <>
+              {params.row.imageUrl && params.row.imageUrl.trim() !== "" ? (
+                <button
+                  onClick={() => handleViewImage(params.row.imageUrl)}
+                  className="size-10 w-20 rounded-md bg-black text-white px-2 py-1 text-xs"
+                >
+                  View Image
+                </button>
+              ) : null}
+            </>
+          );
+        },
+      },
+      {
+        field: "employerName",
+        headerName: "Employer Name",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+      {
+        field: "patientName",
+        headerName: "Patient Name",
+        headerClassName: "header-row",
+        width: 150,
+        renderHeader: renderHeader,
+      },
+    ],
+    [columnFilters, users, rows],
+  );
+
+  // Filtered data
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      for (const [columnName, filters] of Object.entries(columnFilters)) {
+        if (filters.length === 0) continue;
+
+        // Map column names to field names
+        const columnFieldMap = {
+          Status: "status",
+          "Completion Status": "completionStatus",
+          Office: "office",
+          "IV Type": "ivType",
+          "Assigned To": "assignedUser",
+          "Assigned Date": "ivAssignedDate",
+          "Appointment Type": "appointmentType",
+          "Appointment Date": "appointmentDate",
+          "Appointment Time": "appointmentTime",
+          "Patient ID": "patientId",
+          "IV Requested Date": "ivRequestedDate",
+          "Insurance Name": "insuranceName",
+          "Insurance Phone No": "insurancePhone",
+          "Policy Holder Name": "policyHolderName",
+          "Policy Holder DOB": "policyHolderDOB",
+          "Member Id": "memberId",
+          "MID/SSN": "MIDSSN",
+          "Employer Name": "employerName",
+          "Patient Name": "patientName",
+        };
+
+        const fieldName = columnFieldMap[columnName];
+        let rowValue;
+
+        if (columnName === "Assigned To") {
+          const user = users.find((user) => user._id === row.assignedUser);
+          rowValue = user ? user.name : row.assignedUser || "Unassigned";
+        } else if (columnName === "Assigned Date") {
+          rowValue = formatDateTime(row.ivAssignedDate);
+        } else if (fieldName) {
+          rowValue = row[fieldName];
+        }
+
+        if (!filters.includes(String(rowValue))) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [rows, columnFilters, users]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -455,7 +668,7 @@ const Admin = ({ pageState, setPageState }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       console.log("Bulk update response:", response.data);
@@ -542,13 +755,13 @@ const Admin = ({ pageState, setPageState }) => {
               date: currentDate,
               office: "all",
             },
-          }
+          },
         );
 
         let userAttendanceStatus = "No Record";
         if (attendanceResponse.data.success) {
           const userAttendanceData = attendanceResponse.data.data.find(
-            (u) => u.userId === user._id
+            (u) => u.userId === user._id,
           );
           if (userAttendanceData) {
             userAttendanceStatus = userAttendanceData.attendance;
@@ -590,7 +803,7 @@ const Admin = ({ pageState, setPageState }) => {
         const id = selectedAppointmentIds[i];
         try {
           const officeNameForCurrentId = selectedRows.find(
-            (row) => row._id === id
+            (row) => row._id === id,
           )?.office;
 
           if (!officeNameForCurrentId) {
@@ -607,7 +820,7 @@ const Admin = ({ pageState, setPageState }) => {
               completionStatus: "In Process",
               ivAssignedDate: getCSTDateTime(), // Use CST timezone
               ivAssignedByUserName: loggedInUserName,
-            }
+            },
           );
 
           const updatedAppointment = response.data;
@@ -616,7 +829,7 @@ const Admin = ({ pageState, setPageState }) => {
           setRows((prevRows) => {
             const newRows = [...prevRows];
             const index = newRows.findIndex(
-              (row) => row._id.toString() === updatedAppointment._id.toString()
+              (row) => row._id.toString() === updatedAppointment._id.toString(),
             );
             if (index !== -1) {
               newRows[index] = updatedAppointment;
@@ -643,12 +856,12 @@ const Admin = ({ pageState, setPageState }) => {
                   date: currentDate,
                   office: "all",
                 },
-              }
+              },
             );
 
             if (attendanceResponse.data.success) {
               const userAttendanceData = attendanceResponse.data.data.find(
-                (u) => u.userId === user._id
+                (u) => u.userId === user._id,
               );
               if (userAttendanceData && userAttendanceData.assigned) {
                 currentAssignedCount = userAttendanceData.assigned.count || 0;
@@ -660,7 +873,7 @@ const Admin = ({ pageState, setPageState }) => {
           } catch (fetchError) {
             console.log(
               "No existing attendance data found, starting fresh for user:",
-              user.name
+              user.name,
             );
           }
 
@@ -680,7 +893,7 @@ const Admin = ({ pageState, setPageState }) => {
                 count: updatedCount,
                 appointmentIds: updatedAppointmentIds,
               },
-            }
+            },
           );
 
           if (
@@ -688,13 +901,13 @@ const Admin = ({ pageState, setPageState }) => {
             attendanceUpdateResponse.status === 200
           ) {
             console.log(
-              `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`
+              `Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs`,
             );
           }
         } catch (attendanceError) {
           console.error(
             `Error updating attendance for user ${user.name}:`,
-            attendanceError
+            attendanceError,
           );
         }
       }
@@ -742,7 +955,7 @@ const Admin = ({ pageState, setPageState }) => {
     });
 
     const selectedRowsData = filteredSelection.map((id) =>
-      rows.find((row) => row._id === id)
+      rows.find((row) => row._id === id),
     );
     setSelectedRows(selectedRowsData);
   };
@@ -778,7 +991,7 @@ const Admin = ({ pageState, setPageState }) => {
     for (let id of selectedAppointmentIds) {
       try {
         const officeNameForCurrentId = selectedRows.find(
-          (row) => row._id === id
+          (row) => row._id === id,
         )?.office;
         const response = await axios.put(
           `${BASE_URL}/api/appointments/update-appointments/${officeNameForCurrentId}/${id}`,
@@ -788,12 +1001,12 @@ const Admin = ({ pageState, setPageState }) => {
             completionStatus: "IV Not Done",
             ivAssignedDate: null,
             ivAssignedByUserName: null,
-          }
+          },
         );
 
         const updatedAppointment = response.data;
         const index = rows.findIndex(
-          (row) => row._id === updatedAppointment._id
+          (row) => row._id === updatedAppointment._id,
         );
 
         if (index !== -1) {
@@ -823,12 +1036,12 @@ const Admin = ({ pageState, setPageState }) => {
                 date: currentDate,
                 office: "all",
               },
-            }
+            },
           );
 
           if (attendanceResponse.data.success) {
             const userAttendanceData = attendanceResponse.data.data.find(
-              (u) => u.userId === userId
+              (u) => u.userId === userId,
             );
             if (userAttendanceData && userAttendanceData.assigned) {
               currentAssignedCount = userAttendanceData.assigned.count || 0;
@@ -844,34 +1057,34 @@ const Admin = ({ pageState, setPageState }) => {
         // Remove unassigned appointment IDs from current list
         console.log(
           "Current appointment IDs in attendance:",
-          currentAppointmentIds
+          currentAppointmentIds,
         );
         console.log("Appointment IDs to remove:", appointmentIds);
 
         // Convert all IDs to strings for proper comparison
         const currentAppointmentIdsStr = currentAppointmentIds.map((id) =>
-          id.toString()
+          id.toString(),
         );
         const appointmentIdsToRemoveStr = appointmentIds.map((id) =>
-          id.toString()
+          id.toString(),
         );
 
         console.log("Current IDs as strings:", currentAppointmentIdsStr);
         console.log("IDs to remove as strings:", appointmentIdsToRemoveStr);
 
         const updatedAppointmentIds = currentAppointmentIdsStr.filter(
-          (id) => !appointmentIdsToRemoveStr.includes(id)
+          (id) => !appointmentIdsToRemoveStr.includes(id),
         );
 
         console.log(
           "Updated appointment IDs after removal:",
-          updatedAppointmentIds
+          updatedAppointmentIds,
         );
 
         // Decrease count by the number of unassigned appointments
         const updatedCount = Math.max(
           0,
-          currentAssignedCount - appointmentIds.length
+          currentAssignedCount - appointmentIds.length,
         );
 
         // Update attendance using same API pattern as Auto Assignment
@@ -893,12 +1106,12 @@ const Admin = ({ pageState, setPageState }) => {
               count: updatedCount,
               appointmentIds: updatedAppointmentIds,
             },
-          }
+          },
         );
 
         console.log(
           `Attendance update response for ${user.name}:`,
-          attendanceUpdateResponse.data
+          attendanceUpdateResponse.data,
         );
 
         if (
@@ -906,17 +1119,17 @@ const Admin = ({ pageState, setPageState }) => {
           attendanceUpdateResponse.status === 200
         ) {
           console.log(
-            `✅ Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs (decreased by ${appointmentIds.length})`
+            `✅ Successfully updated attendance for user ${user.name}: ${updatedCount} total IVs (decreased by ${appointmentIds.length})`,
           );
           console.log(
             `Final appointment IDs for ${user.name}:`,
-            updatedAppointmentIds
+            updatedAppointmentIds,
           );
         }
       } catch (attendanceError) {
         console.error(
           `Error updating attendance for user ${user.name}:`,
-          attendanceError
+          attendanceError,
         );
       }
     }
@@ -934,7 +1147,7 @@ const Admin = ({ pageState, setPageState }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${valueDate.startDate}&endDate=${valueDate.endDate}`
+        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${valueDate.startDate}&endDate=${valueDate.endDate}`,
       );
       const responseData = await response.json();
 
@@ -945,24 +1158,24 @@ const Admin = ({ pageState, setPageState }) => {
             appointmentDate: new Date(appointment.appointmentDate)
               .toISOString()
               .split("T")[0],
-          })
+          }),
         );
 
         if (patientIdFilter) {
           filteredAppointments = filteredAppointments.filter(
-            (appointment) => appointment.patientId == patientIdFilter
+            (appointment) => appointment.patientId == patientIdFilter,
           );
         }
 
         switch (tabValue) {
           case 0:
             filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === "Unassigned"
+              (appointment) => appointment.status === "Unassigned",
             );
             break;
           case 1:
             filteredAppointments = filteredAppointments.filter(
-              (appointment) => appointment.status === "Assigned"
+              (appointment) => appointment.status === "Assigned",
             );
             break;
           default:
@@ -1232,7 +1445,7 @@ const Admin = ({ pageState, setPageState }) => {
             ) : rows.length > 0 ? (
               <div style={{ height: "100%", width: "100%" }}>
                 <DataGrid
-                  rows={rows}
+                  rows={filteredRows}
                   columns={columns}
                   pageSizeOptions={[25, 50, 100]}
                   checkboxSelection
@@ -1524,6 +1737,122 @@ const Admin = ({ pageState, setPageState }) => {
           </div>
         </div>
       )}
+
+      {/* Filter Popover */}
+      <Popover
+        open={Boolean(filterAnchorEl)}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <div style={{ padding: "16px", minWidth: "280px", maxWidth: "400px" }}>
+          {currentFilterColumn && (
+            <>
+              <div
+                style={{
+                  marginBottom: "12px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#1e293b",
+                }}
+              >
+                Filter: {currentFilterColumn}
+              </div>
+
+              {/* Search Box */}
+              <TextField
+                size="small"
+                placeholder="Search values..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                fullWidth
+                style={{ marginBottom: "12px" }}
+              />
+
+              {/* Select All / Clear Buttons */}
+              <div
+                style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+              >
+                <Button
+                  size="small"
+                  onClick={() => handleSelectAll(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Select All
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleClearColumn(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Clear
+                </Button>
+              </div>
+
+              {/* Checkbox List */}
+              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {getUniqueValues(currentFilterColumn)
+                  .filter(
+                    (value) =>
+                      searchText === "" ||
+                      String(value)
+                        .toLowerCase()
+                        .includes(searchText.toLowerCase()),
+                  )
+                  .map((value) => (
+                    <FormControlLabel
+                      key={value}
+                      control={
+                        <Checkbox
+                          checked={
+                            columnFilters[currentFilterColumn]?.includes(
+                              value,
+                            ) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange(currentFilterColumn, value)
+                          }
+                          size="small"
+                        />
+                      }
+                      label={<span style={{ fontSize: "13px" }}>{value}</span>}
+                      style={{ display: "block", margin: "4px 0" }}
+                    />
+                  ))}
+              </div>
+
+              {/* Close Button */}
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleFilterClose}
+                  style={{
+                    backgroundColor: "#1e293b",
+                    textTransform: "none",
+                    fontSize: "12px",
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Popover>
     </div>
   );
 };

@@ -24,15 +24,15 @@ const NavigationButton = React.memo(
           isLogout
             ? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
             : isActive
-            ? "nav-button-active text-white focus:ring-blue-500"
-            : "bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white focus:ring-blue-500"
+              ? "nav-button-active text-white focus:ring-blue-500"
+              : "bg-slate-700 hover:bg-blue-600 text-slate-100 hover:text-white focus:ring-blue-500",
         )}
         aria-current={isActive ? "page" : undefined}
       >
         <span className="nav-button-text">{item.text}</span>
       </button>
     );
-  }
+  },
 );
 
 NavigationButton.displayName = "NavigationButton";
@@ -79,7 +79,7 @@ const NavigationContainer = React.memo(
         })}
       </div>
     );
-  }
+  },
 );
 
 NavigationContainer.displayName = "NavigationContainer";
@@ -121,13 +121,18 @@ const Header = () => {
         show: userRole === "admin",
       },
       {
-        link: "/dashboard",
+        link: "/iv-user",
+        text: "IV User",
+        show: userRole === "user",
+      },
+      {
+        link: "/user-dashboard",
         text: "Dashboard",
         show: userRole === "user",
       },
       { link: "/", text: "Log Out", show: true },
     ],
-    [userRole]
+    [userRole],
   );
 
   // Memoized navigation handler to prevent recreation
@@ -149,7 +154,7 @@ const Header = () => {
 
       history.push(link);
     },
-    [history, location.pathname]
+    [history, location.pathname],
   );
   return (
     <Disclosure

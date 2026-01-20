@@ -135,8 +135,8 @@ const PendingIV = ({ pageState, setPageState }) => {
                       header === "Office"
                         ? "sticky left-0 bg-gradient-to-r from-slate-800 to-slate-900 border-r-2 border-slate-600 z-40"
                         : header === "Total"
-                        ? "sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40"
-                        : ""
+                          ? "sticky right-0 bg-gradient-to-r from-slate-800 to-slate-900 border-l-2 border-slate-600 z-40"
+                          : ""
                     }`}
                   >
                     {header}
@@ -258,14 +258,16 @@ const PendingIV = ({ pageState, setPageState }) => {
               <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
                 Appointment Date:
               </label>
-              <div className="border border-slate-300 rounded-lg bg-white">
-                <Datepicker
-                  value={dateRange}
-                  onChange={handleValueChange}
-                  inputClassName="text-sm px-3 py-2 border-0 focus:ring-0"
-                  toggleClassName="text-slate-500"
-                  placeholder="Select date range..."
-                />
+              <div className="relative z-50">
+                <div className="border border-slate-300 rounded-lg bg-white">
+                  <Datepicker
+                    value={dateRange}
+                    onChange={handleValueChange}
+                    inputClassName="text-sm px-3 py-2 border-0 focus:ring-0"
+                    toggleClassName="text-slate-500"
+                    placeholder="Select date range..."
+                  />
+                </div>
               </div>
             </div>
             <button

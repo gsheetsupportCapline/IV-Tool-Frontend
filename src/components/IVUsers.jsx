@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Grid,
   TextField,
@@ -17,7 +17,12 @@ import {
   TableHead,
   Snackbar,
   Alert,
+  Popover,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearIcon from "@mui/icons-material/Clear";
 import axios from "axios";
 import Header from "./Header";
 import DatePicker from "./DatePicker";
@@ -28,7 +33,7 @@ const fetchDropdownOptions = async (category) => {
   try {
     const encodedCategory = encodeURIComponent(category);
     const response = await axios.get(
-      `${BASE_URL}/api/dropdownValues/${encodedCategory}`
+      `${BASE_URL}/api/dropdownValues/${encodedCategory}`,
     );
     return response.data.options;
   } catch (error) {
@@ -37,25 +42,86 @@ const fetchDropdownOptions = async (category) => {
   }
 };
 
-const IVUsers = () => {
-  // State management (hooks must be at the top)
-  const [appointments, setAppointments] = useState([]);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({
+const IVUsers = ({ ivUsersState, setIvUsersState }) => {
+  // Use lifted state if available, otherwise use local state
+  const appointments = useMemo(
+    () => ivUsersState?.appointments ?? [],
+    [ivUsersState?.appointments],
+  );
+  const selectedAppointment = ivUsersState?.selectedAppointment ?? null;
+  const loading = ivUsersState?.loading ?? false;
+  const dateRange = ivUsersState?.dateRange ?? {
     startDate: null,
     endDate: null,
-  });
+  };
+  const noteRemarks = ivUsersState?.noteRemarks ?? "";
+  const columnFilters = useMemo(
+    () => ivUsersState?.columnFilters ?? {},
+    [ivUsersState?.columnFilters],
+  );
+  const sortConfig = useMemo(
+    () => ivUsersState?.sortConfig ?? { key: null, direction: "desc" },
+    [ivUsersState?.sortConfig],
+  );
 
-  // Form states
-  const [noteRemarks, setNoteRemarks] = useState("");
+  const [error, setError] = useState(null);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [planTypeOptions, setPlanTypeOptions] = useState([]);
   const [ivRemarksOptions, setIvRemarksOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [currentFilterColumn, setCurrentFilterColumn] = useState(null);
+  const [searchText, setSearchText] = useState("");
+
+  // Update functions that use the lifted state
+  const setAppointments = (value) => {
+    if (setIvUsersState) {
+      const newValue =
+        typeof value === "function" ? value(appointments) : value;
+      setIvUsersState((prev) => ({ ...prev, appointments: newValue }));
+    }
+  };
+
+  const setSelectedAppointment = (value) => {
+    if (setIvUsersState) {
+      setIvUsersState((prev) => ({ ...prev, selectedAppointment: value }));
+    }
+  };
+
+  const setLoading = (value) => {
+    if (setIvUsersState) {
+      setIvUsersState((prev) => ({ ...prev, loading: value }));
+    }
+  };
+
+  const setDateRange = (value) => {
+    if (setIvUsersState) {
+      setIvUsersState((prev) => ({ ...prev, dateRange: value }));
+    }
+  };
+
+  const setNoteRemarks = (value) => {
+    if (setIvUsersState) {
+      setIvUsersState((prev) => ({ ...prev, noteRemarks: value }));
+    }
+  };
+
+  const setColumnFilters = (value) => {
+    if (setIvUsersState) {
+      const newValue =
+        typeof value === "function" ? value(columnFilters) : value;
+      setIvUsersState((prev) => ({ ...prev, columnFilters: newValue }));
+    }
+  };
+
+  const setSortConfig = (value) => {
+    if (setIvUsersState) {
+      const newValue = typeof value === "function" ? value(sortConfig) : value;
+      setIvUsersState((prev) => ({ ...prev, sortConfig: newValue }));
+    }
+  };
 
   // Check user authentication (after hooks)
   const token = localStorage.getItem("token");
@@ -102,8 +168,15 @@ const IVUsers = () => {
       };
       console.log("📊 Setting new date range:", updatedRange);
       setDateRange(updatedRange);
-      // Trigger API call immediately when valid date range is selected
-      fetchAppointmentsWithRange(updatedRange);
+    }
+  };
+
+  // Manual search function for button click
+  const handleSearch = () => {
+    if (dateRange.startDate && dateRange.endDate) {
+      fetchAppointmentsWithRange(dateRange);
+    } else {
+      setError("Please select a valid date range");
     }
   };
 
@@ -149,7 +222,7 @@ const IVUsers = () => {
         processedAppointments = data.appointments;
         console.log(
           "📋 Using data.appointments array, length:",
-          data.appointments.length
+          data.appointments.length,
         );
       } else {
         console.log("📋 No valid array found in response");
@@ -207,7 +280,7 @@ const IVUsers = () => {
 
       await axios.post(
         `${BASE_URL}/api/appointments/update-individual-appointment-details`,
-        payload
+        payload,
       );
 
       setSelectedAppointment(null);
@@ -228,15 +301,180 @@ const IVUsers = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setSelectedAppointment((prevState) => ({
-      ...prevState,
+    setSelectedAppointment({
+      ...selectedAppointment,
       [field]: value,
+    });
+  };
+
+  // Handle column sort
+  const handleSort = (columnKey) => {
+    setSortConfig((prevConfig) => {
+      if (prevConfig.key === columnKey) {
+        // Toggle direction if same column
+        return {
+          key: columnKey,
+          direction: prevConfig.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      // New column, default to ascending
+      return { key: columnKey, direction: "asc" };
+    });
+  };
+
+  // Transform appointments data for filtering and sorting
+  const transformedAppointments = useMemo(() => {
+    const transformed = [...appointments].map((appointment, index) => ({
+      id: appointment._id || index.toString(),
+      office: appointment.office || "N/A",
+      patientId: appointment.patientId || "N/A",
+      appointmentDate: appointment.appointmentDate
+        ? new Date(appointment.appointmentDate).toLocaleDateString()
+        : "N/A",
+      appointmentTime: appointment.appointmentTime || "No time",
+      completionStatus: appointment.completionStatus || "Pending",
+      _original: appointment,
+      _appointmentDateRaw: appointment.appointmentDate, // Keep raw date for sorting
+    }));
+
+    // Apply sorting if configured
+    if (sortConfig.key) {
+      transformed.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        // Special handling for date sorting
+        if (sortConfig.key === "appointmentDate") {
+          aVal = a._appointmentDateRaw
+            ? new Date(a._appointmentDateRaw).getTime()
+            : 0;
+          bVal = b._appointmentDateRaw
+            ? new Date(b._appointmentDateRaw).getTime()
+            : 0;
+        }
+
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return transformed;
+  }, [appointments, sortConfig]);
+
+  // Get unique values for a column based on currently filtered data
+  const getUniqueValues = useCallback(
+    (columnName) => {
+      const otherFilters = Object.entries(columnFilters).filter(
+        ([col]) => col !== columnName,
+      );
+
+      let dataToUse = transformedAppointments;
+      if (otherFilters.length > 0) {
+        dataToUse = transformedAppointments.filter((row) => {
+          return otherFilters.every(([column, selectedValues]) => {
+            if (!selectedValues || selectedValues.length === 0) return true;
+            const cellValue = row[column];
+            return selectedValues.includes(cellValue);
+          });
+        });
+      }
+
+      const values = dataToUse
+        .map((row) => row[columnName])
+        .filter((val) => val !== null && val !== undefined && val !== "N/A");
+      return [...new Set(values)].sort();
+    },
+    [transformedAppointments, columnFilters],
+  );
+
+  // Filter data based on column filters
+  const filteredAppointments = useMemo(() => {
+    if (Object.keys(columnFilters).length === 0) {
+      return transformedAppointments;
+    }
+
+    return transformedAppointments.filter((row) => {
+      return Object.entries(columnFilters).every(([column, selectedValues]) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
+        const cellValue = row[column];
+        return selectedValues.includes(cellValue);
+      });
+    });
+  }, [transformedAppointments, columnFilters]);
+
+  // Handle filter icon click
+  const handleFilterClick = (event, columnName) => {
+    event.stopPropagation();
+    setCurrentFilterColumn(columnName);
+    setFilterAnchorEl(event.currentTarget);
+    setSearchText("");
+  };
+
+  // Handle filter close
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+    setCurrentFilterColumn(null);
+    setSearchText("");
+  };
+
+  // Handle checkbox change
+  const handleCheckboxChange = (columnName, value) => {
+    setColumnFilters((prev) => {
+      const currentFilters = prev[columnName] || [];
+      const newFilters = currentFilters.includes(value)
+        ? currentFilters.filter((v) => v !== value)
+        : [...currentFilters, value];
+
+      if (newFilters.length === 0) {
+        // eslint-disable-next-line no-unused-vars
+        const { [columnName]: removed, ...rest } = prev;
+        return rest;
+      }
+
+      return { ...prev, [columnName]: newFilters };
+    });
+  };
+
+  // Handle select all
+  const handleSelectAll = (columnName) => {
+    const uniqueValues = getUniqueValues(columnName);
+    setColumnFilters((prev) => ({
+      ...prev,
+      [columnName]: uniqueValues,
     }));
   };
 
-  const sortAppointments = (appointments) => {
-    return appointments.sort(
-      (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+  // Handle clear all for a column
+  const handleClearColumn = (columnName) => {
+    setColumnFilters((prev) => {
+      // eslint-disable-next-line no-unused-vars
+      const { [columnName]: removed, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // Handle clear all filters
+  const handleClearAllFilters = () => {
+    setColumnFilters({});
+  };
+
+  // Custom header renderer with filter icon
+  const renderFilterIcon = (columnName) => {
+    const hasFilter =
+      columnFilters[columnName] && columnFilters[columnName].length > 0;
+
+    return (
+      <FilterListIcon
+        onClick={(e) => handleFilterClick(e, columnName)}
+        style={{
+          cursor: "pointer",
+          fontSize: "14px",
+          color: hasFilter ? "#2563eb" : "#64748b",
+          marginLeft: "4px",
+          fontWeight: hasFilter ? "bold" : "normal",
+        }}
+      />
     );
   };
 
@@ -281,7 +519,7 @@ const IVUsers = () => {
         {/* Left Sidebar - Completely Sticky */}
         <div className="w-1/3 bg-white shadow-lg border-r border-slate-200 flex flex-col h-full overflow-hidden">
           {/* Date Range Selector - Fixed */}
-          <div className="p-6 border-b border-slate-200 flex-shrink-0">
+          <div className="p-6 border-b border-slate-200 flex-shrink-0 relative z-50">
             <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
               📅 Select Date Range
             </h2>
@@ -296,6 +534,14 @@ const IVUsers = () => {
                   : null
               }
             />
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              disabled={!dateRange.startDate || !dateRange.endDate || loading}
+              className="mt-3 w-full h-9 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 focus:outline-none disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+            >
+              Search
+            </button>
           </div>
 
           {/* Assignments List */}
@@ -321,7 +567,20 @@ const IVUsers = () => {
                   </p>
                 </div>
               ) : (
-                <div className="h-[calc(100vh-400px)] border border-slate-200 rounded-lg">
+                <div className="h-[calc(100vh-400px)] border border-slate-200 rounded-lg relative">
+                  {/* Clear All Filters Button */}
+                  {Object.keys(columnFilters).length > 0 && (
+                    <div className="absolute -top-8 right-0 z-50">
+                      <button
+                        onClick={handleClearAllFilters}
+                        className="w-7 h-7 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                        title={`Clear ${Object.keys(columnFilters).length} filter(s)`}
+                      >
+                        <ClearIcon style={{ fontSize: "14px" }} />
+                      </button>
+                    </div>
+                  )}
+
                   <TableContainer component={Paper} sx={{ height: "100%" }}>
                     <Table stickyHeader size="small">
                       <TableHead>
@@ -332,9 +591,34 @@ const IVUsers = () => {
                               fontWeight: 600,
                               color: "#374151",
                               fontSize: "0.75rem",
+                              cursor: "pointer",
+                              userSelect: "none",
                             }}
+                            onClick={() => handleSort("office")}
                           >
-                            Office
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <span>Office</span>
+                                {sortConfig.key === "office" && (
+                                  <span style={{ fontSize: "10px" }}>
+                                    {sortConfig.direction === "asc" ? "▲" : "▼"}
+                                  </span>
+                                )}
+                              </div>
+                              {renderFilterIcon("office")}
+                            </div>
                           </TableCell>
                           <TableCell
                             sx={{
@@ -342,9 +626,34 @@ const IVUsers = () => {
                               fontWeight: 600,
                               color: "#374151",
                               fontSize: "0.75rem",
+                              cursor: "pointer",
+                              userSelect: "none",
                             }}
+                            onClick={() => handleSort("patientId")}
                           >
-                            Patient ID
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <span>Patient ID</span>
+                                {sortConfig.key === "patientId" && (
+                                  <span style={{ fontSize: "10px" }}>
+                                    {sortConfig.direction === "asc" ? "▲" : "▼"}
+                                  </span>
+                                )}
+                              </div>
+                              {renderFilterIcon("patientId")}
+                            </div>
                           </TableCell>
                           <TableCell
                             sx={{
@@ -352,9 +661,34 @@ const IVUsers = () => {
                               fontWeight: 600,
                               color: "#374151",
                               fontSize: "0.75rem",
+                              cursor: "pointer",
+                              userSelect: "none",
                             }}
+                            onClick={() => handleSort("appointmentDate")}
                           >
-                            Date & Time
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <span>Date & Time</span>
+                                {sortConfig.key === "appointmentDate" && (
+                                  <span style={{ fontSize: "10px" }}>
+                                    {sortConfig.direction === "asc" ? "▲" : "▼"}
+                                  </span>
+                                )}
+                              </div>
+                              {renderFilterIcon("appointmentDate")}
+                            </div>
                           </TableCell>
                           <TableCell
                             sx={{
@@ -362,98 +696,113 @@ const IVUsers = () => {
                               fontWeight: 600,
                               color: "#374151",
                               fontSize: "0.75rem",
+                              cursor: "pointer",
+                              userSelect: "none",
                             }}
+                            onClick={() => handleSort("completionStatus")}
                           >
-                            Status
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <span>Status</span>
+                                {sortConfig.key === "completionStatus" && (
+                                  <span style={{ fontSize: "10px" }}>
+                                    {sortConfig.direction === "asc" ? "▲" : "▼"}
+                                  </span>
+                                )}
+                              </div>
+                              {renderFilterIcon("completionStatus")}
+                            </div>
                           </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortAppointments(appointments).map(
-                          (appointment, index) => (
-                            <TableRow
-                              key={appointment._id || index}
-                              onClick={() =>
-                                setSelectedAppointment(appointment)
-                              }
+                        {filteredAppointments.map((item) => (
+                          <TableRow
+                            key={item.id}
+                            onClick={() =>
+                              setSelectedAppointment(item._original)
+                            }
+                            sx={{
+                              cursor: "pointer",
+                              "&:hover": { backgroundColor: "#f8fafc" },
+                              backgroundColor:
+                                selectedAppointment?._id === item._original._id
+                                  ? "#eff6ff"
+                                  : "inherit",
+                              borderLeft:
+                                selectedAppointment?._id === item._original._id
+                                  ? "4px solid #3b82f6"
+                                  : "none",
+                            }}
+                          >
+                            <TableCell
                               sx={{
-                                cursor: "pointer",
-                                "&:hover": { backgroundColor: "#f8fafc" },
-                                backgroundColor:
-                                  selectedAppointment?._id === appointment._id
-                                    ? "#eff6ff"
-                                    : "inherit",
-                                borderLeft:
-                                  selectedAppointment?._id === appointment._id
-                                    ? "4px solid #3b82f6"
-                                    : "none",
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                                color: "#1f2937",
+                                py: 1,
                               }}
                             >
-                              <TableCell
-                                sx={{
-                                  fontSize: "0.75rem",
-                                  fontWeight: 500,
-                                  color: "#1f2937",
-                                  py: 1,
-                                }}
-                              >
-                                {appointment.office || "N/A"}
-                              </TableCell>
-                              <TableCell
-                                sx={{
-                                  fontSize: "0.75rem",
-                                  fontWeight: 500,
-                                  color: "#1f2937",
-                                  py: 1,
-                                }}
-                              >
-                                {appointment.patientId || "N/A"}
-                              </TableCell>
-                              <TableCell
-                                sx={{
-                                  fontSize: "0.75rem",
-                                  color: "#4b5563",
-                                  py: 1,
-                                }}
-                              >
-                                <div>
-                                  <div>
-                                    {appointment.appointmentDate
-                                      ? new Date(
-                                          appointment.appointmentDate
-                                        ).toLocaleDateString()
-                                      : "N/A"}
-                                  </div>
-                                  <div className="text-xs text-slate-500">
-                                    {appointment.appointmentTime || "No time"}
-                                  </div>
+                              {item.office}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                                color: "#1f2937",
+                                py: 1,
+                              }}
+                            >
+                              {item.patientId}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontSize: "0.75rem",
+                                color: "#4b5563",
+                                py: 1,
+                              }}
+                            >
+                              <div>
+                                <div>{item.appointmentDate}</div>
+                                <div className="text-xs text-slate-500">
+                                  {item.appointmentTime}
                                 </div>
-                              </TableCell>
-                              <TableCell sx={{ py: 1 }}>
-                                <span
-                                  style={{
-                                    padding: "4px 8px",
-                                    borderRadius: "9999px",
-                                    fontSize: "0.75rem",
-                                    fontWeight: 500,
-                                    backgroundColor:
-                                      appointment.completionStatus ===
-                                      "Completed"
-                                        ? "#dcfce7"
-                                        : "#fed7aa",
-                                    color:
-                                      appointment.completionStatus ===
-                                      "Completed"
-                                        ? "#166534"
-                                        : "#c2410c",
-                                  }}
-                                >
-                                  {appointment.completionStatus || "Pending"}
-                                </span>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        )}
+                              </div>
+                            </TableCell>
+                            <TableCell sx={{ py: 1 }}>
+                              <span
+                                style={{
+                                  padding: "4px 8px",
+                                  borderRadius: "9999px",
+                                  fontSize: "0.75rem",
+                                  fontWeight: 500,
+                                  backgroundColor:
+                                    item.completionStatus === "Completed"
+                                      ? "#dcfce7"
+                                      : "#fed7aa",
+                                  color:
+                                    item.completionStatus === "Completed"
+                                      ? "#166534"
+                                      : "#c2410c",
+                                }}
+                              >
+                                {item.completionStatus}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -478,7 +827,7 @@ const IVUsers = () => {
                       <p className="text-slate-600 mt-1">
                         Patient ID: {selectedAppointment.patientId} •{" "}
                         {new Date(
-                          selectedAppointment.appointmentDate
+                          selectedAppointment.appointmentDate,
                         ).toLocaleDateString()}{" "}
                         • {selectedAppointment.appointmentTime || "No time"}
                       </p>
@@ -748,6 +1097,122 @@ const IVUsers = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* Filter Popover */}
+      <Popover
+        open={Boolean(filterAnchorEl)}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <div style={{ padding: "16px", minWidth: "280px", maxWidth: "400px" }}>
+          {currentFilterColumn && (
+            <>
+              <div
+                style={{
+                  marginBottom: "12px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#1e293b",
+                }}
+              >
+                Filter: {currentFilterColumn}
+              </div>
+
+              {/* Search Box */}
+              <TextField
+                size="small"
+                placeholder="Search values..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                fullWidth
+                style={{ marginBottom: "12px" }}
+              />
+
+              {/* Select All / Clear All Buttons */}
+              <div
+                style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+              >
+                <Button
+                  size="small"
+                  onClick={() => handleSelectAll(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Select All
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleClearColumn(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Clear
+                </Button>
+              </div>
+
+              {/* Checkbox List */}
+              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {getUniqueValues(currentFilterColumn)
+                  .filter(
+                    (value) =>
+                      searchText === "" ||
+                      String(value)
+                        .toLowerCase()
+                        .includes(searchText.toLowerCase()),
+                  )
+                  .map((value) => (
+                    <FormControlLabel
+                      key={value}
+                      control={
+                        <Checkbox
+                          checked={
+                            columnFilters[currentFilterColumn]?.includes(
+                              value,
+                            ) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange(currentFilterColumn, value)
+                          }
+                          size="small"
+                        />
+                      }
+                      label={<span style={{ fontSize: "13px" }}>{value}</span>}
+                      style={{ display: "block", margin: "4px 0" }}
+                    />
+                  ))}
+              </div>
+
+              {/* Apply and Close Button */}
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleFilterClose}
+                  style={{
+                    backgroundColor: "#1e293b",
+                    textTransform: "none",
+                    fontSize: "12px",
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Popover>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import BASE_URL from "../config/apiConfig.js";
 import DatePicker from "./DatePicker";
@@ -61,11 +61,11 @@ const AssignedIV = ({ pageState, setPageState }) => {
 
         // Filter users with role 'user' and isActive true
         const filteredUsers = usersData.filter(
-          (user) => user.role === "user" && user.isActive === true
+          (user) => user.role === "user" && user.isActive === true,
         );
         console.log(
           "Filtered users (role=user & isActive=true):",
-          filteredUsers.length
+          filteredUsers.length,
         );
         console.log("Filtered users data:", filteredUsers);
 
@@ -102,7 +102,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
       });
 
       const appointmentsResponse = await axios.get(
-        `${BASE_URL}/api/appointments/user-appointments/${selectedUserId}?${queryParams}`
+        `${BASE_URL}/api/appointments/user-appointments/${selectedUserId}?${queryParams}`,
       );
 
       // Data is now in response.data.data format
@@ -147,7 +147,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
 
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}?${queryParams}`
+        `${BASE_URL}/api/appointments/assigned-counts/${selectedOffice}?${queryParams}`,
       );
       // Updated response structure: response.data.data.assignedCounts
       const responseData = response.data.data;
@@ -159,7 +159,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
           userName:
             users.find((user) => user._id === userId)?.name || "Unknown",
           count,
-        })
+        }),
       );
       setAssignedCounts(formattedData);
     } catch (error) {
@@ -187,7 +187,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
           id: index,
           office,
           count,
-        })
+        }),
       );
     }
     return [];
@@ -325,7 +325,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
                         <span className="font-semibold text-blue-600">
                           {userOfficeData.reduce(
                             (sum, row) => sum + row.count,
-                            0
+                            0,
                           )}
                         </span>
                       </div>
@@ -473,7 +473,7 @@ const AssignedIV = ({ pageState, setPageState }) => {
                         <span className="font-semibold text-green-600">
                           {assignedCounts.reduce(
                             (sum, row) => sum + row.count,
-                            0
+                            0,
                           )}
                         </span>
                       </div>

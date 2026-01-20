@@ -7,7 +7,7 @@ import BASE_URL from "../config/apiConfig";
 import PageNotFound from "./PageNotFound";
 import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
 
-const Home = ({ pageState, setPageState }) => {
+const Home = ({ pageState, setPageState, statusState, setStatusState }) => {
   // Use lifted state if available, otherwise use local state
   const [allowedOffices, setAllowedOffices] = useState([]);
 
@@ -60,7 +60,7 @@ const Home = ({ pageState, setPageState }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`
+        `${BASE_URL}/api/appointments/fetch-appointments/${selectedOffice}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
       );
       const responseData = await response.json();
       console.log("Fetched data:", responseData);
@@ -232,6 +232,8 @@ const Home = ({ pageState, setPageState }) => {
               data={data}
               dateRange={dateRange}
               patientId={patientIdInput}
+              statusState={statusState}
+              setStatusState={setStatusState}
             />
           </div>
         </div>

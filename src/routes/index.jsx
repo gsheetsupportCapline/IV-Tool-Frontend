@@ -11,6 +11,8 @@ function ParamsExample({
   setMasterDataState,
   homeState,
   setHomeState,
+  statusState,
+  setStatusState,
   awaitingIVState,
   setAwaitingIVState,
   rushState,
@@ -27,6 +29,8 @@ function ParamsExample({
   setAssignedIVState,
   productionIVState,
   setProductionIVState,
+  userDashboardState,
+  setUserDashboardState,
   smilepointIVInfoState,
   setSmilepointIVInfoState,
 }) {
@@ -40,7 +44,7 @@ function ParamsExample({
     "userId:",
     userId,
     "userRole:",
-    userRole
+    userRole,
   );
 
   // Check if user is authenticated - must have both token and userId
@@ -77,7 +81,7 @@ function ParamsExample({
             path={route.path}
             render={(props) => {
               console.log(
-                `Rendering route: ${route.path}, isAuthenticated: ${isAuthenticated}, userRole: ${userRole}`
+                `Rendering route: ${route.path}, isAuthenticated: ${isAuthenticated}, userRole: ${userRole}`,
               );
 
               if (!isAuthenticated) {
@@ -88,7 +92,7 @@ function ParamsExample({
               // Check if route requires specific role
               if (route.requireRole && route.requireRole !== userRole) {
                 console.log(
-                  `Access denied. Required role: ${route.requireRole}, User role: ${userRole}`
+                  `Access denied. Required role: ${route.requireRole}, User role: ${userRole}`,
                 );
                 // Redirect based on user role
                 if (userRole === "admin") {
@@ -110,6 +114,8 @@ function ParamsExample({
                   ...props,
                   pageState: homeState,
                   setPageState: setHomeState,
+                  statusState: statusState,
+                  setStatusState: setStatusState,
                 };
               } else if (route.path === "/awaitingIV") {
                 componentProps = {
@@ -129,11 +135,17 @@ function ParamsExample({
                   pageState: adminState,
                   setPageState: setAdminState,
                 };
-              } else if (route.path === "/dashboard") {
+              } else if (route.path === "/iv-user") {
                 componentProps = {
                   ...props,
-                  pageState: ivUsersState,
-                  setPageState: setIvUsersState,
+                  ivUsersState: ivUsersState,
+                  setIvUsersState: setIvUsersState,
+                };
+              } else if (route.path === "/user-dashboard") {
+                componentProps = {
+                  ...props,
+                  pageState: userDashboardState,
+                  setPageState: setUserDashboardState,
                 };
               } else if (route.path === "/admin-dashboard") {
                 componentProps = {

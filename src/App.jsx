@@ -30,6 +30,12 @@ const App = () => {
     error: false,
   });
 
+  // State for Status component within Home page
+  const [statusState, setStatusState] = useState({
+    selectedOption: "yes",
+    columnFilters: {},
+  });
+
   // State for AwaitingIV page (Information Needed from the Office)
   const [awaitingIVState, setAwaitingIVState] = useState({
     selectedOffice: "",
@@ -72,6 +78,9 @@ const App = () => {
       endDate: null,
     },
     loading: false,
+    columnFilters: {},
+    sortConfig: { key: null, direction: "desc" },
+    noteRemarks: "",
   });
 
   // State for AdminDashboard page
@@ -120,6 +129,20 @@ const App = () => {
     loading: false,
   });
 
+  // State for User Dashboard (ProductionIV for regular users)
+  const [userDashboardState, setUserDashboardState] = useState({
+    users: [],
+    dateRange: {
+      startDate: null,
+      endDate: null,
+    },
+    data: [],
+    userIdToUserMap: {},
+    dateType: "appointmentDate",
+    officeNames: [],
+    loading: false,
+  });
+
   // State for AdminDashboard tabs - Smilepoint IV Info
   const [smilepointIVInfoState, setSmilepointIVInfoState] = useState({
     dateRange: {
@@ -147,6 +170,8 @@ const App = () => {
         setMasterDataState={setMasterDataState}
         homeState={homeState}
         setHomeState={setHomeState}
+        statusState={statusState}
+        setStatusState={setStatusState}
         awaitingIVState={awaitingIVState}
         setAwaitingIVState={setAwaitingIVState}
         rushState={rushState}
@@ -163,6 +188,8 @@ const App = () => {
         setAssignedIVState={setAssignedIVState}
         productionIVState={productionIVState}
         setProductionIVState={setProductionIVState}
+        userDashboardState={userDashboardState}
+        setUserDashboardState={setUserDashboardState}
         smilepointIVInfoState={smilepointIVInfoState}
         setSmilepointIVInfoState={setSmilepointIVInfoState}
       />

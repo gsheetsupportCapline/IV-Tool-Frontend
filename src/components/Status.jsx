@@ -1,9 +1,49 @@
-import { useState, useEffect } from "react";
-import Table from "./Table";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import {
+  Box,
+  Popover,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Button,
+} from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearIcon from "@mui/icons-material/Clear";
 
-const Status = ({ data, dateRange, patientId }) => {
-  const [selectedOption, setSelectedOption] = useState("yes");
+const Status = ({
+  data,
+  dateRange,
+  patientId,
+  statusState,
+  setStatusState,
+}) => {
+  // Use lifted state if available, otherwise use local state
+  const selectedOption = statusState?.selectedOption ?? "yes";
+  const columnFilters = useMemo(
+    () => statusState?.columnFilters ?? {},
+    [statusState?.columnFilters],
+  );
+
   const [filteredData, setFilteredData] = useState([]);
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [currentFilterColumn, setCurrentFilterColumn] = useState(null);
+  const [searchText, setSearchText] = useState("");
+
+  // Update functions that use the lifted state
+  const setSelectedOption = (value) => {
+    if (setStatusState) {
+      setStatusState((prev) => ({ ...prev, selectedOption: value }));
+    }
+  };
+
+  const setColumnFilters = (value) => {
+    if (setStatusState) {
+      const newValue =
+        typeof value === "function" ? value(columnFilters) : value;
+      setStatusState((prev) => ({ ...prev, columnFilters: newValue }));
+    }
+  };
 
   const dataHeaderMapping = {
     "Patient Name": "patientName",
@@ -65,7 +105,7 @@ const Status = ({ data, dateRange, patientId }) => {
           !isInDateRange(
             item.appointmentDate,
             dateRange.startDate,
-            dateRange.endDate
+            dateRange.endDate,
           )
         ) {
           return false;
@@ -80,13 +120,13 @@ const Status = ({ data, dateRange, patientId }) => {
       filtered = filtered.filter(
         (item) =>
           !item.completionStatus ||
-          item.completionStatus.toLowerCase() !== "completed"
+          item.completionStatus.toLowerCase() !== "completed",
       );
     } else if (selectedOption === "yesno") {
       filtered = filtered.filter(
         (item) =>
           item.completionStatus &&
-          item.completionStatus.toLowerCase() === "completed"
+          item.completionStatus.toLowerCase() === "completed",
       );
     }
 
@@ -95,18 +135,16 @@ const Status = ({ data, dateRange, patientId }) => {
 
   useEffect(() => {
     setFilteredData(filterData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, selectedOption, patientId, dateRange]);
 
-  const transformData = (dataArray) => {
-    return dataArray.map((item) => {
-      const transformed = {};
+  // Memoized transform data
+  const transformedData = useMemo(() => {
+    return filteredData.map((item, index) => {
+      const transformed = { id: index.toString() };
       Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
         if (dataKey === "appointmentDate" && item[dataKey]) {
-          // Display date exactly as stored in database (YYYY-MM-DD format)
-          // Extract date string directly without timezone conversion
-          const dateString = item[dataKey].split("T")[0]; // Get YYYY-MM-DD part only
-
-          // Format to MM/DD/YYYY for display
+          const dateString = item[dataKey].split("T")[0];
           const [year, month, day] = dateString.split("-");
           transformed[displayName] = `${month}/${day}/${year}`;
         } else {
@@ -115,7 +153,165 @@ const Status = ({ data, dateRange, patientId }) => {
       });
       return transformed;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredData]);
+
+  // Get unique values for a column based on currently filtered data (excluding the current column filter)
+  const getUniqueValues = useCallback(
+    (columnName) => {
+      // Get data filtered by all columns except the current one
+      const otherFilters = Object.entries(columnFilters).filter(
+        ([col]) => col !== columnName,
+      );
+
+      let dataToUse = transformedData;
+      if (otherFilters.length > 0) {
+        dataToUse = transformedData.filter((row) => {
+          return otherFilters.every(([column, selectedValues]) => {
+            if (!selectedValues || selectedValues.length === 0) return true;
+            const cellValue = row[column];
+            return selectedValues.includes(cellValue);
+          });
+        });
+      }
+
+      const values = dataToUse
+        .map((row) => row[columnName])
+        .filter(
+          (val) =>
+            val !== null && val !== undefined && val !== "" && val !== "-",
+        );
+      return [...new Set(values)].sort();
+    },
+    [transformedData, columnFilters],
+  );
+
+  // Filter data based on column filters
+  const finalFilteredData = useMemo(() => {
+    if (Object.keys(columnFilters).length === 0) {
+      return transformedData;
+    }
+
+    return transformedData.filter((row) => {
+      return Object.entries(columnFilters).every(([column, selectedValues]) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
+        const cellValue = row[column];
+        return selectedValues.includes(cellValue);
+      });
+    });
+  }, [transformedData, columnFilters]);
+
+  // Handle filter icon click
+  const handleFilterClick = (event, columnName) => {
+    event.stopPropagation();
+    setCurrentFilterColumn(columnName);
+    setFilterAnchorEl(event.currentTarget);
+    setSearchText("");
   };
+
+  // Handle filter close
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+    setCurrentFilterColumn(null);
+    setSearchText("");
+  };
+
+  // Handle checkbox change
+  const handleCheckboxChange = (columnName, value) => {
+    setColumnFilters((prev) => {
+      const currentFilters = prev[columnName] || [];
+      const newFilters = currentFilters.includes(value)
+        ? currentFilters.filter((v) => v !== value)
+        : [...currentFilters, value];
+
+      if (newFilters.length === 0) {
+        // eslint-disable-next-line no-unused-vars
+        const { [columnName]: removed, ...rest } = prev;
+        return rest;
+      }
+
+      return { ...prev, [columnName]: newFilters };
+    });
+  };
+
+  // Handle select all
+  const handleSelectAll = (columnName) => {
+    const uniqueValues = getUniqueValues(columnName);
+    setColumnFilters((prev) => ({
+      ...prev,
+      [columnName]: uniqueValues,
+    }));
+  };
+
+  // Handle clear all for a column
+  const handleClearColumn = (columnName) => {
+    setColumnFilters((prev) => {
+      // eslint-disable-next-line no-unused-vars
+      const { [columnName]: removed, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // Handle clear all filters
+  const handleClearAllFilters = () => {
+    setColumnFilters({});
+  };
+
+  // Custom header renderer with filter icon
+  const renderHeader = (params) => {
+    const columnName = params.colDef.headerName;
+    const hasFilter =
+      columnFilters[columnName] && columnFilters[columnName].length > 0;
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+        <span
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+          }}
+        >
+          {columnName}
+        </span>
+        <FilterListIcon
+          onClick={(e) => handleFilterClick(e, columnName)}
+          style={{
+            cursor: "pointer",
+            fontSize: "18px",
+            color: hasFilter ? "#2563eb" : "#64748b",
+            marginLeft: "4px",
+            flexShrink: 0,
+            fontWeight: hasFilter ? "bold" : "normal",
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Memoized columns generation with custom header
+  const columns = useMemo(() => {
+    return Object.keys(dataHeaderMapping).map((header) => ({
+      field: header,
+      headerName: header,
+      flex: 1,
+      minWidth: 150,
+      sortable: true,
+      filterable: false,
+      renderHeader: renderHeader,
+      disableColumnMenu: false,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnFilters]);
 
   const getBaseCounts = () => {
     const validData = data.filter((item) => {
@@ -130,7 +326,7 @@ const Status = ({ data, dateRange, patientId }) => {
           !isInDateRange(
             item.appointmentDate,
             dateRange.startDate,
-            dateRange.endDate
+            dateRange.endDate,
           )
         ) {
           return false;
@@ -144,12 +340,12 @@ const Status = ({ data, dateRange, patientId }) => {
     const completed = validData.filter(
       (item) =>
         item.completionStatus &&
-        item.completionStatus.toLowerCase() === "completed"
+        item.completionStatus.toLowerCase() === "completed",
     ).length;
     const inProcess = validData.filter(
       (item) =>
         !item.completionStatus ||
-        item.completionStatus.toLowerCase() !== "completed"
+        item.completionStatus.toLowerCase() !== "completed",
     ).length;
 
     return { all, completed, inProcess };
@@ -236,16 +432,104 @@ const Status = ({ data, dateRange, patientId }) => {
       {/* Table Content with calculated height */}
       <div
         style={{ height: "calc(100vh - 14rem)" }}
-        className="overflow-hidden"
+        className="overflow-hidden relative"
       >
+        {/* Clear All Filters Button */}
+        {Object.keys(columnFilters).length > 0 && (
+          <div className="absolute top-2 right-2 z-50">
+            <button
+              onClick={handleClearAllFilters}
+              className="w-8 h-8 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+              title={`Clear ${Object.keys(columnFilters).length} filter(s)`}
+            >
+              <ClearIcon style={{ fontSize: "16px" }} />
+            </button>
+          </div>
+        )}
+
         {hasValidFilters() ? (
           filteredData.length > 0 ? (
-            <div className="h-full">
-              <Table
-                data={transformData(filteredData)}
-                headers={Object.keys(dataHeaderMapping)}
+            <Box sx={{ height: "100%", width: "100%" }}>
+              <DataGrid
+                rows={finalFilteredData}
+                columns={columns}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 50 },
+                  },
+                }}
+                pageSizeOptions={[25, 50, 100]}
+                pagination
+                sortingOrder={["asc", "desc"]}
+                disableSelectionOnClick
+                density="compact"
+                filterMode="client"
+                sortingMode="client"
+                getRowId={(row) => row.id}
+                sx={{
+                  border: "none",
+                  ".MuiDataGrid-columnHeader": {
+                    backgroundColor: "#1e293b", // slate-800
+                    color: "#ffffff",
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    padding: "0 8px",
+                  },
+                  ".MuiDataGrid-columnHeaderTitle": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    color: "#ffffff",
+                    fontWeight: 600,
+                  },
+                  ".MuiDataGrid-iconButtonContainer": {
+                    visibility: "visible",
+                    width: "auto",
+                    marginLeft: "2px",
+                  },
+                  ".MuiDataGrid-menuIcon": {
+                    visibility: "visible",
+                    width: "auto",
+                    color: "#ffffff",
+                  },
+                  ".MuiDataGrid-sortIcon": {
+                    color: "#ffffff",
+                    opacity: 0.7,
+                  },
+                  ".MuiDataGrid-menuIconButton": {
+                    color: "#ffffff",
+                    opacity: 0.8,
+                    "&:hover": {
+                      opacity: 1,
+                    },
+                  },
+                  ".MuiDataGrid-columnSeparator": {
+                    color: "#475569",
+                  },
+                  ".MuiDataGrid-columnHeaderTitleContainer .MuiDataGrid-iconButtonContainer":
+                    {
+                      color: "#ffffff",
+                    },
+                  ".MuiDataGrid-filterIcon": {
+                    color: "#ffffff",
+                  },
+                  ".MuiDataGrid-row:hover": {
+                    backgroundColor: "#f8fafc",
+                  },
+                  ".MuiDataGrid-cell": {
+                    borderColor: "#e2e8f0",
+                    fontSize: "0.875rem",
+                  },
+                  ".MuiDataGrid-footerContainer": {
+                    backgroundColor: "#f8fafc",
+                    borderTop: "1px solid #e2e8f0",
+                  },
+                  ".MuiTablePagination-root": {
+                    color: "#475569",
+                  },
+                }}
               />
-            </div>
+            </Box>
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -300,6 +584,122 @@ const Status = ({ data, dateRange, patientId }) => {
           </div>
         )}
       </div>
+
+      {/* Filter Popover */}
+      <Popover
+        open={Boolean(filterAnchorEl)}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <div style={{ padding: "16px", minWidth: "280px", maxWidth: "400px" }}>
+          {currentFilterColumn && (
+            <>
+              <div
+                style={{
+                  marginBottom: "12px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#1e293b",
+                }}
+              >
+                Filter: {currentFilterColumn}
+              </div>
+
+              {/* Search Box */}
+              <TextField
+                size="small"
+                placeholder="Search values..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                fullWidth
+                style={{ marginBottom: "12px" }}
+              />
+
+              {/* Select All / Clear All Buttons */}
+              <div
+                style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+              >
+                <Button
+                  size="small"
+                  onClick={() => handleSelectAll(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Select All
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleClearColumn(currentFilterColumn)}
+                  style={{ fontSize: "12px", textTransform: "none" }}
+                >
+                  Clear
+                </Button>
+              </div>
+
+              {/* Checkbox List */}
+              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {getUniqueValues(currentFilterColumn)
+                  .filter(
+                    (value) =>
+                      searchText === "" ||
+                      String(value)
+                        .toLowerCase()
+                        .includes(searchText.toLowerCase()),
+                  )
+                  .map((value) => (
+                    <FormControlLabel
+                      key={value}
+                      control={
+                        <Checkbox
+                          checked={
+                            columnFilters[currentFilterColumn]?.includes(
+                              value,
+                            ) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange(currentFilterColumn, value)
+                          }
+                          size="small"
+                        />
+                      }
+                      label={<span style={{ fontSize: "13px" }}>{value}</span>}
+                      style={{ display: "block", margin: "4px 0" }}
+                    />
+                  ))}
+              </div>
+
+              {/* Apply and Close Button */}
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleFilterClose}
+                  style={{
+                    backgroundColor: "#1e293b",
+                    textTransform: "none",
+                    fontSize: "12px",
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Popover>
     </div>
   );
 };
