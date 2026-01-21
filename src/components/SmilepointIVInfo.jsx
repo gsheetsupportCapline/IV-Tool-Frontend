@@ -67,7 +67,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
             dateType,
             ivType,
           },
-        }
+        },
       );
 
       console.log("API Response:", response.data);
@@ -111,7 +111,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
       console.error("Error fetching completion analysis:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to fetch IV completion analysis data"
+          "Failed to fetch IV completion analysis data",
       );
       setData([]);
     } finally {
@@ -219,7 +219,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
 
     return `${month} ${day}, ${year}, ${String(displayHours).padStart(
       2,
-      "0"
+      "0",
     )}:${minutes} ${ampm}`;
   };
 
@@ -310,19 +310,13 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                         Appointment Time
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        IV Requested (IST)
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        IV Requested (CST)
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        IV Completed (IST)
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        IV Completed (CST)
+                        IV Requested Date
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         IV Assigned Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        IV Completed Date
                       </th>
                     </tr>
                   </thead>
@@ -345,19 +339,13 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                           {record.appointmentTime || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatDateTimeAsIs(record.ivRequestedDateIST)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatDateTimeAsIs(record.ivRequestedDateTimeCST)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatDateTimeAsIs(record.ivCompletedDateIST)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatDateTimeAsIs(record.ivCompletedDateTimeCST)}
+                          {formatDateTimeAsIs(record.ivRequestedDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {formatDateTimeAsIs(record.ivAssignedDate)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {formatDateTimeAsIs(record.ivCompletedDate)}
                         </td>
                       </tr>
                     ))}
@@ -575,7 +563,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                   office.officeName,
                                   "Total Completed IVs",
                                   office.totalCompletedData,
-                                  `Total Completed IVs - ${office.officeName}`
+                                  `Total Completed IVs - ${office.officeName}`,
                                 )
                               }
                               className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -593,7 +581,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                   "New Patient - Completed After Appointment",
                                   office.newPatient
                                     ?.completedAfterAppointmentData,
-                                  `New Patient - Completed After Appointment - ${office.officeName}`
+                                  `New Patient - Completed After Appointment - ${office.officeName}`,
                                 )
                               }
                               className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -609,7 +597,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                   office.officeName,
                                   "New Patient - Completed Within One Hour",
                                   office.newPatient?.completedWithinOneHourData,
-                                  `New Patient - Completed Within One Hour - ${office.officeName}`
+                                  `New Patient - Completed Within One Hour - ${office.officeName}`,
                                 )
                               }
                               className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -621,7 +609,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                           <td className="px-3 py-2 text-sm text-center text-blue-700 font-semibold border-r border-gray-200 bg-blue-25">
                             {calculatePercentage(
                               office.newPatient?.completedAfterAppointmentCount,
-                              office.totalCompletedIVs
+                              office.totalCompletedIVs,
                             )}
                             %
                           </td>
@@ -634,7 +622,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                   office.officeName,
                                   "Other Patient - Completed After Appointment",
                                   office.others?.completedAfterAppointmentData,
-                                  `Other Patient - Completed After Appointment - ${office.officeName}`
+                                  `Other Patient - Completed After Appointment - ${office.officeName}`,
                                 )
                               }
                               className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -650,7 +638,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                   office.officeName,
                                   "Other Patient - Completed Within One Hour",
                                   office.others?.completedWithinOneHourData,
-                                  `Other Patient - Completed Within One Hour - ${office.officeName}`
+                                  `Other Patient - Completed Within One Hour - ${office.officeName}`,
                                 )
                               }
                               className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -661,7 +649,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                           <td className="px-3 py-2 text-sm text-center text-amber-700 font-semibold bg-amber-25">
                             {calculatePercentage(
                               office.others?.completedAfterAppointmentCount,
-                              office.totalCompletedIVs
+                              office.totalCompletedIVs,
                             )}
                             %
                           </td>
@@ -674,24 +662,24 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
 
                         // Aggregate all data for totals row
                         const allTotalCompletedData = data.flatMap(
-                          (office) => office.totalCompletedData || []
+                          (office) => office.totalCompletedData || [],
                         );
                         const allNewPatientAfterAppointment = data.flatMap(
                           (office) =>
                             office.newPatient?.completedAfterAppointmentData ||
-                            []
+                            [],
                         );
                         const allNewPatientWithinOneHour = data.flatMap(
                           (office) =>
-                            office.newPatient?.completedWithinOneHourData || []
+                            office.newPatient?.completedWithinOneHourData || [],
                         );
                         const allOthersAfterAppointment = data.flatMap(
                           (office) =>
-                            office.others?.completedAfterAppointmentData || []
+                            office.others?.completedAfterAppointmentData || [],
                         );
                         const allOthersWithinOneHour = data.flatMap(
                           (office) =>
-                            office.others?.completedWithinOneHourData || []
+                            office.others?.completedWithinOneHourData || [],
                         );
 
                         return (
@@ -706,7 +694,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                     "All Offices",
                                     "Total Completed IVs",
                                     allTotalCompletedData,
-                                    "Total Completed IVs - All Offices"
+                                    "Total Completed IVs - All Offices",
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-bold"
@@ -723,7 +711,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                     "All Offices",
                                     "New Patient - Completed After Appointment",
                                     allNewPatientAfterAppointment,
-                                    "New Patient - Completed After Appointment - All Offices"
+                                    "New Patient - Completed After Appointment - All Offices",
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -741,7 +729,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                     "All Offices",
                                     "New Patient - Completed Within One Hour",
                                     allNewPatientWithinOneHour,
-                                    "New Patient - Completed Within One Hour - All Offices"
+                                    "New Patient - Completed Within One Hour - All Offices",
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -753,7 +741,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                               {calculatePercentage(
                                 totals.newPatient
                                   .completedAfterAppointmentCount,
-                                totals.totalCompletedIVs
+                                totals.totalCompletedIVs,
                               )}
                               %
                             </td>
@@ -766,7 +754,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                     "All Offices",
                                     "Other Patient - Completed After Appointment",
                                     allOthersAfterAppointment,
-                                    "Other Patient - Completed After Appointment - All Offices"
+                                    "Other Patient - Completed After Appointment - All Offices",
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -781,7 +769,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                                     "All Offices",
                                     "Other Patient - Completed Within One Hour",
                                     allOthersWithinOneHour,
-                                    "Other Patient - Completed Within One Hour - All Offices"
+                                    "Other Patient - Completed Within One Hour - All Offices",
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 hover:underline font-semibold"
@@ -792,7 +780,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
                             <td className="px-3 py-2 text-sm text-center font-bold text-amber-800">
                               {calculatePercentage(
                                 totals.others.completedAfterAppointmentCount,
-                                totals.totalCompletedIVs
+                                totals.totalCompletedIVs,
                               )}
                               %
                             </td>
