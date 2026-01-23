@@ -10,6 +10,7 @@ import ManageUsers from "./ManageUsers";
 import UserAttendance from "./UserAttendance";
 import MasterData from "./MasterData";
 import SmilepointIVInfo from "./SmilepointIVInfo";
+import FetchLogs from "./FetchLogs";
 import Header from "./Header";
 
 const AdminDashboard = ({
@@ -23,6 +24,8 @@ const AdminDashboard = ({
   setProductionIVState,
   smilepointIVInfoState,
   setSmilepointIVInfoState,
+  fetchLogsState,
+  setFetchLogsState,
 }) => {
   const [selectedItem, setSelectedItem] = useState("PendingIV");
 
@@ -33,7 +36,7 @@ const AdminDashboard = ({
   if (userRole !== "admin") {
     console.log(
       "Unauthorized access attempt to AdminDashboard by role:",
-      userRole
+      userRole,
     );
     return (
       <Redirect to={userRole === "user" ? "/dashboard" : "/schedule-patient"} />
@@ -132,6 +135,19 @@ const AdminDashboard = ({
 
               {/* Divider */}
               <div className="border-t border-slate-700 my-4"></div>
+
+              {/* Fetch Logs */}
+              <button
+                onClick={() => setSelectedItem("FetchLogs")}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 flex items-center space-x-3 ${
+                  selectedItem === "FetchLogs"
+                    ? "bg-blue-600 text-white shadow-lg transform scale-[1.02]"
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                <span>Appointments Logs</span>
+              </button>
 
               {/* Validations */}
               <button
@@ -259,6 +275,17 @@ const AdminDashboard = ({
                 <SmilepointIVInfo
                   pageState={smilepointIVInfoState}
                   setPageState={setSmilepointIVInfoState}
+                />
+              </div>
+              <div
+                style={{
+                  display: selectedItem === "FetchLogs" ? "block" : "none",
+                }}
+                className="h-full"
+              >
+                <FetchLogs
+                  pageState={fetchLogsState}
+                  setPageState={setFetchLogsState}
                 />
               </div>
             </div>

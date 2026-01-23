@@ -163,6 +163,18 @@ const App = () => {
     },
   });
 
+  // State for AdminDashboard tabs - Fetch Logs
+  const [fetchLogsState, setFetchLogsState] = useState({
+    fetchMode: "latest",
+    selectedDate: null,
+    logsData: null,
+    loading: false,
+    error: null,
+    expandedOperations: [],
+    modalData: null,
+    toast: null,
+  });
+
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <Body
@@ -192,6 +204,8 @@ const App = () => {
         setUserDashboardState={setUserDashboardState}
         smilepointIVInfoState={smilepointIVInfoState}
         setSmilepointIVInfoState={setSmilepointIVInfoState}
+        fetchLogsState={fetchLogsState}
+        setFetchLogsState={setFetchLogsState}
       />
     </LocalizationProvider>
   );

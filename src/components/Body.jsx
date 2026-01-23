@@ -42,6 +42,8 @@ const Body = ({
   setUserDashboardState,
   smilepointIVInfoState,
   setSmilepointIVInfoState,
+  fetchLogsState,
+  setFetchLogsState,
 }) => {
   // const appRouter = createBrowserRouter([
   //   {
@@ -129,6 +131,8 @@ const Body = ({
         setUserDashboardState={setUserDashboardState}
         smilepointIVInfoState={smilepointIVInfoState}
         setSmilepointIVInfoState={setSmilepointIVInfoState}
+        fetchLogsState={fetchLogsState}
+        setFetchLogsState={setFetchLogsState}
       />
     </div>
   );

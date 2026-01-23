@@ -23,7 +23,7 @@ const fetchDropdownOptions = async (category) => {
   try {
     const encodedCategory = encodeURIComponent(category);
     const response = await axios.get(
-      `${BASE_URL}/api/dropdownValues/${encodedCategory}`
+      `${BASE_URL}/api/dropdownValues/${encodedCategory}`,
     );
     return response.data.options;
   } catch (error) {
@@ -95,7 +95,7 @@ const Rush = ({ pageState, setPageState }) => {
 
         // Filter to show only assigned offices
         officeOptions = allOffices.filter((office) =>
-          assignedOfficesList.includes(office.name)
+          assignedOfficesList.includes(office.name),
         );
 
         // If only one office assigned, auto-select it
@@ -210,7 +210,7 @@ const Rush = ({ pageState, setPageState }) => {
             setSnackbarOpen(true);
             setSnackbarSeverity("error");
             setSnackbarMessage(
-              "No doctor found for selected office and appointment date."
+              "No doctor found for selected office and appointment date.",
             );
           }
         } else {
@@ -221,7 +221,7 @@ const Rush = ({ pageState, setPageState }) => {
           setSnackbarOpen(true);
           setSnackbarSeverity("error");
           setSnackbarMessage(
-            "Failed to update Google Sheet. Please try again."
+            "Failed to update Google Sheet. Please try again.",
           );
         }
       } catch (error) {
@@ -234,7 +234,7 @@ const Rush = ({ pageState, setPageState }) => {
         setSnackbarSeverity("error");
         // setSnackbarMessage("An error occurred while fetching provider. Please try again.");
         setSnackbarMessage(
-          "No provider found for selected office and appointment date."
+          "No provider found for selected office and appointment date.",
         );
       }
     }
@@ -328,11 +328,11 @@ const Rush = ({ pageState, setPageState }) => {
 
     console.log(
       "Current CST Date:",
-      currentCSTDate.toISOString().split("T")[0]
+      currentCSTDate.toISOString().split("T")[0],
     );
     console.log(
       "Appointment Date:",
-      appointmentDateOnly.toISOString().split("T")[0]
+      appointmentDateOnly.toISOString().split("T")[0],
     );
     console.log("Determined IV Type:", ivType);
 
@@ -363,7 +363,7 @@ const Rush = ({ pageState, setPageState }) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/appointments/create-new-appointment/${selectedOffice}`,
-        payload
+        payload,
       );
       setSnackbarOpen(true);
       setSnackbarSeverity("success");
@@ -386,11 +386,23 @@ const Rush = ({ pageState, setPageState }) => {
     } catch (error) {
       console.error(
         "Error creating new appointment:",
-        error.response ? error.response.data : error.message
+        error.response ? error.response.data : error.message,
       );
+
+      // Check if error is about duplicate appointment
+      let errorMessage = "Failed to create IV";
+      if (
+        error.response?.data?.message?.includes(
+          "Duplicate appointment already exists",
+        )
+      ) {
+        errorMessage =
+          "An open appointment already exists, so a new appointment cannot be created.";
+      }
+
       setSnackbarOpen(true);
       setSnackbarSeverity("error");
-      setSnackbarMessage("Failed to create IV");
+      setSnackbarMessage(errorMessage);
     }
   };
   const handleUpload = async (event) => {
@@ -404,7 +416,7 @@ const Rush = ({ pageState, setPageState }) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/image-upload/upload`,
-        formData
+        formData,
       );
       console.log(response);
       const imageUrl = response.data.fileInfo.url;

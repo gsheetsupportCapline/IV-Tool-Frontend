@@ -33,6 +33,8 @@ function ParamsExample({
   setUserDashboardState,
   smilepointIVInfoState,
   setSmilepointIVInfoState,
+  fetchLogsState,
+  setFetchLogsState,
 }) {
   let token = localStorage.getItem("token");
   let userId = localStorage.getItem("loggedinUserId");
@@ -160,6 +162,8 @@ function ParamsExample({
                   setProductionIVState,
                   smilepointIVInfoState,
                   setSmilepointIVInfoState,
+                  fetchLogsState,
+                  setFetchLogsState,
                 };
               }
 
