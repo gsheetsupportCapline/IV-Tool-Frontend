@@ -289,7 +289,7 @@ const FetchLogs = ({ pageState, setPageState }) => {
         <div className="bg-white rounded-lg shadow border border-slate-200 p-4 mb-6">
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-slate-800">
-              📋 Appointments Logs Dashboard
+              📋 Appointments Logs
             </h2>
 
             {/* Filters */}
