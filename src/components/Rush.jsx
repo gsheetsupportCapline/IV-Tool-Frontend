@@ -397,7 +397,7 @@ const Rush = ({ pageState, setPageState }) => {
         )
       ) {
         errorMessage =
-          "An open appointment already exists, so a new appointment cannot be created.";
+          "There is already an open entry available in the IV Tool with the same details.";
       }
 
       setSnackbarOpen(true);
