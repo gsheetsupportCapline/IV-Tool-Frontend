@@ -162,9 +162,10 @@ const IVUsers = ({ ivUsersState, setIvUsersState }) => {
   const handleDateChange = (newDateRange) => {
     console.log("🗓️ Date range changed:", newDateRange);
     if (newDateRange && newDateRange.startDate && newDateRange.endDate) {
+      // Keep dates as strings to avoid timezone conversion issues
       const updatedRange = {
-        startDate: new Date(newDateRange.startDate),
-        endDate: new Date(newDateRange.endDate),
+        startDate: newDateRange.startDate,
+        endDate: newDateRange.endDate,
       };
       console.log("📊 Setting new date range:", updatedRange);
       setDateRange(updatedRange);
@@ -192,9 +193,15 @@ const IVUsers = ({ ivUsersState, setIvUsersState }) => {
         return;
       }
 
-      // Format dates for API
-      const startDate = range.startDate.toISOString().split("T")[0];
-      const endDate = range.endDate.toISOString().split("T")[0];
+      // Format dates for API - keep as strings to avoid timezone conversion
+      const startDate =
+        typeof range.startDate === "string"
+          ? range.startDate
+          : range.startDate.toISOString().split("T")[0];
+      const endDate =
+        typeof range.endDate === "string"
+          ? range.endDate
+          : range.endDate.toISOString().split("T")[0];
 
       console.log("Fetching appointments for user:", userId);
       console.log("Date range:", { startDate, endDate });
