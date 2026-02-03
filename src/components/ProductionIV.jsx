@@ -298,7 +298,10 @@ const ProductionIV = ({ pageState, setPageState }) => {
             <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
               Date Range:
             </label>
-            <div className="border border-slate-300 rounded-lg bg-white">
+            <div
+              className="border border-slate-300 rounded-lg bg-white"
+              style={{ position: "relative", zIndex: 50 }}
+            >
               <Datepicker
                 value={dateRange}
                 onChange={handleValueChange}
