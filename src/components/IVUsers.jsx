@@ -747,7 +747,9 @@ const IVUsers = ({ ivUsersState, setIvUsersState }) => {
                               backgroundColor:
                                 selectedAppointment?._id === item._original._id
                                   ? "#eff6ff"
-                                  : "inherit",
+                                  : item._original.isPreviouslyCompleted
+                                    ? "#fee2e2" // Light red for previously completed
+                                    : "inherit",
                               borderLeft:
                                 selectedAppointment?._id === item._original._id
                                   ? "4px solid #3b82f6"
@@ -995,6 +997,16 @@ const IVUsers = ({ ivUsersState, setIvUsersState }) => {
                             size="small"
                             label="Policy Holder Name"
                             value={selectedAppointment.policyHolderName || ""}
+                            InputProps={{ readOnly: true }}
+                            className="bg-slate-50"
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Policy Holder DOB"
+                            value={selectedAppointment.policyHolderDOB || ""}
                             InputProps={{ readOnly: true }}
                             className="bg-slate-50"
                           />

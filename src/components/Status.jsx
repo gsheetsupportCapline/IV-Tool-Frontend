@@ -141,7 +141,10 @@ const Status = ({
   // Memoized transform data
   const transformedData = useMemo(() => {
     return filteredData.map((item, index) => {
-      const transformed = { id: index.toString() };
+      const transformed = {
+        id: index.toString(),
+        isPreviouslyCompleted: item.isPreviouslyCompleted || false, // Preserve this field
+      };
       Object.entries(dataHeaderMapping).forEach(([displayName, dataKey]) => {
         if (dataKey === "appointmentDate" && item[dataKey]) {
           const dateString = item[dataKey].split("T")[0];
@@ -466,8 +469,16 @@ const Status = ({
                 filterMode="client"
                 sortingMode="client"
                 getRowId={(row) => row.id}
+                getRowClassName={(params) =>
+                  params.row.isPreviouslyCompleted
+                    ? "previously-completed-row"
+                    : ""
+                }
                 sx={{
                   border: "none",
+                  ".previously-completed-row": {
+                    backgroundColor: "#fee2e2 !important", // Light red for previously completed
+                  },
                   ".MuiDataGrid-columnHeader": {
                     backgroundColor: "#1e293b", // slate-800
                     color: "#ffffff",

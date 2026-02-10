@@ -37,9 +37,35 @@ export const getCSTDateTime = () => {
   // This ensures the exact CST time is stored in the database
   return `${year}-${month.padStart(2, "0")}-${day.padStart(
     2,
-    "0"
+    "0",
   )}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:${second.padStart(
     2,
-    "0"
+    "0",
   )}.000Z`;
+};
+
+/**
+ * Get current date only in CST timezone (without time) in YYYY-MM-DD format
+ * This function is specifically used for attendance date fields
+ * to ensure consistent date across all operations irrespective of user's browser timezone
+ *
+ * @returns {string} Date string in YYYY-MM-DD format (CST timezone)
+ */
+export const getCSTDate = () => {
+  const date = new Date();
+
+  // Convert to CST timezone (America/Chicago includes both CST and CDT automatically)
+  const cstString = date.toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  // Parse the CST date string
+  // Format: MM/DD/YYYY
+  const [month, day, year] = cstString.split("/");
+
+  // Return in YYYY-MM-DD format
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };

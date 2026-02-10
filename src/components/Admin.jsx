@@ -15,7 +15,7 @@ import ShimmerTableComponent from "./ShimmerTableComponent";
 import BASE_URL from "../config/apiConfig";
 import ImageViewer from "react-simple-image-viewer";
 import { fetchOfficeOptions } from "../utils/fetchOfficeOptions";
-import { getCSTDateTime } from "../utils/timezoneUtils";
+import { getCSTDateTime, getCSTDate } from "../utils/timezoneUtils";
 import { Popover, Checkbox, FormControlLabel, TextField } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
@@ -747,7 +747,7 @@ const Admin = ({ pageState, setPageState }) => {
 
       // First check if user is present today before assigning
       try {
-        const currentDate = new Date().toISOString().split("T")[0];
+        const currentDate = getCSTDate(); // Use CST timezone for date
         const attendanceResponse = await axios.get(
           `${BASE_URL}/api/attendance/by-date`,
           {
@@ -844,7 +844,7 @@ const Admin = ({ pageState, setPageState }) => {
       // Update attendance logic
       if (selectedAppointmentIds.length > 0) {
         try {
-          const currentDate = new Date().toISOString().split("T")[0];
+          const currentDate = getCSTDate(); // Use CST timezone for date
           let currentAssignedCount = 0;
           let currentAppointmentIds = [];
 
@@ -1024,7 +1024,7 @@ const Admin = ({ pageState, setPageState }) => {
       const { user, appointmentIds } = userAppointmentMap[userId];
 
       try {
-        const currentDate = new Date().toISOString().split("T")[0];
+        const currentDate = getCSTDate(); // Use CST timezone for date
         let currentAssignedCount = 0;
         let currentAppointmentIds = [];
 

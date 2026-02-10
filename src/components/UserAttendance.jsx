@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URL from "../config/apiConfig";
-import { getCSTDateTime } from "../utils/timezoneUtils";
+import { getCSTDateTime, getCSTDate } from "../utils/timezoneUtils";
 
 const UserAttendance = () => {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    getCSTDate(), // Use CST timezone for initial date
   );
   const [users, setUsers] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
@@ -25,7 +25,7 @@ const UserAttendance = () => {
     // Get current IST time
     const now = new Date();
     const istTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
     const currentHour = istTime.getHours();
     const currentMinute = istTime.getMinutes();
@@ -86,7 +86,7 @@ const UserAttendance = () => {
 
       // Filter active users with role 'user'
       const activeUsers = userData.filter(
-        (user) => user.role === "user" && user.isActive === true
+        (user) => user.role === "user" && user.isActive === true,
       );
 
       setUsers(activeUsers);
@@ -102,7 +102,7 @@ const UserAttendance = () => {
   const fetchAttendanceData = async (date) => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/attendance/by-date?date=${date}`
+        `${BASE_URL}/api/attendance/by-date?date=${date}`,
       );
 
       let attendanceInfo = response.data;
@@ -126,7 +126,7 @@ const UserAttendance = () => {
     const combined = usersList.map((user) => {
       // Find matching attendance record for this user
       const userAttendance = attendanceList.find(
-        (attendance) => attendance.userId === user._id
+        (attendance) => attendance.userId === user._id,
       );
 
       const attendanceValue = userAttendance
@@ -171,7 +171,7 @@ const UserAttendance = () => {
       combined.map((user) => ({
         userId: user.userId,
         attendance: user.attendance,
-      }))
+      })),
     );
     setHasAttendanceChanges(false);
     setUserActionStatus({}); // Reset action status
@@ -234,7 +234,7 @@ const UserAttendance = () => {
     // Check if there are any changes from original data
     const hasChanges = updatedData.some((user) => {
       const original = originalAttendanceData.find(
-        (orig) => orig.userId === user.userId
+        (orig) => orig.userId === user.userId,
       );
       return original && original.attendance !== user.attendance;
     });
@@ -248,19 +248,19 @@ const UserAttendance = () => {
       console.log(
         "Starting fetchPendingCounts for",
         combinedData.length,
-        "users"
+        "users",
       );
       const updatedPendingCounts = {};
 
       // Filter users who have assigned IVs
       const usersWithIVs = combinedData.filter(
-        (user) => user.assignedIvs && user.assignedIvs.length > 0
+        (user) => user.assignedIvs && user.assignedIvs.length > 0,
       );
       console.log(`Found ${usersWithIVs.length} users with assigned IVs`);
 
       if (usersWithIVs.length === 0) {
         console.log(
-          "No users with assigned IVs found, setting all pending counts to 0"
+          "No users with assigned IVs found, setting all pending counts to 0",
         );
         combinedData.forEach((user) => {
           updatedPendingCounts[user.userId] = 0;
@@ -274,14 +274,14 @@ const UserAttendance = () => {
         try {
           console.log(
             `Making API call for ${user.userName} with IDs:`,
-            user.assignedIvs
+            user.assignedIvs,
           );
 
           const response = await axios.post(
             `${BASE_URL}/api/appointments/check-completion-status`,
             {
               appointmentIds: user.assignedIvs,
-            }
+            },
           );
 
           console.log(`API response for ${user.userName}:`, response.data);
@@ -295,7 +295,7 @@ const UserAttendance = () => {
           } else {
             console.log(
               `No valid response for ${user.userName}:`,
-              response.data
+              response.data,
             );
             return {
               userId: user.userId,
@@ -306,7 +306,7 @@ const UserAttendance = () => {
         } catch (error) {
           console.error(
             `Error fetching pending count for user ${user.userName}:`,
-            error
+            error,
           );
           return {
             userId: user.userId,
@@ -324,7 +324,7 @@ const UserAttendance = () => {
       results.forEach((result) => {
         updatedPendingCounts[result.userId] = result.pendingCount;
         console.log(
-          `Pending count for ${result.userName}: ${result.pendingCount}`
+          `Pending count for ${result.userName}: ${result.pendingCount}`,
         );
       });
 
@@ -333,14 +333,14 @@ const UserAttendance = () => {
         if (!updatedPendingCounts.hasOwnProperty(user.userId)) {
           updatedPendingCounts[user.userId] = 0;
           console.log(
-            `User ${user.userName} has no assigned IVs - setting pending count to 0`
+            `User ${user.userName} has no assigned IVs - setting pending count to 0`,
           );
         }
       });
 
       console.log(
         "Final pending counts before setState:",
-        updatedPendingCounts
+        updatedPendingCounts,
       );
       setPendingCounts(updatedPendingCounts);
       console.log("All pending counts updated successfully");
@@ -353,7 +353,7 @@ const UserAttendance = () => {
   const handleUpdateAttendance = async () => {
     const changedUsers = combinedData.filter((user) => {
       const original = originalAttendanceData.find(
-        (orig) => orig.userId === user.userId
+        (orig) => orig.userId === user.userId,
       );
       return original && original.attendance !== user.attendance;
     });
@@ -381,7 +381,7 @@ const UserAttendance = () => {
       // Call bulk save API
       const response = await axios.post(
         `${BASE_URL}/api/attendance/bulk-save`,
-        requestBody
+        requestBody,
       );
 
       console.log("Attendance update response:", response.data);
@@ -393,13 +393,13 @@ const UserAttendance = () => {
           combinedData.map((user) => ({
             userId: user.userId,
             attendance: user.attendance,
-          }))
+          })),
         );
         setHasAttendanceChanges(false);
 
         // Show success message
         alert(
-          `✅ Attendance updated successfully for ${changedUsers.length} user(s)`
+          `✅ Attendance updated successfully for ${changedUsers.length} user(s)`,
         );
 
         // Optionally reload data to ensure consistency
@@ -461,7 +461,7 @@ const UserAttendance = () => {
     const selectableUsers = combinedData.filter((user) => user.isSelectable);
     const selectableUserIds = selectableUsers.map((user) => user.userId);
     const allSelectableSelected = selectableUserIds.every((id) =>
-      selectedUsers.has(id)
+      selectedUsers.has(id),
     );
 
     if (allSelectableSelected) {
@@ -474,7 +474,7 @@ const UserAttendance = () => {
   // Auto assignment function
   const handleAutoAssignment = async () => {
     const selectedUsersList = combinedData.filter((user) =>
-      selectedUsers.has(user.userId)
+      selectedUsers.has(user.userId),
     );
 
     if (selectedUsersList.length === 0) {
@@ -497,7 +497,7 @@ const UserAttendance = () => {
 
       // Fetch unassigned appointments
       const appointmentsResponse = await axios.get(
-        `${BASE_URL}/api/appointments/dynamic-unassigned-appointments`
+        `${BASE_URL}/api/appointments/dynamic-unassigned-appointments`,
       );
 
       if (
@@ -516,7 +516,7 @@ const UserAttendance = () => {
             new Date(a.appointmentDate) - new Date(b.appointmentDate);
           if (dateComparison !== 0) return dateComparison;
           return a.appointmentTime.localeCompare(b.appointmentTime);
-        }
+        },
       );
 
       const totalUsers = selectedUsersList.length;
@@ -527,7 +527,7 @@ const UserAttendance = () => {
       const userAssignmentTracking = {};
       selectedUsersList.forEach((user) => {
         const currentUserData = combinedData.find(
-          (u) => u.userId === user.userId
+          (u) => u.userId === user.userId,
         );
         userAssignmentTracking[user.userId] = {
           assignedIvs: [...(currentUserData?.assignedIvs || [])],
@@ -566,7 +566,7 @@ const UserAttendance = () => {
                   completionStatus: "In Process",
                   ivAssignedDate: getCSTDateTime(), // Use CST timezone
                   ivAssignedByUserName: loggedInUserName,
-                }
+                },
               );
 
               console.log("API Response:", assignResponse.data);
@@ -577,7 +577,7 @@ const UserAttendance = () => {
                 assignResponse.data.assignedUser
               ) {
                 console.log(
-                  `Successfully assigned appointment ${appointment.appointmentId} to user ${user.userName}`
+                  `Successfully assigned appointment ${appointment.appointmentId} to user ${user.userName}`,
                 );
 
                 // Track this assignment for batch update later
@@ -596,7 +596,7 @@ const UserAttendance = () => {
               } else {
                 console.error(
                   `Failed to assign appointment ${appointment.appointmentId} to user ${user.userName}`,
-                  assignResponse.data
+                  assignResponse.data,
                 );
               }
 
@@ -612,7 +612,7 @@ const UserAttendance = () => {
                   appointmentId: appointment.appointmentId,
                   userId: user.userId,
                   office: appointment.office,
-                }
+                },
               );
 
               // Increment appointment index even on error to avoid assigning same appointment to multiple users
@@ -634,7 +634,7 @@ const UserAttendance = () => {
         if (userTracking.newAssignments.length > 0) {
           try {
             const currentUserData = combinedData.find(
-              (u) => u.userId === user.userId
+              (u) => u.userId === user.userId,
             );
 
             if (
@@ -658,7 +658,7 @@ const UserAttendance = () => {
                     count: userTracking.assignedCount,
                     appointmentIds: userTracking.assignedIvs,
                   },
-                }
+                },
               );
 
               if (
@@ -666,7 +666,7 @@ const UserAttendance = () => {
                 assignedUpdateResponse.status === 200
               ) {
                 console.log(
-                  `Successfully updated attendance for user ${user.userName}: ${userTracking.assignedCount} total IVs`
+                  `Successfully updated attendance for user ${user.userName}: ${userTracking.assignedCount} total IVs`,
                 );
 
                 // Update local state to reflect the change
@@ -678,20 +678,20 @@ const UserAttendance = () => {
                           assignedIvs: [...userTracking.assignedIvs],
                           assignedCount: userTracking.assignedCount,
                         }
-                      : u
-                  )
+                      : u,
+                  ),
                 );
               } else {
                 console.error(
                   `Failed to update attendance for user ${user.userName}:`,
-                  assignedUpdateResponse.data
+                  assignedUpdateResponse.data,
                 );
               }
             }
           } catch (attendanceError) {
             console.error(
               `Error updating attendance for user ${user.userName}:`,
-              attendanceError
+              attendanceError,
             );
           }
         }
@@ -831,15 +831,15 @@ const UserAttendance = () => {
                         type="checkbox"
                         checked={(() => {
                           const selectableUsers = combinedData.filter(
-                            (user) => user.isSelectable
+                            (user) => user.isSelectable,
                           );
                           const selectableUserIds = selectableUsers.map(
-                            (user) => user.userId
+                            (user) => user.userId,
                           );
                           return (
                             selectableUserIds.length > 0 &&
                             selectableUserIds.every((id) =>
-                              selectedUsers.has(id)
+                              selectedUsers.has(id),
                             )
                           );
                         })()}
@@ -888,8 +888,8 @@ const UserAttendance = () => {
                                   user.attendance !== "Half"
                                   ? "User must be Present or Half to be selected"
                                   : !user.shiftTimeActive
-                                  ? `User's shift (${user.shiftTime}) is not currently active`
-                                  : "User not selectable"
+                                    ? `User's shift (${user.shiftTime}) is not currently active`
+                                    : "User not selectable"
                                 : "Select user for auto assignment"
                             }
                             className={`rounded border-gray-300 focus:ring-blue-500 ${
@@ -914,12 +914,12 @@ const UserAttendance = () => {
                             user.shiftTime === "Not Assigned"
                               ? "bg-gray-100 text-gray-600"
                               : user.shiftTime === "6PM-3AM"
-                              ? "bg-purple-100 text-purple-700"
-                              : user.shiftTime === "7PM-4AM"
-                              ? "bg-green-100 text-green-700"
-                              : user.shiftTime === "8PM-5AM"
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-blue-100 text-blue-700"
+                                ? "bg-purple-100 text-purple-700"
+                                : user.shiftTime === "7PM-4AM"
+                                  ? "bg-green-100 text-green-700"
+                                  : user.shiftTime === "8PM-5AM"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-blue-100 text-blue-700"
                           } ${
                             !user.shiftTimeActive &&
                             user.shiftTime !== "Not Assigned"
@@ -944,10 +944,10 @@ const UserAttendance = () => {
                             user.attendance === "Present"
                               ? "bg-green-100 text-green-700"
                               : user.attendance === "Absent"
-                              ? "bg-red-100 text-red-700"
-                              : user.attendance === "Half"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-600"
+                                ? "bg-red-100 text-red-700"
+                                : user.attendance === "Half"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           <option value="No Record" disabled>
@@ -972,7 +972,7 @@ const UserAttendance = () => {
                         <div
                           className="hidden"
                           data-appointment-ids={JSON.stringify(
-                            user.appointmentIds
+                            user.appointmentIds,
                           )}
                         >
                           {user.appointmentIds.join(",")}

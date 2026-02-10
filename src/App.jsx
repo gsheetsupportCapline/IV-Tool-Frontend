@@ -2,6 +2,7 @@ import { useState } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Body from "./components/Body";
+import LiveClock from "./components/LiveClock";
 import "./App.css";
 
 const App = () => {
@@ -207,6 +208,7 @@ const App = () => {
         fetchLogsState={fetchLogsState}
         setFetchLogsState={setFetchLogsState}
       />
+      <LiveClock />
     </LocalizationProvider>
   );
 };
