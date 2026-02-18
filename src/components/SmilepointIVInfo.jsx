@@ -193,34 +193,88 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
   // Format appointment date (without time)
   const formatAppointmentDate = (dateString) => {
     if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    });
+
+    // Extract date parts directly from string to avoid timezone conversion
+    let year, month, day;
+
+    // Handle ISO format: "2026-02-02T19:00:14.947Z" or "2026-02-02"
+    if (dateString.includes("T") || dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const datePart = dateString.split("T")[0];
+      [year, month, day] = datePart.split("-");
+    }
+    // Handle SQL format: "2026-02-13 10:00:20"
+    else if (dateString.includes(" ")) {
+      const datePart = dateString.split(" ")[0];
+      [year, month, day] = datePart.split("-");
+    } else {
+      return "-";
+    }
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthName = monthNames[parseInt(month) - 1];
+
+    return `${monthName} ${day}, ${year}`;
   };
 
-  // Format date and time without timezone conversion (display as-is from backend)
+  // Format date and time without timezone conversion (display exactly as received)
   const formatDateTimeAsIs = (dateString) => {
     if (!dateString) return "-";
-    const date = new Date(dateString);
 
-    const year = date.getUTCFullYear();
-    const month = date.toLocaleString("en-US", {
-      month: "short",
-      timeZone: "UTC",
-    });
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const hours = date.getUTCHours();
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
+    let year, month, day, hours, minutes, seconds;
 
-    return `${month} ${day}, ${year}, ${String(displayHours).padStart(
-      2,
-      "0",
-    )}:${minutes} ${ampm}`;
+    // Handle ISO format: "2026-02-02T19:00:14.947Z"
+    if (dateString.includes("T")) {
+      const [datePart, timePart] = dateString.split("T");
+      [year, month, day] = datePart.split("-");
+
+      // Remove Z and milliseconds if present
+      const cleanTime = timePart.replace("Z", "").split(".")[0];
+      [hours, minutes, seconds] = cleanTime.split(":");
+    }
+    // Handle SQL format: "2026-02-13 10:00:20"
+    else if (dateString.includes(" ")) {
+      const [datePart, timePart] = dateString.split(" ");
+      [year, month, day] = datePart.split("-");
+      [hours, minutes, seconds] = timePart.split(":");
+    } else {
+      return "-";
+    }
+
+    // Convert to 12-hour format
+    const hour24 = parseInt(hours);
+    const hour12 = hour24 % 12 || 12;
+    const ampm = hour24 >= 12 ? "PM" : "AM";
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthName = monthNames[parseInt(month) - 1];
+
+    return `${monthName} ${day}, ${year}, ${String(hour12).padStart(2, "0")}:${minutes} ${ampm}`;
   };
 
   return (
