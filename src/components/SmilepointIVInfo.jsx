@@ -473,11 +473,8 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
           </div>
 
           {/* Detail Table */}
-          <div className="flex-1 overflow-hidden bg-white rounded border">
-            <div
-              style={{ maxHeight: "calc(100vh - 14rem)" }}
-              className="overflow-auto"
-            >
+          <div className="flex-1 bg-white rounded border flex flex-col overflow-hidden">
+            <div className="overflow-auto flex-1">
               {detailView.detailData.length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky top-0">
@@ -681,11 +678,8 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
           {/* Main Content */}
           <div className="flex-1 overflow-hidden">
             {!loading && !error && data.length > 0 && (
-              <div className="bg-white rounded border h-full">
-                <div
-                  style={{ maxHeight: "calc(100vh - 16rem)" }}
-                  className="overflow-auto"
-                >
+              <div className="bg-white rounded border h-full flex flex-col overflow-hidden">
+                <div className="overflow-auto flex-1">
                   <table className="min-w-full">
                     <thead className="bg-gray-50 sticky top-0 z-10">
                       <tr>
