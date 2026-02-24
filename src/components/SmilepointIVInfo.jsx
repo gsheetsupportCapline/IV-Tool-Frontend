@@ -71,6 +71,20 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
       );
 
       console.log("API Response:", response.data);
+      
+      // Debug: Log date formats from first record if available
+      if (response.data && response.data.data && response.data.data.length > 0) {
+        const firstOffice = response.data.data[0];
+        if (firstOffice.totalCompletedData && firstOffice.totalCompletedData.length > 0) {
+          const sampleRecord = firstOffice.totalCompletedData[0];
+          console.log("Sample Date Formats Received:", {
+            ivRequestedDate: sampleRecord.ivRequestedDate,
+            ivAssignedDate: sampleRecord.ivAssignedDate,
+            ivCompletedDate: sampleRecord.ivCompletedDate,
+            appointmentDate: sampleRecord.appointmentDate,
+          });
+        }
+      }
 
       // Handle different possible response formats
       let responseData = response.data;
@@ -191,90 +205,142 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
   };
 
   // Format appointment date (without time)
+  // This function NEVER uses Date objects to avoid ANY timezone conversion
   const formatAppointmentDate = (dateString) => {
     if (!dateString) return "-";
 
-    // Extract date parts directly from string to avoid timezone conversion
+    // Clean the string
+    const cleanDateString = String(dateString).trim();
+    
     let year, month, day;
 
-    // Handle ISO format: "2026-02-02T19:00:14.947Z" or "2026-02-02"
-    if (dateString.includes("T") || dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      const datePart = dateString.split("T")[0];
-      [year, month, day] = datePart.split("-");
-    }
-    // Handle SQL format: "2026-02-13 10:00:20"
-    else if (dateString.includes(" ")) {
-      const datePart = dateString.split(" ")[0];
-      [year, month, day] = datePart.split("-");
-    } else {
-      return "-";
-    }
+    try {
+      // Handle ISO format: "2026-02-02T19:00:14.947Z" or "2026-02-02"
+      if (cleanDateString.includes("T") || cleanDateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const datePart = cleanDateString.split("T")[0];
+        [year, month, day] = datePart.split("-");
+      }
+      // Handle SQL format: "2026-02-13 10:00:20"
+      else if (cleanDateString.includes(" ")) {
+        const datePart = cleanDateString.split(" ")[0];
+        [year, month, day] = datePart.split("-");
+      } else {
+        console.warn("Unrecognized date format:", cleanDateString);
+        return cleanDateString;
+      }
 
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const monthName = monthNames[parseInt(month) - 1];
+      // Validate extracted values
+      if (!year || !month || !day) {
+        console.warn("Invalid date components:", { year, month, day });
+        return cleanDateString;
+      }
 
-    return `${monthName} ${day}, ${year}`;
+      const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      ];
+      const monthName = monthNames[parseInt(month, 10) - 1];
+
+      return `${monthName} ${day}, ${year}`;
+    } catch (error) {
+      console.error("Error formatting date:", error, "Input:", cleanDateString);
+      return cleanDateString;
+    }
   };
 
   // Format date and time without timezone conversion (display exactly as received)
+  // This function NEVER uses Date objects to avoid ANY timezone conversion
   const formatDateTimeAsIs = (dateString) => {
     if (!dateString) return "-";
 
+    // Clean the string - remove any extra whitespace
+    const cleanDateString = String(dateString).trim();
+    
     let year, month, day, hours, minutes, seconds;
+    let formatType = "";
 
-    // Handle ISO format: "2026-02-02T19:00:14.947Z"
-    if (dateString.includes("T")) {
-      const [datePart, timePart] = dateString.split("T");
-      [year, month, day] = datePart.split("-");
+    try {
+      // Handle ISO format: "2026-02-02T19:00:14.947Z" or "2026-02-02T19:00:14+05:30"
+      if (cleanDateString.includes("T")) {
+        formatType = "ISO";
+        const [datePart, timePartRaw] = cleanDateString.split("T");
+        [year, month, day] = datePart.split("-");
 
-      // Remove Z and milliseconds if present
-      const cleanTime = timePart.replace("Z", "").split(".")[0];
-      [hours, minutes, seconds] = cleanTime.split(":");
+        // Remove timezone indicators (Z, +HH:MM, -HH:MM) and milliseconds
+        // Extract only HH:MM:SS part
+        let timePart = timePartRaw
+          .replace(/Z$/i, "")              // Remove Z at end
+          .replace(/[+\-]\d{2}:\d{2}$/, "")  // Remove +05:30 or -08:00 at end
+          .split(".")[0];                  // Remove milliseconds
+        
+        [hours, minutes, seconds = "00"] = timePart.split(":");
+        
+        console.log(`[ISO Format] Input: "${cleanDateString}" -> Parsed time: ${hours}:${minutes}`);
+      }
+      // Handle SQL/MySQL format: "2026-02-13 10:00:20" or "2026-02-13 10:00:20.000"
+      else if (cleanDateString.includes(" ") && cleanDateString.includes("-")) {
+        formatType = "SQL";
+        // Split by space to separate date and time
+        const parts = cleanDateString.split(" ");
+        const datePart = parts[0];
+        const timePartRaw = parts[1] || "00:00:00";
+        
+        // Parse date part
+        [year, month, day] = datePart.split("-");
+        
+        // Parse time part - remove milliseconds if present
+        const timePart = timePartRaw.split(".")[0];
+        [hours, minutes, seconds = "00"] = timePart.split(":");
+        
+        console.log(`[SQL Format] Input: "${cleanDateString}" -> Date: ${year}-${month}-${day}, Time: ${hours}:${minutes}:${seconds}`);
+      }
+      // Handle date only format: "2026-02-13"
+      else if (cleanDateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        formatType = "DateOnly";
+        [year, month, day] = cleanDateString.split("-");
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return `${monthNames[parseInt(month, 10) - 1]} ${day}, ${year}`;
+      }
+      else {
+        console.warn("[Unknown Format]:", cleanDateString);
+        return cleanDateString; // Return as-is if format not recognized
+      }
+
+      // Validate extracted values
+      if (!year || !month || !day || hours === undefined || minutes === undefined) {
+        console.warn(`[${formatType}] Invalid date components:`, { 
+          input: cleanDateString,
+          year, month, day, hours, minutes 
+        });
+        return cleanDateString;
+      }
+
+      // Convert to 12-hour format
+      const hour24 = parseInt(hours, 10);
+      if (isNaN(hour24) || hour24 < 0 || hour24 > 23) {
+        console.error(`[${formatType}] Invalid hour value:`, hours, "from input:", cleanDateString);
+        return cleanDateString;
+      }
+      
+      const hour12 = hour24 % 12 || 12;
+      const ampm = hour24 >= 12 ? "PM" : "AM";
+
+      const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      ];
+      const monthName = monthNames[parseInt(month, 10) - 1];
+
+      // Format: "Feb 13, 2026, 07:30 PM"
+      const formatted = `${monthName} ${day}, ${year}, ${String(hour12).padStart(2, "0")}:${minutes} ${ampm}`;
+      
+      console.log(`[${formatType}] Formatted: "${formatted}" (24h: ${hours}:${minutes} -> 12h: ${hour12}:${minutes} ${ampm})`);
+      
+      return formatted;
+    } catch (error) {
+      console.error(`[${formatType}] Error formatting date:`, error, "Input:", cleanDateString);
+      return cleanDateString; // Return original string if parsing fails
     }
-    // Handle SQL format: "2026-02-13 10:00:20"
-    else if (dateString.includes(" ")) {
-      const [datePart, timePart] = dateString.split(" ");
-      [year, month, day] = datePart.split("-");
-      [hours, minutes, seconds] = timePart.split(":");
-    } else {
-      return "-";
-    }
-
-    // Convert to 12-hour format
-    const hour24 = parseInt(hours);
-    const hour12 = hour24 % 12 || 12;
-    const ampm = hour24 >= 12 ? "PM" : "AM";
-
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const monthName = monthNames[parseInt(month) - 1];
-
-    return `${monthName} ${day}, ${year}, ${String(hour12).padStart(2, "0")}:${minutes} ${ampm}`;
   };
 
   return (
