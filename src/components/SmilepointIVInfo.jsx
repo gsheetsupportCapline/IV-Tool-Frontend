@@ -71,11 +71,18 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
       );
 
       console.log("API Response:", response.data);
-      
+
       // Debug: Log date formats from first record if available
-      if (response.data && response.data.data && response.data.data.length > 0) {
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
         const firstOffice = response.data.data[0];
-        if (firstOffice.totalCompletedData && firstOffice.totalCompletedData.length > 0) {
+        if (
+          firstOffice.totalCompletedData &&
+          firstOffice.totalCompletedData.length > 0
+        ) {
           const sampleRecord = firstOffice.totalCompletedData[0];
           console.log("Sample Date Formats Received:", {
             ivRequestedDate: sampleRecord.ivRequestedDate,
@@ -211,12 +218,15 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
 
     // Clean the string
     const cleanDateString = String(dateString).trim();
-    
+
     let year, month, day;
 
     try {
       // Handle ISO format: "2026-02-02T19:00:14.947Z" or "2026-02-02"
-      if (cleanDateString.includes("T") || cleanDateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (
+        cleanDateString.includes("T") ||
+        cleanDateString.match(/^\d{4}-\d{2}-\d{2}$/)
+      ) {
         const datePart = cleanDateString.split("T")[0];
         [year, month, day] = datePart.split("-");
       }
@@ -236,8 +246,18 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
       }
 
       const monthNames = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
       const monthName = monthNames[parseInt(month, 10) - 1];
 
@@ -255,7 +275,7 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
 
     // Clean the string - remove any extra whitespace
     const cleanDateString = String(dateString).trim();
-    
+
     let year, month, day, hours, minutes, seconds;
     let formatType = "";
 
@@ -269,13 +289,15 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
         // Remove timezone indicators (Z, +HH:MM, -HH:MM) and milliseconds
         // Extract only HH:MM:SS part
         let timePart = timePartRaw
-          .replace(/Z$/i, "")              // Remove Z at end
-          .replace(/[+\-]\d{2}:\d{2}$/, "")  // Remove +05:30 or -08:00 at end
-          .split(".")[0];                  // Remove milliseconds
-        
+          .replace(/Z$/i, "") // Remove Z at end
+          .replace(/[+\-]\d{2}:\d{2}$/, "") // Remove +05:30 or -08:00 at end
+          .split(".")[0]; // Remove milliseconds
+
         [hours, minutes, seconds = "00"] = timePart.split(":");
-        
-        console.log(`[ISO Format] Input: "${cleanDateString}" -> Parsed time: ${hours}:${minutes}`);
+
+        console.log(
+          `[ISO Format] Input: "${cleanDateString}" -> Parsed time: ${hours}:${minutes}`,
+        );
       }
       // Handle SQL/MySQL format: "2026-02-13 10:00:20" or "2026-02-13 10:00:20.000"
       else if (cleanDateString.includes(" ") && cleanDateString.includes("-")) {
@@ -284,33 +306,57 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
         const parts = cleanDateString.split(" ");
         const datePart = parts[0];
         const timePartRaw = parts[1] || "00:00:00";
-        
+
         // Parse date part
         [year, month, day] = datePart.split("-");
-        
+
         // Parse time part - remove milliseconds if present
         const timePart = timePartRaw.split(".")[0];
         [hours, minutes, seconds = "00"] = timePart.split(":");
-        
-        console.log(`[SQL Format] Input: "${cleanDateString}" -> Date: ${year}-${month}-${day}, Time: ${hours}:${minutes}:${seconds}`);
+
+        console.log(
+          `[SQL Format] Input: "${cleanDateString}" -> Date: ${year}-${month}-${day}, Time: ${hours}:${minutes}:${seconds}`,
+        );
       }
       // Handle date only format: "2026-02-13"
       else if (cleanDateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
         formatType = "DateOnly";
         [year, month, day] = cleanDateString.split("-");
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthNames = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
         return `${monthNames[parseInt(month, 10) - 1]} ${day}, ${year}`;
-      }
-      else {
+      } else {
         console.warn("[Unknown Format]:", cleanDateString);
         return cleanDateString; // Return as-is if format not recognized
       }
 
       // Validate extracted values
-      if (!year || !month || !day || hours === undefined || minutes === undefined) {
-        console.warn(`[${formatType}] Invalid date components:`, { 
+      if (
+        !year ||
+        !month ||
+        !day ||
+        hours === undefined ||
+        minutes === undefined
+      ) {
+        console.warn(`[${formatType}] Invalid date components:`, {
           input: cleanDateString,
-          year, month, day, hours, minutes 
+          year,
+          month,
+          day,
+          hours,
+          minutes,
         });
         return cleanDateString;
       }
@@ -318,27 +364,49 @@ const SmilepointIVInfo = ({ pageState, setPageState }) => {
       // Convert to 12-hour format
       const hour24 = parseInt(hours, 10);
       if (isNaN(hour24) || hour24 < 0 || hour24 > 23) {
-        console.error(`[${formatType}] Invalid hour value:`, hours, "from input:", cleanDateString);
+        console.error(
+          `[${formatType}] Invalid hour value:`,
+          hours,
+          "from input:",
+          cleanDateString,
+        );
         return cleanDateString;
       }
-      
+
       const hour12 = hour24 % 12 || 12;
       const ampm = hour24 >= 12 ? "PM" : "AM";
 
       const monthNames = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
       const monthName = monthNames[parseInt(month, 10) - 1];
 
       // Format: "Feb 13, 2026, 07:30 PM"
       const formatted = `${monthName} ${day}, ${year}, ${String(hour12).padStart(2, "0")}:${minutes} ${ampm}`;
-      
-      console.log(`[${formatType}] Formatted: "${formatted}" (24h: ${hours}:${minutes} -> 12h: ${hour12}:${minutes} ${ampm})`);
-      
+
+      console.log(
+        `[${formatType}] Formatted: "${formatted}" (24h: ${hours}:${minutes} -> 12h: ${hour12}:${minutes} ${ampm})`,
+      );
+
       return formatted;
     } catch (error) {
-      console.error(`[${formatType}] Error formatting date:`, error, "Input:", cleanDateString);
+      console.error(
+        `[${formatType}] Error formatting date:`,
+        error,
+        "Input:",
+        cleanDateString,
+      );
       return cleanDateString; // Return original string if parsing fails
     }
   };
